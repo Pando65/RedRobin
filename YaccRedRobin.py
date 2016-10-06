@@ -33,7 +33,6 @@ def p_valor_retorno(p):
 def p_privilages(p):
     '''privilages : SECRET
                   | PUBLIC'''
-    print("olivermelapela")
 
 def p_tipovariable(p):
     '''tipovariable : NUMBER
@@ -43,7 +42,7 @@ def p_tipovariable(p):
                     | ID'''
 
 def p_parametros(p):
-    '''parametros : tipovariable DOSPUNTOS ID mas_ids mas_parametros
+    '''parametros : tipovariable posiblesbrackets DOSPUNTOS ID mas_ids mas_parametros
                   | empty'''
 
 def p_mas_ids(p):
@@ -51,9 +50,12 @@ def p_mas_ids(p):
                | empty'''
 
 def p_mas_parametros(p):
-    '''mas_parametros : PUNTOYCOMA tipovariable DOSPUNTOS ID mas_ids mas_parametros
+    '''mas_parametros : PUNTOYCOMA tipovariable posiblesbrackets DOSPUNTOS ID mas_ids mas_parametros
                       | empty'''
     
+def p_posiblesbrackets(p):
+    '''posiblesbrackets : B_ABRE B_CIERRA
+                        | empty'''
 
 def p_clases(p):
     'clases : CLASS ID herencia L_ABRE cuerpoclase L_CIERRA'
@@ -214,7 +216,8 @@ def p_error(p):
 # Build the parser
 parser = yacc.yacc()
 
-filename = "p2.txt"
+#filename = "p2.txt"
+filename = input("Ingresa nombre de archivo con lenguaje Red Robin: ") 
 file = open(filename, 'r')
 s = ""
 for line in file:
