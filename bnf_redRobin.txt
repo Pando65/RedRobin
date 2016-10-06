@@ -1,0 +1,34 @@
+PROGRAM ::= 'class' 'RedRobin' '{' CUERPOPROGRAM '}'
+CUERPOPROGRAM ::= CODIGO 'redRobin' '(' ')' '{' CUERPOFUNCION '}' 
+CODIGO ::= (CLASES | FUNCIONES)*
+
+FUNCIONES::= PRIVILAGES (TIPOVARIABLE|'empty') 'id' '(' PARAMETROS ')' '{' CUERPOFUNCION '}'
+PRIVILAGES ::= 'secret' | 'public' 
+TIPOVARIABLE ::= 'number'|'real'|'string'|'bool'|'id'
+PARAMETROS ::= ( TIPOVARIABLE ('[' ']')? ':' 'id' (',' 'id')* ( ';' TIPOVARIABLE ('[' ']')? ':' 'id' (',' 'id')* )* )?
+
+CLASES ::= 'class' 'id' ('inherit' 'id')? '{' CUERPOCLASE '}'
+CUERPOCLASE ::= (PRIVALAGES DECLARACION | FUNCIONES)+
+
+CUERPOFUNCION ::= (DECLARACION | ASIGNACION | CONDICIONAL | CICLO | INVOCACION ';' | RETORNO )*
+RETORNO ::= 'give' EXPRESION ';'
+INVOCACION ::= 'id' ('.' 'id')? '(' ARGUMENTOS ')'
+ARGUMENTOS ::= (VALORARGUMENTOS (',' VALORARGUMENTOS)*)?
+VALORARGUMENTOS ::= '&'? IDENTIFICADOR | EXPRESION
+CICLO ::= CICLOESTATICO | CICLODINAMICO
+CICLOESTATICO ::= 'for' 'id' 'in' '(' VALOR '..' VALOR ')' 'step' VALOR '{' CUERPOFUNCION '}'
+CICLODINAMICO ::= 'until' '(' COMPARACION ')' 'do' '{' CUERPOFUNCION '}'
+CONDICIONAL ::= 'if' '(' COMPARACION ')' '{' CUERPOFUNCION '}' ('elif' '(' COMPARACION ')' '{' CUERPOFUNCION '}')* ('else' '{' CUERPOFUNCION '}')?
+ASIGNACION ::= 'id' ('.' 'id')? '=' EXPRESION ';'
+DECLARACION ::= TIPOVARIABLE 'id' ('[' VALOR ']')? ('=' EXPRESION)? (',' 'id' ('[' VALOR ']')? ('=' EXPRESION)?)* ';'
+
+EXPRESION ::= COMPARACION | EXPRESIONARITMETICA
+
+COMPARACION ::= (VALOR | EXPRESION OPERADORELACIONAL EXPRESION | '!'? '(' COMPARACION ')') (('AND'|'OR') COMPARACION)* 
+OPERADORRELACIONAL ::= '>='|'<='|'=='|'<>'
+
+EXPRESIONARITMETICA ::= (VALOR | '(' EXPRESIONARITMETICA ')' ) ( OPERADORESARITMETICOS EXPRESIONARITMETICA )*
+OPERADORESARITMETICOS ::= '+' | '-' | '*' | '/' 
+
+VALOR ::= IDENTIFICADOR | INVOCACION | 'cnst String' | 'const Bool' | 'const Integer' | 'const Double'
+IDENTIFICADOR ::= 'id' ('.' 'id' | '[' VALOR ']' )?
