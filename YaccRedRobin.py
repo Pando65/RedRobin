@@ -9,6 +9,11 @@ import ply.yacc as yacc
 # Get the token map from the lexer.  This is required.
 from LexRedRobin import tokens
 
+# Procedures directory
+dirProced = [] # String : {'scope': 'padre', 'tipo': 'clase/funcion', 'vars': {} }
+currentType = ''
+currentScope = ''
+
 aprobado = True
 
 def p_program(p):
@@ -22,9 +27,8 @@ def p_codigo(p):
               | funciones codigo
               | empty '''
 
-#funciones deberia generar mas funciones
 def p_funciones(p):
-    'funciones : privilages valor_retorno ID P_ABRE parametros P_CIERRA L_ABRE cuerpofuncion L_CIERRA'
+    'funciones : FUNCTION privilages valor_retorno ID P_ABRE parametros P_CIERRA L_ABRE cuerpofuncion L_CIERRA'
 
 def p_valor_retorno(p):
     '''valor_retorno : tipovariable
@@ -40,6 +44,8 @@ def p_tipovariable(p):
                     | STRING
                     | BOOL
                     | ID'''
+    global currentType
+    currentType = p[1]
 
 def p_parametros(p):
     '''parametros : tipovariable posiblesbrackets DOSPUNTOS ID mas_ids mas_parametros
@@ -59,6 +65,7 @@ def p_posiblesbrackets(p):
 
 def p_clases(p):
     'clases : CLASS ID herencia L_ABRE cuerpoclase L_CIERRA'
+    print(p[2])
     
 def p_herencia(p):
     '''herencia : INHERIT ID
@@ -67,6 +74,7 @@ def p_herencia(p):
 def p_cuerpoclase(p):
     '''cuerpoclase : privilages declaracion mas_cuerpoclase
                    | funciones mas_cuerpoclase'''
+
 
 def p_mas_cuerpoclase(p):
     '''mas_cuerpoclase : cuerpoclase
@@ -130,6 +138,7 @@ def p_asignacion(p):
 
 def p_declaracion(p):
     'declaracion : tipovariable ID declara_arreglo iniciacion mas_declaraciones PUNTOYCOMA'
+    print(p[2])
 
 def p_declara_arreglo(p):
     '''declara_arreglo : B_ABRE valor B_CIERRA
@@ -216,8 +225,8 @@ def p_error(p):
 # Build the parser
 parser = yacc.yacc()
 
-#filename = "p2.txt"
-filename = input("Ingresa nombre de archivo con lenguaje Red Robin: ") 
+filename = "p2.txt"
+# filename = input("Ingresa nombre de archivo con lenguaje Red Robin: ") 
 file = open(filename, 'r')
 s = ""
 for line in file:

@@ -1,19 +1,11 @@
 class RedRobin {
 
-  public bool compara(int: a, b) {
-	if (a >= b) {
-		give a;
-	}
-	give b;
+  class prueba {
+    func public bool compara() {
+    
+    }
   }
-
-  public bool compara(int: a, b; real: aa) {
-	if (a >= b) {
-		give a;
-	}
-	give b;
-  }
-
+  
   RedRobin() {
 
   }

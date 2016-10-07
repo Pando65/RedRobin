@@ -56,7 +56,8 @@ reserved = {
     'elif' : 'ELIF',
     'else' : 'ELSE',
     'and' : 'AND',
-    'or' : 'OR'
+    'or' : 'OR',
+    'func' : 'FUNCTION'
 }
 
 t_L_ABRE = r'\{'

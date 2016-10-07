@@ -2,7 +2,7 @@ PROGRAM ::= 'class' 'RedRobin' '{' CUERPOPROGRAM '}'
 CUERPOPROGRAM ::= CODIGO 'redRobin' '(' ')' '{' CUERPOFUNCION '}' 
 CODIGO ::= (CLASES | FUNCIONES)*
 
-FUNCIONES::= PRIVILAGES (TIPOVARIABLE|'empty') 'id' '(' PARAMETROS ')' '{' CUERPOFUNCION '}'
+FUNCIONES::= 'func' PRIVILAGES (TIPOVARIABLE|'empty') 'id' '(' PARAMETROS ')' '{' CUERPOFUNCION '}'
 PRIVILAGES ::= 'secret' | 'public' 
 TIPOVARIABLE ::= 'number'|'real'|'string'|'bool'|'id'
 PARAMETROS ::= ( TIPOVARIABLE ('[' ']')? ':' 'id' (',' 'id')* ( ';' TIPOVARIABLE ('[' ']')? ':' 'id' (',' 'id')* )* )?
