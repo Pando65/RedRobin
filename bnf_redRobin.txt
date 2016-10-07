@@ -20,7 +20,7 @@ CICLOESTATICO ::= 'for' 'id' 'in' '(' VALOR '..' VALOR ')' 'step' VALOR '{' CUER
 CICLODINAMICO ::= 'until' '(' COMPARACION ')' 'do' '{' CUERPOFUNCION '}'
 CONDICIONAL ::= 'if' '(' COMPARACION ')' '{' CUERPOFUNCION '}' ('elif' '(' COMPARACION ')' '{' CUERPOFUNCION '}')* ('else' '{' CUERPOFUNCION '}')?
 ASIGNACION ::= 'id' ('.' 'id')? '=' COMPARACION ';'
-DECLARACION ::= TIPOVARIABLE 'id' ('[' VALOR ']')? ('=' COMPARACION)? (',' 'id' ('[' VALOR ']')? ('=' COMPARACION)?)* ';'
+DECLARACION ::= TIPOVARIABLE 'id' ('[' VALOR ']' | '=' COMPARACION)? (',' 'id' ('[' VALOR ']' | '=' COMPARACION)?)* ';'
 
 COMPARACION ::= (EXPRESIONARITMETICA | COMPARACION OPERADORELACIONAL COMPARACION | '!'? '(' COMPARACION ')') (('AND'|'OR') COMPARACION)* 
 OPERADORRELACIONAL ::= '>='|'<='|'=='|'<>'
