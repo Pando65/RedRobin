@@ -19,7 +19,13 @@ currentScopeFunction = ''
 aprobado = True
 
 def p_program(p):
-    'program : CLASS REDROBIN L_ABRE cuerpoprogram L_CIERRA'
+    'program : CLASS REDROBIN newprogram L_ABRE cuerpoprogram L_CIERRA'
+    
+def p_newprogram(p):
+    'newprogram : '
+    global dirProced
+    dirProced['RedRobin'] = {'func': {}, 'vars': {}}
+    
     
 def p_cuerpoprogram(p):
     'cuerpoprogram : codigo REDROBIN P_ABRE P_CIERRA L_ABRE cuerpofuncion L_CIERRA'
@@ -171,8 +177,30 @@ def p_asignacion(p):
     'asignacion : ID composicion_atributo IGUAL comparacion PUNTOYCOMA'
 
 def p_declaracion(p):
-    'declaracion : tipovariable ID declara_arreglo_o_iniciacion mas_declaraciones PUNTOYCOMA'
-#    print(p[2])
+    'declaracion : tipovariable ID newvariable declara_arreglo_o_iniciacion mas_declaraciones PUNTOYCOMA'
+
+def p_newvariable(p):
+    'newvariable : '
+    global dirProced
+    global currentScopeClass
+    global currentScopeFunction
+    global currentType
+    newVariableName = p[-1]
+    # si es una variable de funcion
+    if currentScopeFunction != '':
+        if newVariableName in dirProced[currentScopeClass]['func'][currentScopeFunction]:
+            print("VARIABLE YA DECLARADA")
+            sys.exit()
+        else:
+            dirProced[currentScopeClass]['func'][currentScopeFunction][newVariableName] = {'tipo': 'number', 'size': 0}
+    else:
+        # si es una variable de clase
+        if newVariableName in dirProced[currentScopeClass]['vars']:
+            print("VARIABLE YA DECLARADA")
+            sys.exit()
+        else:
+            dirProced[currentScopeClass]['vars'][newVariableName] = {'tipo': 'number', 'size': 0}    
+    
 
 def p_declara_arreglo_o_iniciacion(p):
     '''declara_arreglo_o_iniciacion : B_ABRE valor B_CIERRA
