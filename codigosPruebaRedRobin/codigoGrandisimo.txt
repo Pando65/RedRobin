@@ -1,0 +1,33 @@
+class RedRobin{
+
+    func secret real promedio(real: num1, num2, num3) {
+        real ave;
+
+        ave = (num1 + num2 + num3)/3;
+
+        give ave;
+    }
+
+    func secret number encuentraMayor(number[]: valores, number: length) {
+        number mayor = 0, iterador;
+
+        mayor = 0;
+        
+        for iterador in (0 .. length) step 1 {
+            if (valores[iterador] >= mayor) {
+                mayor = valores[iterador];
+            }
+        }
+
+        give mayor;
+    }
+
+  RedRobin() {
+    number arrNum[5] = 3;
+
+    promedio(5, 8, 4);
+
+    number mayor = encuentraMayor(arrNum, 5);
+  }
+
+}

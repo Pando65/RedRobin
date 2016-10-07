@@ -171,19 +171,16 @@ def p_asignacion(p):
     'asignacion : ID composicion_atributo IGUAL comparacion PUNTOYCOMA'
 
 def p_declaracion(p):
-    'declaracion : tipovariable ID declara_arreglo iniciacion mas_declaraciones PUNTOYCOMA'
+    'declaracion : tipovariable ID declara_arreglo_o_iniciacion mas_declaraciones PUNTOYCOMA'
 #    print(p[2])
 
-def p_declara_arreglo(p):
-    '''declara_arreglo : B_ABRE valor B_CIERRA
-                       | empty'''
-
-def p_iniciacion(p):
-    '''iniciacion : IGUAL comparacion
-                  | empty'''
+def p_declara_arreglo_o_iniciacion(p):
+    '''declara_arreglo_o_iniciacion : B_ABRE valor B_CIERRA
+                                    | IGUAL comparacion
+                                    | empty'''
 
 def p_mas_declaraciones(p):
-    '''mas_declaraciones : COMA ID declara_arreglo iniciacion mas_declaraciones
+    '''mas_declaraciones : COMA ID declara_arreglo_o_iniciacion mas_declaraciones
                          | empty'''
     
 
