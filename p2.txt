@@ -2,9 +2,18 @@ class RedRobin {
 
   class prueba {
     func public bool compara() {
-    
+      number a;
     }
   }
+  
+  class prueba1 {
+    func public bool compara2() {
+      number a;
+    }
+    func public bool compara3() {
+      number a;
+    }
+  }  
   
   RedRobin() {
 

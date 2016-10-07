@@ -5,14 +5,16 @@
 # Omar Manjarrez
 # ------------------------------------------------------------
 import ply.yacc as yacc
+import sys
 
 # Get the token map from the lexer.  This is required.
 from LexRedRobin import tokens
 
 # Procedures directory
-dirProced = [] # String : {'scope': 'padre', 'tipo': 'clase/funcion', 'vars': {} }
+dirProced = {}
 currentType = ''
-currentScope = ''
+currentScopeClass = 'RedRobin'
+currentScopeFunction = ''
 
 aprobado = True
 
@@ -28,7 +30,25 @@ def p_codigo(p):
               | empty '''
 
 def p_funciones(p):
-    'funciones : FUNCTION privilages valor_retorno ID P_ABRE parametros P_CIERRA L_ABRE cuerpofuncion L_CIERRA'
+    'funciones : FUNCTION privilages valor_retorno ID newfunction P_ABRE parametros P_CIERRA L_ABRE cuerpofuncion L_CIERRA'
+    global currentScopeFunction
+    currentScopeFunction = ''
+    
+def p_newfunction(p):
+    'newfunction : '
+    # nueva funcion encontrada
+    global dirProced
+    global currentScopeClass
+    global currentScopeFunction
+    newScopeFunction = p[-1]
+    # TODO - encontrar el tipo de la funcion, hardcodeado con empty
+    if newScopeFunction in dirProced[currentScopeClass]['func']:
+        print("FUNCION YA DECLARADA")
+        global aprobado
+        aprobado = False
+    else:
+        dirProced[currentScopeClass]['func'][newScopeFunction] = {'vars': {}, 'giveType': 'empty'}
+        currentScopeFunction = newScopeFunction
 
 def p_valor_retorno(p):
     '''valor_retorno : tipovariable
@@ -64,8 +84,22 @@ def p_posiblesbrackets(p):
                         | empty'''
 
 def p_clases(p):
-    'clases : CLASS ID herencia L_ABRE cuerpoclase L_CIERRA'
-    print(p[2])
+    'clases : CLASS ID herencia newclass L_ABRE cuerpoclase L_CIERRA'
+    global currentScopeClass
+    currentScopeClass = 'RedRobin'
+    
+def p_newclass(p):
+    'newclass :'
+    # Nuevo scope de clase
+    global dirProced
+    global currentScopeClass
+    newScopeClass = p[-2]
+    if newScopeClass in dirProced:
+        print("CLASE YA DECLARADA")
+        sys.exit()
+    else:
+        dirProced[newScopeClass] = {'func': {}, 'vars': {}}
+        currentScopeClass = newScopeClass
     
 def p_herencia(p):
     '''herencia : INHERIT ID
@@ -138,7 +172,7 @@ def p_asignacion(p):
 
 def p_declaracion(p):
     'declaracion : tipovariable ID declara_arreglo iniciacion mas_declaraciones PUNTOYCOMA'
-    print(p[2])
+#    print(p[2])
 
 def p_declara_arreglo(p):
     '''declara_arreglo : B_ABRE valor B_CIERRA
@@ -235,4 +269,5 @@ parser.parse(s)
 
 if aprobado == True:
     print("Aprobado")
+    print(dirProced)
 
