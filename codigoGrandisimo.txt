@@ -8,11 +8,11 @@ class RedRobin{
         give ave;
     }
 
-    func secret number encuentraMayor(bool: hola; real: bajan; number[]: valores; number: length) {
+    func secret number encuentraMayor(number[]: valores; number: length) {
         mayor = 0;
         number mayor = 0, iterador;
 
-        for iterador in (0 .. length) step 1 {
+        for iterador in (0 _ length) step 1 {
             if (valores[iterador] >= mayor) {
                 mayor = valores[iterador];
             }
@@ -22,7 +22,7 @@ class RedRobin{
     }
 
   RedRobin() {
-    number arrNum[5] = 3;
+    number arrNum[5];
 
     promedio(5, 8, 4);
 

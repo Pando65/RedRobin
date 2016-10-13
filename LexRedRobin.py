@@ -17,6 +17,7 @@ tokens = [
     'PUNTOYCOMA',
     'AMPERSAND',
     'PUNTO',
+    'GUIONBAJO',
     'IGUAL',
     'B_ABRE',
     'B_CIERRA',
@@ -69,6 +70,7 @@ t_COMA = r'\,'
 t_PUNTOYCOMA = r'\;'
 t_AMPERSAND = r'\&'
 t_PUNTO = r'\.'
+t_GUIONBAJO = r'\_'
 t_IGUAL = r'\='
 t_B_ABRE = r'\['
 t_B_CIERRA = r'\]'

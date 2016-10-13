@@ -157,14 +157,14 @@ def p_ciclo(p):
              | ciclodinamico'''
 
 def p_cicloestatico(p):
-    'cicloestatico : FOR ID IN P_ABRE valor DOSPUNTOS valor P_CIERRA STEP valor L_ABRE cuerpofuncion L_CIERRA'
+    'cicloestatico : FOR ID IN P_ABRE valor GUIONBAJO valor P_CIERRA STEP valor L_ABRE cuerpofuncion L_CIERRA'
 
 def p_ciclodinamico(p):
     'ciclodinamico : UNTIL P_ABRE comparacion P_CIERRA DO L_ABRE cuerpofuncion L_CIERRA'
 
 def p_condicional(p):
     'condicional : IF P_ABRE comparacion P_CIERRA L_ABRE cuerpofuncion L_CIERRA condiciones_elif condicion_else'
-
+    
 def p_condiciones_elif(p):
     '''condiciones_elif : ELIF P_ABRE comparacion P_CIERRA L_ABRE cuerpofuncion L_CIERRA condiciones_elif
                         | empty'''
@@ -284,7 +284,7 @@ def p_error(p):
 # Build the parser
 parser = yacc.yacc()
 
-filename = "p2.txt"
+filename = "codigoGrandisimo.txt"
 # filename = input("Ingresa nombre de archivo con lenguaje Red Robin: ") 
 file = open(filename, 'r')
 s = ""
