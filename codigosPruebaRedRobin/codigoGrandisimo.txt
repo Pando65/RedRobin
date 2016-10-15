@@ -1,4 +1,4 @@
-class RedRobin{
+ class RedRobin{
 
     func secret real promedio(real: num1, num2, num3) {
         real ave;

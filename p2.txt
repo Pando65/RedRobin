@@ -1,22 +1,8 @@
 class RedRobin {
-  class prueba {
-    func public bool compara() {
-      number a;
-      number b;
-    }
+  func public bool proband(number: param1, param2; bool: param3) {
+    number x, y;
+    give y;
   }
-  
-  class prueba1 {
-    func public bool compara2() {
-      number a;
-      number c;
-    }
-    func public bool compara3() {
-      number a;
-      number b;
-    }
-  }  
-  
   RedRobin() {
 
   }

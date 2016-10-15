@@ -53,7 +53,7 @@ def p_newfunction(p):
         global aprobado
         aprobado = False
     else:
-        dirProced[currentScopeClass]['func'][newScopeFunction] = {'vars': {}, 'giveType': 'empty'}
+        dirProced[currentScopeClass]['func'][newScopeFunction] = {'vars': {}, 'giveType': 'empty', 'params': {}}
         currentScopeFunction = newScopeFunction
 
 def p_valor_retorno(p):
@@ -73,16 +73,25 @@ def p_tipovariable(p):
     global currentType
     currentType = p[1]
 
+# nuevo parametro, solo el primero MARCA
 def p_parametros(p):
-    '''parametros : tipovariable posiblesbrackets DOSPUNTOS ID mas_ids mas_parametros
+    '''parametros : tipovariable posiblesbrackets DOSPUNTOS ID paramFound mas_ids mas_parametros
                   | empty'''
-
+    
+def p_paramFound(p):
+    'paramFound :'
+    newParamName = p[-1]
+    # agrego a hash de params
+    dirProced[currentScopeClass]['func'][currentScopeFunction]['params'][newParamName] = {'pos': 1, 'type': currentType}
+    # agrego a hash de vars
+    dirProced[currentScopeClass]['func'][currentScopeFunction]['vars'][newParamName] = {'tipo': currentType, 'size': 0} 
+    
 def p_mas_ids(p):
-    '''mas_ids : COMA ID mas_ids
+    '''mas_ids : COMA ID paramFound mas_ids
                | empty'''
 
 def p_mas_parametros(p):
-    '''mas_parametros : PUNTOYCOMA tipovariable posiblesbrackets DOSPUNTOS ID mas_ids mas_parametros
+    '''mas_parametros : PUNTOYCOMA parametros
                       | empty'''
     
 def p_posiblesbrackets(p):
@@ -186,13 +195,15 @@ def p_newvariable(p):
     global currentScopeFunction
     global currentType
     newVariableName = p[-1]
+    # nueva variable encontrada
     # si es una variable de funcion
+    # TODO: ver que rollo con los arreglos y valores de la variable y su tipo
     if currentScopeFunction != '':
         if newVariableName in dirProced[currentScopeClass]['func'][currentScopeFunction]:
             print("VARIABLE YA DECLARADA")
             sys.exit()
         else:
-            dirProced[currentScopeClass]['func'][currentScopeFunction][newVariableName] = {'tipo': 'number', 'size': 0}
+            dirProced[currentScopeClass]['func'][currentScopeFunction]['vars'][newVariableName] = {'tipo': 'number', 'size': 0}
     else:
         # si es una variable de clase
         if newVariableName in dirProced[currentScopeClass]['vars']:
@@ -208,12 +219,8 @@ def p_declara_arreglo_o_iniciacion(p):
                                     | empty'''
 
 def p_mas_declaraciones(p):
-    '''mas_declaraciones : COMA ID declara_arreglo_o_iniciacion mas_declaraciones
+    '''mas_declaraciones : COMA ID newvariable declara_arreglo_o_iniciacion mas_declaraciones
                          | empty'''
-    
-
-#def p_expresion(p):
-#    '''expresion : comparacion'''
                  
 
 def p_comparacion(p):
@@ -264,6 +271,14 @@ def p_valor(p):
              
 def p_identificador(p):
     'identificador : ID atributo_o_arreglo'
+    # TODO: validar que el tipo de variable concuerde con su declaracion
+    # Checar si existe la variable como:
+        # Variable Global de la clase actual
+        # Funcion dentro de la clase actual        
+        # Variable local dentro funcion
+    if not p[1] in dirProced[currentScopeClass]['vars'] and not p[1] in dirProced[currentScopeClass]['func'] and not p[1] in dirProced[currentScopeClass]['func'][currentScopeFunction]['vars']:
+        print("Variable " + p[1] + " no declarada")
+        sys.exit()
     
 def p_atributo_o_arreglo(p):
     '''atributo_o_arreglo : PUNTO ID
@@ -278,8 +293,9 @@ def p_empty(p):
 def p_error(p):
     global aprobado
     aprobado = False
-    print(p);
+    print(p)
     print("Syntax error in input!")
+    sys.exit()
 
 # Build the parser
 parser = yacc.yacc()
