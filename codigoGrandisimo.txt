@@ -13,7 +13,7 @@ class RedRobin{
         number mayor = 0, iterador;
 
         for iterador in (0 _ length) step 1 {
-            if (valores[iterador] >= mayor) {
+            if (valores[iterador] == mayor) {
                 mayor = valores[iterador];
             }
         }

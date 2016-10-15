@@ -140,7 +140,7 @@ def p_cuerpofuncion(p):
                      | empty'''
 
 def p_retorno(p):
-    'retorno : GIVE comparacion PUNTOYCOMA'
+    'retorno : GIVE expresion PUNTOYCOMA'
 
 def p_invocacion(p):
     'invocacion : ID composicion_atributo P_ABRE argumentos P_CIERRA'
@@ -155,7 +155,7 @@ def p_mas_argumentos(p):
 
 def p_valorargumentos(p):
     '''valorargumentos : AMPERSAND ID composicion_atributo 
-                       | comparacion'''
+                       | expresion'''
 
 def p_composicion_atributo(p):
     '''composicion_atributo : PUNTO ID
@@ -169,13 +169,13 @@ def p_cicloestatico(p):
     'cicloestatico : FOR ID IN P_ABRE valor GUIONBAJO valor P_CIERRA STEP valor L_ABRE cuerpofuncion L_CIERRA'
 
 def p_ciclodinamico(p):
-    'ciclodinamico : UNTIL P_ABRE comparacion P_CIERRA DO L_ABRE cuerpofuncion L_CIERRA'
+    'ciclodinamico : UNTIL P_ABRE expresion P_CIERRA DO L_ABRE cuerpofuncion L_CIERRA'
 
 def p_condicional(p):
-    'condicional : IF P_ABRE comparacion P_CIERRA L_ABRE cuerpofuncion L_CIERRA condiciones_elif condicion_else'
+    'condicional : IF P_ABRE expresion P_CIERRA L_ABRE cuerpofuncion L_CIERRA condiciones_elif condicion_else'
     
 def p_condiciones_elif(p):
-    '''condiciones_elif : ELIF P_ABRE comparacion P_CIERRA L_ABRE cuerpofuncion L_CIERRA condiciones_elif
+    '''condiciones_elif : ELIF P_ABRE expresion P_CIERRA L_ABRE cuerpofuncion L_CIERRA condiciones_elif
                         | empty'''
 
 def p_condicion_else(p):
@@ -183,7 +183,7 @@ def p_condicion_else(p):
                       | empty'''
 
 def p_asignacion(p):
-    'asignacion : ID composicion_atributo IGUAL comparacion PUNTOYCOMA'
+    'asignacion : ID composicion_atributo IGUAL expresion PUNTOYCOMA'
 
 def p_declaracion(p):
     'declaracion : tipovariable ID newvariable declara_arreglo_o_iniciacion mas_declaraciones PUNTOYCOMA'
@@ -215,51 +215,69 @@ def p_newvariable(p):
 
 def p_declara_arreglo_o_iniciacion(p):
     '''declara_arreglo_o_iniciacion : B_ABRE valor B_CIERRA
-                                    | IGUAL comparacion
+                                    | IGUAL expresion
                                     | empty'''
 
 def p_mas_declaraciones(p):
     '''mas_declaraciones : COMA ID newvariable declara_arreglo_o_iniciacion mas_declaraciones
                          | empty'''
-                 
 
-def p_comparacion(p):
-    'comparacion : operando_comparacion mas_operadores'
+def p_expresion(p):
+    'expresion : expresionii mas_expresion'
 
-def p_operando_comparacion(p):
-    '''operando_comparacion : expresionaritmetica
-                            | comparacion operadorrelacional comparacion
-                            | negacion P_ABRE comparacion P_CIERRA'''
+def p_mas_expresion(p):
+    '''mas_expresion : OR expresion
+                   | empty'''
+
+def p_expresionii(p):
+    'expresionii : expresioniii mas_expresionii'
+
+def p_mas_expresionii(p):
+    '''mas_expresionii : AND expresionii
+                       | empty'''
+
+def p_expresioniii(p):
+    'expresioniii : expresioniv mas_expresioniii'
+
+def p_mas_expresioniii(p):
+    '''mas_expresioniii : operadorrelacional expresioniii
+                        | empty'''
+
+def p_expresioniv(p):
+    'expresioniv : expresionv mas_expresioniv'
+
+def p_mas_expresioniv(p):
+    '''mas_expresioniv : operadortermino expresioniv
+                       | empty'''
+
+def p_expresionv(p):
+    'expresionv : expresionvi mas_expresionv'
+
+def p_mas_expresionv(p):
+    '''mas_expresionv : operadorfactor expresionv
+                      | empty'''
+
+def p_expresionvi(p):
+    '''expresionvi : valor
+                   | negacion P_ABRE expresion P_CIERRA'''
 
 def p_negacion(p):
     '''negacion : NEGAR
                 | empty'''
-                
-def p_mas_operadores(p):
-    '''mas_operadores : AND comparacion
-                      | OR comparacion
-                      | empty'''
 
 def p_operadorrelacional(p):
     '''operadorrelacional : MAYOR_IGUAL
                           | MENOR_IGUAL
                           | IGUAL_IGUAL
                           | DIFERENTE'''
-                          
 
-def p_expresionaritmetica(p):
-    '''expresionaritmetica : valor mas_expresionesaritmeticas
-                           | P_ABRE expresionaritmetica P_CIERRA mas_expresionesaritmeticas'''
+def p_operadortermino(p):
+    '''operadortermino : OPERADOR_SUMA
+                       | OPERAODR_RESTA'''
 
-def p_mas_expresionesaritmeticas(p):
-    '''mas_expresionesaritmeticas : operadoresaritmeticos expresionaritmetica mas_expresionesaritmeticas
-                                  | empty'''
-
-def p_operadoresaritmeticos(p):
-    '''operadoresaritmeticos : OPERADOR_SUMA
-                             | OPERAODR_RESTA
-                             | OPERADOR_MULTIPLICACION
-                             | OPERADOR_DIVISION'''
+def p_operadorfactor(p):
+    '''operadorfactor : OPERADOR_MULTIPLICACION
+                      | OPERADOR_DIVISION'''
     
 def p_valor(p):
     '''valor : identificador
