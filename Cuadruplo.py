@@ -2,6 +2,6 @@ import numpy
 from Enums import *
 
 class Cuadruplo:
-    v = numpy.zeros(4)
-    
-    
+
+    def __init__(self):
+        self.v = numpy.zeros(4)        

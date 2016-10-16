@@ -8,7 +8,7 @@ import numpy
 from Enums import *
 
 class Cubo:
-    semantica = numpy.zeros((45, 45, 45))
+    semantica = numpy.zeros((35, 35, 35))
     
     # Variables: number, real, string, bool
     # operadores: +, - , *, /, >=, <=, ==, <>, 
@@ -131,7 +131,7 @@ class Cubo:
         self.semantica[toCode['bool']][toCode['bool']]  [toCode['/']] = toCode['error']
         self.semantica[toCode['bool']][toCode['number']][toCode['>=']] = toCode['error']
         self.semantica[toCode['bool']][toCode['real']]  [toCode['>=']] = toCode['error']
-        self.semantica[toCode['bool']][toCode['string']][toCode['>=']] = toCode['errpr']
+        self.semantica[toCode['bool']][toCode['string']][toCode['>=']] = toCode['error']
         self.semantica[toCode['bool']][toCode['bool']]  [toCode['>=']] = toCode['bool']
         self.semantica[toCode['bool']][toCode['number']][toCode['<=']] = toCode['error']
         self.semantica[toCode['bool']][toCode['real']]  [toCode['<=']] = toCode['error']
@@ -147,13 +147,10 @@ class Cubo:
         self.semantica[toCode['bool']][toCode['bool']]  [toCode['<>']] = toCode['bool']
         
     def check(self, op1, op2, ope):
-        code_op1 = toCode[op1]
-        code_op2 = toCode[op2]
-        code_ope = toCode[ope]
-        return toSymbol[self.semantica[code_op1][code_op2][code_ope]]
+        return toSymbol[self.semantica[toCode[op1]][toCode[op2]][ope]]
     
-x = Cubo()
+# x = Cubo()
 
-print(x.check('number', 'number', '*') )
+# print(x.check('number', 'number', '*') )
         
 
