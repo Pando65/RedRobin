@@ -2,6 +2,7 @@ class RedRobin{
 
     func secret real promedio(real: num1, num2, num3) {
         real ave;
+        number mayor1;
 
         ave = (num1 + num2 + num3)/3;
 
@@ -18,7 +19,7 @@ class RedRobin{
             }
         }
 
-        give mayor;
+        give mayor1;
     }
 
   RedRobin() {

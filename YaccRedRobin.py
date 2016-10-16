@@ -6,6 +6,7 @@
 # ------------------------------------------------------------
 import ply.yacc as yacc
 import sys
+from Cubo import *
 
 # Get the token map from the lexer.  This is required.
 from LexRedRobin import tokens
@@ -15,6 +16,33 @@ dirProced = {}
 currentType = ''
 currentScopeClass = 'RedRobin'
 currentScopeFunction = ''
+
+# direccion virtuales
+virtualTable = {}
+memConts = numpy.zeros(16)
+memConts[memCont['numberClass']] = memStart['numberClass']
+memConts[memCont['realClass']] =   memStart['realClass']
+memConts[memCont['stringClass']] = memStart['stringClass']
+memConts[memCont['boolClass']] =   memStart['boolClass']
+
+memConts[memCont['numberFunc']] = memStart['numberFunc']
+memConts[memCont['realFunc']] =   memStart['realFunc']
+memConts[memCont['stringFunc']] = memStart['stringFunc']
+memConts[memCont['boolFunc']] =   memStart['boolFunc']
+
+memConts[memCont['numberTemp']] = memStart['numberTemp']
+memConts[memCont['realTemp']] =   memStart['realTemp']
+memConts[memCont['stringTemp']] = memStart['stringTemp']
+memConts[memCont['boolTemp']] =   memStart['boolTemp']
+
+memConts[memCont['numberCte']] = memStart['numberCte']
+memConts[memCont['realCte']] =   memStart['realCte']
+memConts[memCont['stringCte']] = memStart['stringCte']
+memConts[memCont['boolCte']] =   memStart['boolCte']
+
+# generacion de cuadruplos
+stackOpe = []
+stackDirMem = []
 
 aprobado = True
 

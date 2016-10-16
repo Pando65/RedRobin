@@ -131,7 +131,7 @@ class Cubo:
         self.semantica[toCode['bool']][toCode['bool']]  [toCode['/']] = toCode['error']
         self.semantica[toCode['bool']][toCode['number']][toCode['>=']] = toCode['error']
         self.semantica[toCode['bool']][toCode['real']]  [toCode['>=']] = toCode['error']
-        self.semantica[toCode['bool']][toCode['string']][toCode['>=']] = toCode['errpr']
+        self.semantica[toCode['bool']][toCode['string']][toCode['>=']] = toCode['error']
         self.semantica[toCode['bool']][toCode['bool']]  [toCode['>=']] = toCode['bool']
         self.semantica[toCode['bool']][toCode['number']][toCode['<=']] = toCode['error']
         self.semantica[toCode['bool']][toCode['real']]  [toCode['<=']] = toCode['error']
@@ -152,8 +152,8 @@ class Cubo:
         code_ope = toCode[ope]
         return toSymbol[self.semantica[code_op1][code_op2][code_ope]]
     
-x = Cubo()
+# x = Cubo()
 
-print(x.check('number', 'number', '*') )
+# print(x.check('number', 'number', '*') )
         
 
