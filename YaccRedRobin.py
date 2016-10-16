@@ -7,6 +7,7 @@
 import ply.yacc as yacc
 import sys
 from Cubo import *
+from Cuadruplo import *
 
 # Get the token map from the lexer.  This is required.
 from LexRedRobin import tokens
@@ -19,6 +20,7 @@ currentScopeFunction = ''
 
 # direccion virtuales
 virtualTable = {}
+mapCteToDir = {}
 memConts = numpy.zeros(16)
 memConts[memCont['numberClass']] = memStart['numberClass']
 memConts[memCont['realClass']] =   memStart['realClass']
@@ -40,9 +42,48 @@ memConts[memCont['realCte']] =   memStart['realCte']
 memConts[memCont['stringCte']] = memStart['stringCte']
 memConts[memCont['boolCte']] =   memStart['boolCte']
 
+def getType(memAddress):
+    if memAddress <= memLimit['numberClass']:
+        return 'number'
+    if memAddress <= memLimit['realClass']:
+        return 'real'
+    if memAddress <= memLimit['stringClass']:
+        return 'string'
+    if memAddress <= memLimit['boolClass']:
+        return 'bool'
+    
+    if memAddress <= memLimit['numberFunc']:
+        return 'number'
+    if memAddress <= memLimit['realFunc']:
+        return 'real'
+    if memAddress <= memLimit['stringFunc']:
+        return 'string'
+    if memAddress <= memLimit['boolFunc']:
+        return 'bool'
+    
+    if memAddress <= memLimit['numberTemp']:
+        return 'number'
+    if memAddress <= memLimit['realTemp']:
+        return 'real'
+    if memAddress <= memLimit['stringTemp']:
+        return 'string'
+    if memAddress <= memLimit['boolTemp']:
+        return 'bool'
+    
+    if memAddress <= memLimit['numberCte']:
+        return 'number'
+    if memAddress <= memLimit['realCte']:
+        return 'real'
+    if memAddress <= memLimit['stringCte']:
+        return 'string'
+    if memAddress <= memLimit['boolCte']:
+        return 'bool'
+
 # generacion de cuadruplos
 stackOpe = []
 stackDirMem = []
+cubo = Cubo()
+cuadruplos = []
 
 aprobado = True
 
@@ -251,11 +292,25 @@ def p_mas_declaraciones(p):
                          | empty'''
 
 def p_expresion(p):
-    'expresion : expresionii mas_expresion'
+    'expresion : expresionii pendingors mas_expresion'
 
 def p_mas_expresion(p):
-    '''mas_expresion : OR expresion
+    '''mas_expresion : OR newor expresion
                    | empty'''
+
+def p_newor(p):
+    'newor :'
+    # nuevo or se agrega a la pila
+    stackOpe.append(toCode['OR'])
+    
+def p_pendingors(p):
+    'pendingors :'
+    # pregunto si tengo ors pendientes por resolver
+#    if stackOpe[-1] == toCode["OR"]:
+#        ope2 = getType(stackOpe.pop())
+#        ope1 = getType(stackOpe.pop())
+#        if cubo.check(ope1, ope2, 'OR') != 'error':
+#            print(ope1 + " " + ope2 + " OR")
 
 def p_expresionii(p):
     'expresionii : expresioniii mas_expresionii'
@@ -272,11 +327,35 @@ def p_mas_expresioniii(p):
                         | empty'''
 
 def p_expresioniv(p):
-    'expresioniv : expresionv mas_expresioniv'
+    'expresioniv : expresionv checkpendingterminos mas_expresioniv'
 
 def p_mas_expresioniv(p):
     '''mas_expresioniv : operadortermino expresioniv
                        | empty'''
+    
+def p_checkpendingterminos(p):
+    'checkpendingterminos :'
+    # pregunto si tengo sumas o restas pendientes por resolver
+    if len(stackOpe) > 0 and (stackOpe[-1] == toCode['+'] or stackOpe[-1] == toCode['-']):
+        oope2 = stackDirMem.pop()
+        oope1 = stackDirMem.pop()
+        ope2 = getType(oope2)
+        ope1 = getType(oope1)
+        op = stackOpe[-1]
+        resultType = cubo.check(ope1, ope2, op) 
+        if resultType != 'error':
+            # ocupo crear la temporal que manejara el resultado
+            resultType += "Temp"
+            # virtualTable[memConts[memCont[resultType]]] = {''} no se que cosa guardar de la temporal
+            stackDirMem.append(memConts[memCont[resultType]])
+            # genero el cuadruplo
+            cuadruplos.append(Cuadruplo())
+            cuadruplos[-1].v[0] = op
+            cuadruplos[-1].v[1] = oope1
+            cuadruplos[-1].v[2] = oope2
+            cuadruplos[-1].v[3] = memConts[memCont[resultType]]
+            memConts[memCont[resultType]] += 1
+            
 
 def p_expresionv(p):
     'expresionv : expresionvi mas_expresionv'
@@ -302,6 +381,7 @@ def p_operadorrelacional(p):
 def p_operadortermino(p):
     '''operadortermino : OPERADOR_SUMA
                        | OPERAODR_RESTA'''
+    stackOpe.append(toCode[p[1]])
 
 def p_operadorfactor(p):
     '''operadorfactor : OPERADOR_MULTIPLICACION
@@ -310,10 +390,29 @@ def p_operadorfactor(p):
 def p_valor(p):
     '''valor : identificador
              | invocacion
-             | CONST_STRING
-             | CONST_BOOL
-             | CONST_INTEGER
-             | CONST_DOUBLE'''
+             | CONST_STRING newCteString
+             | CONST_BOOL newCteBool
+             | CONST_INTEGER newCteInt
+             | CONST_DOUBLE '''
+
+def p_newCteString(p):
+    'newCteString :'
+    
+def p_newCteBool(p):
+    'newCteBool :'
+    print("new bool" + p[-1])
+    
+def p_newCteInt(p):
+    'newCteInt :'
+    # nueva constate entera, crear la direccion de mem si no existe
+    if not p[-1] in mapCteToDir:
+        mapCteToDir[p[-1]] = memConts[memCont['numberCte']]
+        virtualTable[memCont['numberCte']] = p[-1]
+        memConts[memCont['numberCte']] += 1
+    stackDirMem.append(mapCteToDir[p[-1]])
+        
+    
+    
              
 def p_identificador(p):
     'identificador : ID atributo_o_arreglo'
@@ -348,13 +447,13 @@ parser = yacc.yacc()
 
 filename = "codigoGrandisimo.txt"
 # filename = input("Ingresa nombre de archivo con lenguaje Red Robin: ") 
-file = open(filename, 'r')
-s = ""
-for line in file:
-    s += line
+f = open(filename, 'r')
+s = f.read()
 parser.parse(s)
+
 
 if aprobado == True:
     print("Aprobado")
-    print(dirProced)
+    for cuadruplo in cuadruplos:
+        print(str(cuadruplo.v[0]) + " " + str(cuadruplo.v[1]) + " " + str(cuadruplo.v[2]) + " " + str(cuadruplo.v[3]))
 
