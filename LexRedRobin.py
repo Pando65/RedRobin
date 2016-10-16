@@ -27,7 +27,7 @@ tokens = [
     'IGUAL_IGUAL',
     'DIFERENTE',
     'OPERADOR_SUMA',
-    'OPERAODR_RESTA',
+    'OPERADOR_RESTA',
     'OPERADOR_MULTIPLICACION',
     'OPERADOR_DIVISION',
     'CONST_STRING',
@@ -58,7 +58,9 @@ reserved = {
     'else' : 'ELSE',
     'and' : 'AND',
     'or' : 'OR',
-    'func' : 'FUNCTION'
+    'func' : 'FUNCTION',
+    'true' : 'TRUE',
+    'false' : 'FALSE'
 }
 
 t_L_ABRE = r'\{'
@@ -80,7 +82,7 @@ t_MENOR_IGUAL = r'\<\='
 t_IGUAL_IGUAL = r'\=\='
 t_DIFERENTE = r'\<\>'
 t_OPERADOR_SUMA = r'\+'
-t_OPERAODR_RESTA = r'\-'
+t_OPERADOR_RESTA = r'\-'
 t_OPERADOR_MULTIPLICACION = r'\*'
 t_OPERADOR_DIVISION = r'\/'
 t_CONST_STRING = r'\"[^ \"]*\"'

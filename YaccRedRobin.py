@@ -183,7 +183,7 @@ def p_condicion_else(p):
                       | empty'''
 
 def p_asignacion(p):
-    'asignacion : ID composicion_atributo IGUAL expresion PUNTOYCOMA'
+    'asignacion : identificador IGUAL expresion PUNTOYCOMA'
 
 def p_declaracion(p):
     'declaracion : tipovariable ID newvariable declara_arreglo_o_iniciacion mas_declaraciones PUNTOYCOMA'
@@ -273,7 +273,7 @@ def p_operadorrelacional(p):
 
 def p_operadortermino(p):
     '''operadortermino : OPERADOR_SUMA
-                       | OPERAODR_RESTA'''
+                       | OPERADOR_RESTA'''
 
 def p_operadorfactor(p):
     '''operadorfactor : OPERADOR_MULTIPLICACION
@@ -283,12 +283,19 @@ def p_valor(p):
     '''valor : identificador
              | invocacion
              | CONST_STRING
-             | CONST_BOOL
-             | CONST_INTEGER
-             | CONST_DOUBLE'''
+             | valorbooleano
+             | negativo CONST_INTEGER
+             | negativo CONST_DOUBLE'''
+
+def p_valorbooleano(p):
+    '''valorbooleano : TRUE
+                     | FALSE'''
+def p_negativo(p):
+    '''negativo : OPERADOR_RESTA
+                | empty'''
              
 def p_identificador(p):
-    'identificador : ID atributo_o_arreglo'
+    'identificador : ID atributo arreglo'
     # TODO: validar que el tipo de variable concuerde con su declaracion
     # Checar si existe la variable como:
         # Variable Global de la clase actual
@@ -298,10 +305,13 @@ def p_identificador(p):
         print("Variable " + p[1] + " no declarada")
         sys.exit()
     
-def p_atributo_o_arreglo(p):
-    '''atributo_o_arreglo : PUNTO ID
-                          | B_ABRE valor B_CIERRA
-                          | empty'''
+def p_atributo(p):
+    '''atributo : PUNTO ID
+                | empty'''
+    
+def p_arreglo(p):
+    '''arreglo : B_ABRE valor B_CIERRA
+               | empty'''
                                                 
 def p_empty(p):
     'empty :'

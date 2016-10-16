@@ -8,7 +8,7 @@ TIPOVARIABLE ::= 'number'|'real'|'string'|'bool'|'id'
 PARAMETROS ::= ( TIPOVARIABLE ('[' ']')? ':' 'id' (',' 'id')* ( ';' TIPOVARIABLE ('[' ']')? ':' 'id' (',' 'id')* )* )?
 
 CLASES ::= 'class' 'id' ('inherit' 'id')? '{' CUERPOCLASE '}'
-CUERPOCLASE ::= (PRIVALAGES DECLARACION | FUNCIONES)+
+CUERPOCLASE ::= (PRIVILAGES DECLARACION | FUNCIONES)+
 
 CUERPOFUNCION ::= (DECLARACION | ASIGNACION | CONDICIONAL | CICLO | INVOCACION ';' | RETORNO )*
 RETORNO ::= 'give' EXPRESION ';'
@@ -19,7 +19,7 @@ CICLO ::= CICLOESTATICO | CICLODINAMICO
 CICLOESTATICO ::= 'for' 'id' 'in' '(' VALOR '_' VALOR ')' 'step' VALOR '{' CUERPOFUNCION '}'
 CICLODINAMICO ::= 'until' '(' EXPRESION ')' 'do' '{' CUERPOFUNCION '}'
 CONDICIONAL ::= 'if' '(' EXPRESION ')' '{' CUERPOFUNCION '}' ('elif' '(' EXPRESION ')' '{' CUERPOFUNCION '}')* ('else' '{' CUERPOFUNCION '}')?
-ASIGNACION ::= 'id' ('.' 'id')? '=' EXPRESION ';'
+ASIGNACION ::= IDENTIFICADOR '=' EXPRESION ';'
 DECLARACION ::= TIPOVARIABLE 'id' ('[' VALOR ']' | '=' EXPRESION)? (',' 'id' ('[' VALOR ']' | '=' EXPRESION)?)* ';'
 
 EXPRESION ::= EXPRESIONII ('OR' EXPRESIONII)*
@@ -29,5 +29,6 @@ EXPRESIONIV ::= EXPRESIONV (('+'|'-') EXPRESIONV)*
 EXPRESIONV ::= EXPRESIONVI (('*'|'/') EXPRESIONVI)*
 EXPRESIONVI ::= VALOR | '!'? '(' EXPRESION ')'
 
-VALOR ::= IDENTIFICADOR | INVOCACION | 'cnst String' | 'const Bool' | 'const Integer' | 'const Double'
-IDENTIFICADOR ::= 'id' ('.' 'id' | '[' VALOR ']' )?
+VALOR ::= IDENTIFICADOR | INVOCACION | 'cnst String' | VALORBOOLEANO | '-'? 'const Integer' | '-'? 'const Double'
+VALORBOOLEANO ::= 'true' | 'false'
+IDENTIFICADOR ::= 'id' ('.' 'id' )? ( '[' VALOR ']' )?

@@ -1,20 +1,50 @@
 class RedRobin{
 
     func secret real promedio(real: num1, num2, num3) {
+        bool pruebaBooleano = true;
         real ave;
-
+        bool probandoArreglo[100];
         ave = (num1 + num2 + num3)/3;
 
+        probandoArreglo[2] = probandoArreglo[3];
         give ave;
     }
 
+    class internship {
+        secret bool companyName;
+        secret real salary;
+        secret number duration;
+        secret string classmatesGoing[100];
+
+        func public empty internship() {
+            companyName = "";
+            salary = 0.0;
+            duration = 0;
+            classmatesGoing[0] = "";
+        }
+
+        func public empty internship1(bool: compania; real: salario; number: tiempoSemanas; string: amigo) {
+            companyName = compania;
+            salary = salario;
+            duration = tiempoSemanas;
+            classmatesGoing[0] = amigo;
+        }
+    }
+
     func secret number encuentraMayor(number[]: valores; number: length) {
-        mayor = 0;
         number mayor = 0, iterador;
 
         for iterador in (0 _ length) step 1 {
             if (valores[iterador] == mayor) {
                 mayor = valores[iterador];
+            }
+            elif (valores[iterador] <> valores[iterador]) {
+
+            }
+            else {
+                until (2 <= 7 and valores[iterador] + 3 / 3 <= 100) do {
+                    mayor = -1;
+                }
             }
         }
 
