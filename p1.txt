@@ -1,7 +1,7 @@
 class RedRobin {
 
   RedRobin() {
-	number a = 1 + 1 + 23 + 24+ 3421+ 123412431;
+	number a = 2 + 1 * 2 * 3 * 4 + 3;
   }
 
 }

@@ -167,14 +167,14 @@ def p_mas_expresioniii(p):
                         | empty'''
 
 def p_expresioniv(p):
-    'expresioniv : expresionv smcheckpendingterminos mas_expresioniv'
+    'expresioniv : expresionv smcheckpendingterms mas_expresioniv'
 
 def p_mas_expresioniv(p):
     '''mas_expresioniv : operadortermino expresioniv
                        | empty'''
     
 def p_expresionv(p):
-    'expresionv : expresionvi mas_expresionv'
+    'expresionv : expresionvi smcheckpendingfactors mas_expresionv'
 
 def p_mas_expresionv(p):
     '''mas_expresionv : operadorfactor expresionv
@@ -202,6 +202,7 @@ def p_operadortermino(p):
 def p_operadorfactor(p):
     '''operadorfactor : OPERADOR_MULTIPLICACION
                       | OPERADOR_DIVISION'''
+    pushToStackOpe(p[1])
     
 def p_valor(p):
     '''valor : identificador

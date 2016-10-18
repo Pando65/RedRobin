@@ -142,8 +142,8 @@ def p_smnewvariable(p):
             dirProced[currentScopeClass]['vars'][newVarName] = {'tipo': 'number', 'size': 0}
 
 # Llamada desde p_expresioniv
-def p_smcheckpendingterminos(p):
-    'smcheckpendingterminos :'
+def p_smcheckpendingterms(p):
+    'smcheckpendingterms :'
     # pregunto si tengo sumas o restas pendientes por resolver
     if len(stackOpe) > 0 and (stackOpe[-1] == toCode['+'] or stackOpe[-1] == toCode['-']):
         # obtengo direcciones de memoria de los valores a sumar/restar
@@ -151,7 +151,7 @@ def p_smcheckpendingterminos(p):
         opDir1 = stackDirMem.pop()
         opTypeCode2 = getTypeCode(opDir2)
         opTypeCode1 = getTypeCode(opDir1)
-        opeCode = stackOpe[-1]
+        opeCode = stackOpe.pop()
         resultType = cubo.check(opTypeCode1, opTypeCode2, opeCode) 
         if resultType != 'error':
             # ocupo crear la temporal que manejara el resultado
@@ -163,10 +163,27 @@ def p_smcheckpendingterminos(p):
         else:
             terminate("TYPE MISMATCH")
             
+def p_smcheckpendingfactors(p):
+    'smcheckpendingfactors :'
+    if len(stackOpe) > 0 and (stackOpe[-1] == toCode['*'] or stackOpe[-1] == toCode['/']):
+        opDir2 = stackDirMem.pop()
+        opDir1 = stackDirMem.pop()
+        opTypeCode2 = getTypeCode(opDir2)
+        opTypeCode1 = getTypeCode(opDir1)
+        opeCode = stackOpe.pop()
+        resultType = cubo.check(opTypeCode1, opTypeCode2, opeCode)
+        if resultType != 'error':
+            resultType += 'Temp'
+            # todo - agregar a tabla de direccion virtual el valor temporal
+            stackDirMem.append(memConts[memCont[resultType]])
+            createQuadruple(opeCode, opDir1, opDir2, memConts[memCont[resultType]])
+            memConts[memCont[resultType]] += 1
+            
 # Llamada desde p_valor
 def p_smnewcteint(p):
     'smnewcteint :'
     # nueva constate entera, crear la direccion de mem si no existe
+    global stackDirMem
     if not p[-1] in mapCteToDir:
         mapCteToDir[p[-1]] = memConts[memCont['numberCte']]
         virtualTable[memConts[memCont['numberCte']]] = p[-1]
@@ -196,6 +213,7 @@ def terminate(message):
     sys.exit()
     
 def createQuadruple(ope, op1, op2, r):
+    global cuadruplos
     cuadruplos.append(Cuadruplo())
     cuadruplos[-1].ope = ope
     cuadruplos[-1].op1 = op1
