@@ -147,10 +147,6 @@ class Cubo:
         self.semantica[toCode['bool']][toCode['bool']]  [toCode['<>']] = toCode['bool']
         
     def check(self, op1, op2, ope):
-        return toSymbol[self.semantica[toCode[op1]][toCode[op2]][ope]]
-    
-# x = Cubo()
+        return toSymbol[self.semantica[op1][op2][ope]]
 
-# print(x.check('number', 'number', '*') )
-        
 

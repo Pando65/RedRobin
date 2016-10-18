@@ -6,95 +6,15 @@
 # ------------------------------------------------------------
 import ply.yacc as yacc
 import sys
-from Cubo import *
-from Cuadruplo import *
+from SemanticsRedRobin import *
 
 # Get the token map from the lexer.  This is required.
 from LexRedRobin import tokens
 
-# Procedures directory
-dirProced = {}
-currentType = ''
-currentScopeClass = 'RedRobin'
-currentScopeFunction = ''
-
-# direccion virtuales
-virtualTable = {}
-mapCteToDir = {}
-memConts = numpy.zeros(16)
-memConts[memCont['numberClass']] = memStart['numberClass']
-memConts[memCont['realClass']] =   memStart['realClass']
-memConts[memCont['stringClass']] = memStart['stringClass']
-memConts[memCont['boolClass']] =   memStart['boolClass']
-
-memConts[memCont['numberFunc']] = memStart['numberFunc']
-memConts[memCont['realFunc']] =   memStart['realFunc']
-memConts[memCont['stringFunc']] = memStart['stringFunc']
-memConts[memCont['boolFunc']] =   memStart['boolFunc']
-
-memConts[memCont['numberTemp']] = memStart['numberTemp']
-memConts[memCont['realTemp']] =   memStart['realTemp']
-memConts[memCont['stringTemp']] = memStart['stringTemp']
-memConts[memCont['boolTemp']] =   memStart['boolTemp']
-
-memConts[memCont['numberCte']] = memStart['numberCte']
-memConts[memCont['realCte']] =   memStart['realCte']
-memConts[memCont['stringCte']] = memStart['stringCte']
-memConts[memCont['boolCte']] =   memStart['boolCte']
-
-def getType(memAddress):
-    if memAddress <= memLimit['numberClass']:
-        return 'number'
-    if memAddress <= memLimit['realClass']:
-        return 'real'
-    if memAddress <= memLimit['stringClass']:
-        return 'string'
-    if memAddress <= memLimit['boolClass']:
-        return 'bool'
-    
-    if memAddress <= memLimit['numberFunc']:
-        return 'number'
-    if memAddress <= memLimit['realFunc']:
-        return 'real'
-    if memAddress <= memLimit['stringFunc']:
-        return 'string'
-    if memAddress <= memLimit['boolFunc']:
-        return 'bool'
-    
-    if memAddress <= memLimit['numberTemp']:
-        return 'number'
-    if memAddress <= memLimit['realTemp']:
-        return 'real'
-    if memAddress <= memLimit['stringTemp']:
-        return 'string'
-    if memAddress <= memLimit['boolTemp']:
-        return 'bool'
-    
-    if memAddress <= memLimit['numberCte']:
-        return 'number'
-    if memAddress <= memLimit['realCte']:
-        return 'real'
-    if memAddress <= memLimit['stringCte']:
-        return 'string'
-    if memAddress <= memLimit['boolCte']:
-        return 'bool'
-
-# generacion de cuadruplos
-stackOpe = []
-stackDirMem = []
-cubo = Cubo()
-cuadruplos = []
-
 aprobado = True
 
 def p_program(p):
-    'program : CLASS REDROBIN newprogram L_ABRE cuerpoprogram L_CIERRA'
-    
-def p_newprogram(p):
-    'newprogram : '
-    global dirProced
-    dirProced['RedRobin'] = {'func': {}, 'vars': {}}
-    
+    'program : CLASS REDROBIN smnewprogram L_ABRE cuerpoprogram L_CIERRA'
     
 def p_cuerpoprogram(p):
     'cuerpoprogram : codigo REDROBIN P_ABRE P_CIERRA L_ABRE cuerpofuncion L_CIERRA'
@@ -105,25 +25,8 @@ def p_codigo(p):
               | empty '''
 
 def p_funciones(p):
-    'funciones : FUNCTION privilages valor_retorno ID newfunction P_ABRE parametros P_CIERRA L_ABRE cuerpofuncion L_CIERRA'
-    global currentScopeFunction
-    currentScopeFunction = ''
-    
-def p_newfunction(p):
-    'newfunction : '
-    # nueva funcion encontrada
-    global dirProced
-    global currentScopeClass
-    global currentScopeFunction
-    newScopeFunction = p[-1]
-    # TODO - encontrar el tipo de la funcion, hardcodeado con empty
-    if newScopeFunction in dirProced[currentScopeClass]['func']:
-        print("FUNCION YA DECLARADA")
-        global aprobado
-        aprobado = False
-    else:
-        dirProced[currentScopeClass]['func'][newScopeFunction] = {'vars': {}, 'giveType': 'empty', 'params': {}}
-        currentScopeFunction = newScopeFunction
+    'funciones : FUNCTION privilages valor_retorno ID smnewfunction P_ABRE parametros P_CIERRA L_ABRE cuerpofuncion L_CIERRA'
+    setScopeFunction('')
 
 def p_valor_retorno(p):
     '''valor_retorno : tipovariable
@@ -139,24 +42,14 @@ def p_tipovariable(p):
                     | STRING
                     | BOOL
                     | ID'''
-    global currentType
-    currentType = p[1]
+    setCurrentType(p[1])
 
-# nuevo parametro, solo el primero MARCA
 def p_parametros(p):
-    '''parametros : tipovariable posiblesbrackets DOSPUNTOS ID paramFound mas_ids mas_parametros
+    '''parametros : tipovariable posiblesbrackets DOSPUNTOS ID smnewparam mas_ids mas_parametros
                   | empty'''
     
-def p_paramFound(p):
-    'paramFound :'
-    newParamName = p[-1]
-    # agrego a hash de params
-    dirProced[currentScopeClass]['func'][currentScopeFunction]['params'][newParamName] = {'pos': 1, 'type': currentType}
-    # agrego a hash de vars
-    dirProced[currentScopeClass]['func'][currentScopeFunction]['vars'][newParamName] = {'tipo': currentType, 'size': 0} 
-    
 def p_mas_ids(p):
-    '''mas_ids : COMA ID paramFound mas_ids
+    '''mas_ids : COMA ID smnewparam mas_ids
                | empty'''
 
 def p_mas_parametros(p):
@@ -168,22 +61,8 @@ def p_posiblesbrackets(p):
                         | empty'''
 
 def p_clases(p):
-    'clases : CLASS ID herencia newclass L_ABRE cuerpoclase L_CIERRA'
-    global currentScopeClass
-    currentScopeClass = 'RedRobin'
-    
-def p_newclass(p):
-    'newclass :'
-    # Nuevo scope de clase
-    global dirProced
-    global currentScopeClass
-    newScopeClass = p[-2]
-    if newScopeClass in dirProced:
-        print("CLASE YA DECLARADA")
-        sys.exit()
-    else:
-        dirProced[newScopeClass] = {'func': {}, 'vars': {}}
-        currentScopeClass = newScopeClass
+    'clases : CLASS ID herencia smnewclass L_ABRE cuerpoclase L_CIERRA'
+    setScopeClass("RedRobin")
     
 def p_herencia(p):
     '''herencia : INHERIT ID
@@ -255,32 +134,7 @@ def p_asignacion(p):
     'asignacion : identificador IGUAL expresion PUNTOYCOMA'
 
 def p_declaracion(p):
-    'declaracion : tipovariable ID newvariable declara_arreglo_o_iniciacion mas_declaraciones PUNTOYCOMA'
-
-def p_newvariable(p):
-    'newvariable : '
-    global dirProced
-    global currentScopeClass
-    global currentScopeFunction
-    global currentType
-    newVariableName = p[-1]
-    # nueva variable encontrada
-    # si es una variable de funcion
-    # TODO: ver que rollo con los arreglos y valores de la variable y su tipo
-    if currentScopeFunction != '':
-        if newVariableName in dirProced[currentScopeClass]['func'][currentScopeFunction]:
-            print("VARIABLE YA DECLARADA")
-            sys.exit()
-        else:
-            dirProced[currentScopeClass]['func'][currentScopeFunction]['vars'][newVariableName] = {'tipo': 'number', 'size': 0}
-    else:
-        # si es una variable de clase
-        if newVariableName in dirProced[currentScopeClass]['vars']:
-            print("VARIABLE YA DECLARADA")
-            sys.exit()
-        else:
-            dirProced[currentScopeClass]['vars'][newVariableName] = {'tipo': 'number', 'size': 0}    
-    
+    'declaracion : tipovariable ID smnewvariable declara_arreglo_o_iniciacion mas_declaraciones PUNTOYCOMA'    
 
 def p_declara_arreglo_o_iniciacion(p):
     '''declara_arreglo_o_iniciacion : B_ABRE valor B_CIERRA
@@ -288,29 +142,15 @@ def p_declara_arreglo_o_iniciacion(p):
                                     | empty'''
 
 def p_mas_declaraciones(p):
-    '''mas_declaraciones : COMA ID newvariable declara_arreglo_o_iniciacion mas_declaraciones
+    '''mas_declaraciones : COMA ID smnewvariable declara_arreglo_o_iniciacion mas_declaraciones
                          | empty'''
 
 def p_expresion(p):
-    'expresion : expresionii pendingors mas_expresion'
+    'expresion : expresionii mas_expresion'
 
 def p_mas_expresion(p):
-    '''mas_expresion : OR newor expresion
+    '''mas_expresion : OR expresion
                    | empty'''
-
-def p_newor(p):
-    'newor :'
-    # nuevo or se agrega a la pila
-    stackOpe.append(toCode['OR'])
-    
-def p_pendingors(p):
-    'pendingors :'
-    # pregunto si tengo ors pendientes por resolver
-#    if stackOpe[-1] == toCode["OR"]:
-#        ope2 = getType(stackOpe.pop())
-#        ope1 = getType(stackOpe.pop())
-#        if cubo.check(ope1, ope2, 'OR') != 'error':
-#            print(ope1 + " " + ope2 + " OR")
 
 def p_expresionii(p):
     'expresionii : expresioniii mas_expresionii'
@@ -327,36 +167,12 @@ def p_mas_expresioniii(p):
                         | empty'''
 
 def p_expresioniv(p):
-    'expresioniv : expresionv checkpendingterminos mas_expresioniv'
+    'expresioniv : expresionv smcheckpendingterminos mas_expresioniv'
 
 def p_mas_expresioniv(p):
     '''mas_expresioniv : operadortermino expresioniv
                        | empty'''
     
-def p_checkpendingterminos(p):
-    'checkpendingterminos :'
-    # pregunto si tengo sumas o restas pendientes por resolver
-    if len(stackOpe) > 0 and (stackOpe[-1] == toCode['+'] or stackOpe[-1] == toCode['-']):
-        oope2 = stackDirMem.pop()
-        oope1 = stackDirMem.pop()
-        ope2 = getType(oope2)
-        ope1 = getType(oope1)
-        op = stackOpe[-1]
-        resultType = cubo.check(ope1, ope2, op) 
-        if resultType != 'error':
-            # ocupo crear la temporal que manejara el resultado
-            resultType += "Temp"
-            # virtualTable[memConts[memCont[resultType]]] = {''} no se que cosa guardar de la temporal
-            stackDirMem.append(memConts[memCont[resultType]])
-            # genero el cuadruplo
-            cuadruplos.append(Cuadruplo())
-            cuadruplos[-1].v[0] = op
-            cuadruplos[-1].v[1] = oope1
-            cuadruplos[-1].v[2] = oope2
-            cuadruplos[-1].v[3] = memConts[memCont[resultType]]
-            memConts[memCont[resultType]] += 1
-            
-
 def p_expresionv(p):
     'expresionv : expresionvi mas_expresionv'
 
@@ -381,7 +197,7 @@ def p_operadorrelacional(p):
 def p_operadortermino(p):
     '''operadortermino : OPERADOR_SUMA
                        | OPERADOR_RESTA'''
-    stackOpe.append(toCode[p[1]])
+    pushToStackOpe(p[1])
 
 def p_operadorfactor(p):
     '''operadorfactor : OPERADOR_MULTIPLICACION
@@ -390,9 +206,9 @@ def p_operadorfactor(p):
 def p_valor(p):
     '''valor : identificador
              | invocacion
-             | CONST_STRING newCteString
-             | valorbooleano newCteBool
-             | negativo CONST_INTEGER newCteInt
+             | CONST_STRING
+             | valorbooleano
+             | negativo CONST_INTEGER smnewcteint
              | negativo CONST_DOUBLE'''
 
 def p_valorbooleano(p):
@@ -401,34 +217,11 @@ def p_valorbooleano(p):
 def p_negativo(p):
     '''negativo : OPERADOR_RESTA
                 | empty'''
-
-def p_newCteString(p):
-    'newCteString :'
-    
-def p_newCteBool(p):
-    'newCteBool :'
-    #print("new bool" + p[-1])
-    
-def p_newCteInt(p):
-    'newCteInt :'
-    # nueva constate entera, crear la direccion de mem si no existe
-    if not p[-1] in mapCteToDir:
-        mapCteToDir[p[-1]] = memConts[memCont['numberCte']]
-        virtualTable[memCont['numberCte']] = p[-1]
-        memConts[memCont['numberCte']] += 1
-    stackDirMem.append(mapCteToDir[p[-1]])
              
 def p_identificador(p):
     'identificador : ID atributo arreglo'
-    # TODO: validar que el tipo de variable concuerde con su declaracion
-    # Checar si existe la variable como:
-        # Variable Global de la clase actual
-        # Funcion dentro de la clase actual        
-        # Variable local dentro funcion
-    if not p[1] in dirProced[currentScopeClass]['vars'] and not p[1] in dirProced[currentScopeClass]['func'] and not p[1] in dirProced[currentScopeClass]['func'][currentScopeFunction]['vars']:
-        print("Variable " + p[1] + " no declarada")
-        sys.exit()
-    
+    validateVarSemantics(p[1])
+
 def p_atributo(p):
     '''atributo : PUNTO ID
                 | empty'''
@@ -462,5 +255,5 @@ parser.parse(s)
 if aprobado == True:
     print("Aprobado")
     for cuadruplo in cuadruplos:
-        print(str(cuadruplo.v[0]) + " " + str(cuadruplo.v[1]) + " " + str(cuadruplo.v[2]) + " " + str(cuadruplo.v[3]))
+        print(str(cuadruplo.ope) + " " + str(cuadruplo.op1) + " " + str(cuadruplo.op2) + " " + str(cuadruplo.r))
 
