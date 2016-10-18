@@ -1,3 +1,4 @@
+import sys
 from Cubo import *
 from Cuadruplo import *
 
@@ -121,25 +122,19 @@ def p_smnewclass(p):
 # Llamada desde p_declaracion y p_masdeclaraciones
 def p_smnewvariable(p):
     'smnewvariable : '
-    global dirProced
-    global currentScopeClass
-    global currentScopeFunction
-    global currentType
     newVarName = p[-1]
-    # nueva variable encontrada
-    # si es una variable de funcion
-    # TODO: ver que rollo con los arreglos y valores de la variable y su tipo
+    # TODO: ver que rollo con los arreglos y valores de la variable
     if currentScopeFunction != '': # si estamos dentro de una funcion
         if newVarName in dirProced[currentScopeClass]['func'][currentScopeFunction]:
             terminate("REPEATED VARIABLE NAME")
         else:
-            dirProced[currentScopeClass]['func'][currentScopeFunction]['vars'][newVarName] = {'tipo': 'number', 'size': 0}
+            dirProced[currentScopeClass]['func'][currentScopeFunction]['vars'][newVarName] = {'tipo': currentType, 'size': 0, 'mem': getMemSpace(currentType, 'Func', newVarName)}
     else:
         # si es una variable de clase
         if newVarName in dirProced[currentScopeClass]['vars']:
             terminate("REPEATED VARIABLE NAME")
         else:
-            dirProced[currentScopeClass]['vars'][newVarName] = {'tipo': 'number', 'size': 0}
+            dirProced[currentScopeClass]['vars'][newVarName] = {'tipo': currentType, 'size': 0, 'mem': getMemSpace(currentType, 'Class', newVarName)}
 
 # Llamada desde p_expresioniv
 def p_smcheckpendingterms(p):
@@ -183,12 +178,21 @@ def p_smcheckpendingfactors(p):
 def p_smnewcteint(p):
     'smnewcteint :'
     # nueva constate entera, crear la direccion de mem si no existe
-    global stackDirMem
     if not p[-1] in mapCteToDir:
         mapCteToDir[p[-1]] = memConts[memCont['numberCte']]
         virtualTable[memConts[memCont['numberCte']]] = p[-1]
         memConts[memCont['numberCte']] += 1
     stackDirMem.append(mapCteToDir[p[-1]])
+    
+# Llamada desde p_valor
+def p_smnewctedouble(p):
+    'smnewctedouble :'
+    # nueva constate double, crear la direccion de mem si no existe
+    if not p[-1] in mapCteToDir:
+        mapCteToDir[p[-1]] = memConts[memCont['realCte']]
+        virtualTable[memConts[memCont['realCte']]] = p[-1]
+        memConts[memCont['realCte']] += 1
+    stackDirMem.append(mapCteToDir[p[-1]])    
 
 ########### FUNCIONES DE SEMANTICA ###########
 
@@ -206,7 +210,7 @@ def setScopeClass(newScopeClass):
     
 def pushToStackOpe(opeSymbol):
     global stackOpe
-    stackOpe.append(toCode[opeSymbol])    
+    stackOpe.append(toCode[opeSymbol])
     
 def terminate(message):
     print(message)
@@ -220,14 +224,27 @@ def createQuadruple(ope, op1, op2, r):
     cuadruplos[-1].op2 = op2
     cuadruplos[-1].r = r
     
+def getMemSpace(varType, scope, varName):
+    memType = varType + scope
+    #todo - ver que guardo, val depende del tipo
+    virtualTable[memConts[memCont[memType]]] = {'name': varName, 'val': -1}
+    memConts[memCont[memType]] += 1
+    return memConts[memCont[memType]] - 1
+    
 # Llamada de p_identificador
-def validateVarSemantics(currentVarName):
+def validateIdSemantics(currentIdName):
     # TODO: validar que el tipo de variable concuerde con su declaracion
     # Checo si existe la variable como:
         # Variable Global de la clase actual
         # Funcion dentro de la clase actual        
         # Variable local dentro funcion
-    if not currentVarName in dirProced[currentScopeClass]['vars'] and not currentVarName in dirProced[currentScopeClass]['func'] and not currentVarName in dirProced[currentScopeClass]['func'][currentScopeFunction]['vars']:
-        terminate("Variable " + " not declared")
+    if not currentIdName in dirProced[currentScopeClass]['vars'] and not currentIdName in dirProced[currentScopeClass]['func'] and (currentScopeFunction == '' or not currentIdName in dirProced[currentScopeClass]['func'][currentScopeFunction]['vars']):
+        terminate("Variable " + currentIdName + " not declared")
+    else:
+        # variable valida, insertar a pila
+        if currentIdName in dirProced[currentScopeClass]['vars']:
+            stackDirMem.append(dirProced[currentScopeClass]['vars'][currentIdName]['mem'])
+        elif currentScopeFunction == '' or currentIdName in dirProced[currentScopeClass]['func'][currentScopeFunction]['vars']:
+            stackDirMem.append(dirProced[currentScopeClass]['func'][currentScopeFunction]['vars'][currentIdName]['mem'])
     
         

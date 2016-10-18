@@ -210,7 +210,7 @@ def p_valor(p):
              | CONST_STRING
              | valorbooleano
              | negativo CONST_INTEGER smnewcteint
-             | negativo CONST_DOUBLE'''
+             | negativo CONST_DOUBLE smnewctedouble'''
 
 def p_valorbooleano(p):
     '''valorbooleano : TRUE
@@ -221,7 +221,7 @@ def p_negativo(p):
              
 def p_identificador(p):
     'identificador : ID atributo arreglo'
-    validateVarSemantics(p[1])
+    validateIdSemantics(p[1])
 
 def p_atributo(p):
     '''atributo : PUNTO ID
@@ -257,4 +257,5 @@ if aprobado == True:
     print("Aprobado")
     for cuadruplo in cuadruplos:
         print(str(cuadruplo.ope) + " " + str(cuadruplo.op1) + " " + str(cuadruplo.op2) + " " + str(cuadruplo.r))
+    print(dirProced)
 
