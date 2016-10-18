@@ -104,7 +104,7 @@ def p_smnewparam(p):
     # agrego a hash de params TODO - actualizar al posicion del parametro, dar dir de memoria a variable
     dirProced[currentScopeClass]['func'][currentScopeFunction]['params'][newParamName] = {'pos': 1, 'type': currentType}
     # agrego a hash de vars
-    dirProced[currentScopeClass]['func'][currentScopeFunction]['vars'][newParamName] = {'tipo': currentType, 'size': 0}         
+    dirProced[currentScopeClass]['func'][currentScopeFunction]['vars'][newParamName] = {'tipo': currentType, 'size': 0, 'mem': getMemSpace(currentType, 'Func', newParamName)}         
 
 # Llamada desde p_clases
 def p_smnewclass(p):
@@ -242,6 +242,9 @@ def validateIdSemantics(currentIdName):
         terminate("Variable " + currentIdName + " not declared")
     else:
         # variable valida, insertar a pila
+#        print("class scope " + currentScopeClass)
+#        print("func scope " + currentScopeFunction)
+#        print("var name " +  currentIdName)
         if currentIdName in dirProced[currentScopeClass]['vars']:
             stackDirMem.append(dirProced[currentScopeClass]['vars'][currentIdName]['mem'])
         elif currentScopeFunction == '' or currentIdName in dirProced[currentScopeClass]['func'][currentScopeFunction]['vars']:
