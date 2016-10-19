@@ -144,7 +144,7 @@ def p_declara_arreglo_o_iniciacion(p):
 def p_mas_declaraciones(p):
     '''mas_declaraciones : COMA ID smnewvariable declara_arreglo_o_iniciacion mas_declaraciones
                          | empty'''
-
+# TODO - ors y asignaciones a la pila de operadores
 def p_expresion(p):
     'expresion : expresionii mas_expresion'
 
@@ -153,14 +153,14 @@ def p_mas_expresion(p):
                    | empty'''
 
 def p_expresionii(p):
-    'expresionii : expresioniii mas_expresionii'
+    'expresionii : expresioniii smcheckpendingands mas_expresionii'
 
 def p_mas_expresionii(p):
-    '''mas_expresionii : AND expresionii
+    '''mas_expresionii : AND smaddand expresionii
                        | empty'''
 
 def p_expresioniii(p):
-    'expresioniii : expresioniv mas_expresioniii'
+    'expresioniii : expresioniv smcheckpendingrelational mas_expresioniii'
 
 def p_mas_expresioniii(p):
     '''mas_expresioniii : operadorrelacional expresioniii
@@ -182,7 +182,7 @@ def p_mas_expresionv(p):
 
 def p_expresionvi(p):
     '''expresionvi : valor
-                   | negacion P_ABRE expresion P_CIERRA'''
+                   | negacion P_ABRE smAddParentesis expresion smRemoveParentesis P_CIERRA'''
 
 def p_negacion(p):
     '''negacion : NEGAR
@@ -193,6 +193,7 @@ def p_operadorrelacional(p):
                           | MENOR_IGUAL
                           | IGUAL_IGUAL
                           | DIFERENTE'''
+    pushToStackOpe(p[1])
 
 def p_operadortermino(p):
     '''operadortermino : OPERADOR_SUMA
@@ -215,6 +216,8 @@ def p_valor(p):
 def p_valorbooleano(p):
     '''valorbooleano : TRUE
                      | FALSE'''
+    newCteBool(p[1]);
+    
 def p_negativo(p):
     '''negativo : OPERADOR_RESTA
                 | empty'''

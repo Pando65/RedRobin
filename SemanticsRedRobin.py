@@ -136,6 +136,50 @@ def p_smnewvariable(p):
         else:
             dirProced[currentScopeClass]['vars'][newVarName] = {'tipo': currentType, 'size': 0, 'mem': getMemSpace(currentType, 'Class', newVarName)}
 
+# Llamada desde p_expreionii
+def p_smcheckpendingands(p):
+    'smcheckpendingands :'
+    if len(stackOpe) > 0 and stackOpe[-1] == toCode['and']:
+        opDir2 = stackDirMem.pop()
+        opDir1 = stackDirMem.pop()
+        opTypeCode2 = getTypeCode(opDir2)
+        opTypeCode1 = getTypeCode(opDir1)
+        opeCode = stackOpe.pop()
+        resultType = cubo.check(opTypeCode1, opTypeCode2, opeCode) 
+        if resultType != 'error':
+            # ocupo crear la temporal que manejara el resultado
+            resultType += "Temp"
+            # virtualTable[memConts[memCont[resultType]]] = {''} Guardar algo en la temporal (?)
+            stackDirMem.append(memConts[memCont[resultType]])
+            print(opeCode)
+            print(opDir1)
+            print(opDir2)
+            createQuadruple(opeCode, opDir1, opDir2, memConts[memCont[resultType]])
+            memConts[memCont[resultType]] += 1
+        else:
+            terminate("TYPE MISMATCH")
+            
+            
+# Llamada desde p_expresioniii
+def p_smcheckpendingrelational(p):
+    'smcheckpendingrelational :'
+    if len(stackOpe) > 0 and (stackOpe[-1] == toCode['>='] or stackOpe[-1] == toCode['<='] or stackOpe[-1] == toCode['=='] or stackOpe[-1] == toCode['<>']):
+        opDir2 = stackDirMem.pop()
+        opDir1 = stackDirMem.pop()
+        opTypeCode2 = getTypeCode(opDir2)
+        opTypeCode1 = getTypeCode(opDir1)
+        opeCode = stackOpe.pop()
+        resultType = cubo.check(opTypeCode1, opTypeCode2, opeCode) 
+        if resultType != 'error':
+            # ocupo crear la temporal que manejara el resultado
+            resultType += "Temp"
+            # virtualTable[memConts[memCont[resultType]]] = {''} Guardar algo en la temporal (?)
+            stackDirMem.append(memConts[memCont[resultType]])
+            createQuadruple(opeCode, opDir1, opDir2, memConts[memCont[resultType]])
+            memConts[memCont[resultType]] += 1
+        else:
+            terminate("TYPE MISMATCH")
+            
 # Llamada desde p_expresioniv
 def p_smcheckpendingterms(p):
     'smcheckpendingterms :'
@@ -173,6 +217,20 @@ def p_smcheckpendingfactors(p):
             stackDirMem.append(memConts[memCont[resultType]])
             createQuadruple(opeCode, opDir1, opDir2, memConts[memCont[resultType]])
             memConts[memCont[resultType]] += 1
+            
+def p_smaddand(p):
+    'smaddand :'
+    pushToStackOpe('and')
+            
+def p_smAddParentesis(p):
+    'smAddParentesis :'
+    pushToStackOpe('(')
+    
+def p_smRemoveParentesis(p):
+    'smRemoveParentesis :'
+    opeCode = stackOpe.pop()
+    if opeCode != toCode['(']:
+        terminate("ERROR EXPRESION")
             
 # Llamada desde p_valor
 def p_smnewcteint(p):
@@ -249,5 +307,13 @@ def validateIdSemantics(currentIdName):
             stackDirMem.append(dirProced[currentScopeClass]['vars'][currentIdName]['mem'])
         elif currentScopeFunction == '' or currentIdName in dirProced[currentScopeClass]['func'][currentScopeFunction]['vars']:
             stackDirMem.append(dirProced[currentScopeClass]['func'][currentScopeFunction]['vars'][currentIdName]['mem'])
+            
+def newCteBool(newBool):
+    virtualTable[memConts[memCont['boolCte']]] = 'false'
+    virtualTable[memConts[memCont['boolCte']] + 1] = 'true'
+    if newBool == 'true':
+        stackDirMem.append(memConts[memCont['boolCte']] + 1)
+    else:
+        stackDirMem.append(memConts[memCont['boolCte']])
     
         
