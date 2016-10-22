@@ -21,7 +21,6 @@ tokens = [
     'IGUAL',
     'B_ABRE',
     'B_CIERRA',
-    'CONST_BOOL',
     'MAYOR_IGUAL',
     'MENOR_IGUAL',
     'IGUAL_IGUAL',
@@ -51,8 +50,7 @@ reserved = {
     'for' : 'FOR',
     'in' : 'IN',
     'step' : 'STEP',
-    'until' : 'UNTIL',
-    'do' : 'DO',
+    'while' : 'WHILE',
     'if' : 'IF',
     'elif' : 'ELIF',
     'else' : 'ELSE',
@@ -76,7 +74,6 @@ t_GUIONBAJO = r'\_'
 t_IGUAL = r'\='
 t_B_ABRE = r'\['
 t_B_CIERRA = r'\]'
-t_CONST_BOOL = r'[true|false]'
 t_MAYOR_IGUAL = r'\>\='
 t_MENOR_IGUAL = r'\<\='
 t_IGUAL_IGUAL = r'\=\='
