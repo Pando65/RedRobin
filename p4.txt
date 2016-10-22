@@ -22,6 +22,11 @@ class RedRobin {
         c = d + 1;
     }
     d = d + 1;
+    
+    while(a <= b or d <= b) {
+        b = b - 1;
+    }
+    a = 10 + 2;
   }
 
 }

@@ -84,11 +84,11 @@ elifCount = 0
 # Llamada desde p_condicional
 def p_smnewif(p):
     'smnewif :'
-    conditionExp = stackDirMem.pop()
-    if getTypeCode(conditionExp) != toCode['bool']:
+    condition = stackDirMem.pop()
+    if getTypeCode(condition) != toCode['bool']:
         terminate("TYPE MISMATCH")
     else:
-        createQuadruple(toCode['gotof'], conditionExp, -1, -1)
+        createQuadruple(toCode['gotof'], condition, -1, -1)
         stackJumps.append(len(cuadruplos) - 1)
         
 def p_smendif(p):
@@ -115,6 +115,30 @@ def p_smnewelif(p):
     elifCount += 1
 
 ### termina ciclos if ###
+
+### CICLOS WHILE ###
+
+def p_smwhilestart(p):
+    'smwhilestart :'
+    stackJumps.append(len(cuadruplos))
+    
+def p_smwhilecondition(p):
+    'smwhilecondition :'
+    condition = stackDirMem.pop()
+    if getTypeCode(condition) != toCode['bool']:
+        terminate("TYPE MISSMATCH1")
+    else:
+        createQuadruple(toCode['gotof'], condition, -1, -1)
+        stackJumps.append(len(cuadruplos) - 1)
+        
+def p_smendwhile(p):
+    'smendwhile :'
+    false = stackJumps.pop()
+    retrn = stackJumps.pop()
+    createQuadruple(toCode['goto'], -1, -1, retrn)
+    cuadruplos[false].fill(len(cuadruplos))
+
+### termina ciclos while ###
 
 # Llamada desde p_program
 def p_smnewprogram(p):
