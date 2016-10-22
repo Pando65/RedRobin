@@ -186,6 +186,7 @@ def p_expresionvi(p):
 
 def p_negacion(p):
     '''negacion : NEGAR
+                | OPERADOR_RESTA
                 | empty'''
 
 # TODO - checar jerarquia de estos operadores, tambien tienen al parecer
