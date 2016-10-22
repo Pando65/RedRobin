@@ -120,15 +120,15 @@ def p_ciclodinamico(p):
     'ciclodinamico : UNTIL P_ABRE expresion P_CIERRA DO L_ABRE cuerpofuncion L_CIERRA'
 
 def p_condicional(p):
-    'condicional : IF P_ABRE expresion smnewifexpression P_CIERRA L_ABRE cuerpofuncion L_CIERRA condiciones_elif condicion_else'
+    'condicional : IF P_ABRE expresion smnewif P_CIERRA L_ABRE cuerpofuncion L_CIERRA condiciones_elif condicion_else smendif'
     
 def p_condiciones_elif(p):
-    '''condiciones_elif : ELIF P_ABRE expresion P_CIERRA L_ABRE cuerpofuncion L_CIERRA condiciones_elif
+    '''condiciones_elif : ELIF smnewelif smnewelse P_ABRE expresion smnewif P_CIERRA L_ABRE cuerpofuncion L_CIERRA condiciones_elif
                         | empty'''
 
 def p_condicion_else(p):
-    '''condicion_else : ELSE smnewelse L_ABRE cuerpofuncion L_CIERRA smendif
-                      | empty smendif'''
+    '''condicion_else : ELSE smnewelse L_ABRE cuerpofuncion L_CIERRA
+                      | empty'''
 
 def p_asignacion(p):
     'asignacion : identificador IGUAL expresion PUNTOYCOMA'
@@ -250,7 +250,7 @@ def p_error(p):
 # Build the parser
 parser = yacc.yacc()
 
-filename = "p1.txt"
+filename = "p4.txt"
 # filename = input("Ingresa nombre de archivo con lenguaje Red Robin: ") 
 f = open(filename, 'r')
 s = f.read()

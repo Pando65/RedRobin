@@ -79,11 +79,11 @@ cuadruplos = []
 ########### REGLAS DE SEMANTICA ###########
 
 ### CICLOS IF ###
+elifCount = 0
 
 # Llamada desde p_condicional
-def p_smnewifexpression(p):
-    'smnewifexpression :'
-    print("empieza if")
+def p_smnewif(p):
+    'smnewif :'
     conditionExp = stackDirMem.pop()
     if getTypeCode(conditionExp) != toCode['bool']:
         terminate("TYPE MISMATCH")
@@ -93,18 +93,27 @@ def p_smnewifexpression(p):
         
 def p_smendif(p):
     'smendif :'
-    print("acabo if")
-    exitIf = stackJumps.pop()
-    cuadruplos[exitIf].fill(len(cuadruplos))
+    global elifCount
+    # lleno todos los goto pendientes hacia al zona ya no condicionada
+    # es +1 porque tengo que hacer el ciclo aunque sea 1 vez para cerrar el primer if
+    while elifCount + 1 > 0:
+        exitIf = stackJumps.pop()
+        cuadruplos[exitIf].fill(len(cuadruplos))
+        elifCount -= 1
+    elifCount = 0
     
 def p_smnewelse(p):
     'smnewelse :'
-    print("empieza else")
     falseIf = stackJumps.pop()
     createQuadruple(toCode['goto'], -1, -1, -1)
     stackJumps.append(len(cuadruplos) - 1)
     cuadruplos[falseIf].fill(len(cuadruplos))
     
+def p_smnewelif(p):
+    'smnewelif :'
+    global elifCount
+    elifCount += 1
+
 ### termina ciclos if ###
 
 # Llamada desde p_program

@@ -1,0 +1,27 @@
+class RedRobin {
+
+  RedRobin() {
+    number a, b, c, d;
+    if (a >= b) {
+        b = c * d;
+    } elif (b <= c) {
+        b = c + d;
+    } elif(b == d) {
+        d = c * a;
+    }
+    else {
+        b = c - d;
+    }
+    a = c / d;
+    
+    
+    if (a <= b) {
+        d = d + 1;
+    }
+    else {
+        c = d + 1;
+    }
+    d = d + 1;
+  }
+
+}
