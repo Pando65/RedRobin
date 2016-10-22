@@ -120,15 +120,15 @@ def p_ciclodinamico(p):
     'ciclodinamico : UNTIL P_ABRE expresion P_CIERRA DO L_ABRE cuerpofuncion L_CIERRA'
 
 def p_condicional(p):
-    'condicional : IF P_ABRE expresion P_CIERRA L_ABRE cuerpofuncion L_CIERRA condiciones_elif condicion_else'
+    'condicional : IF P_ABRE expresion smnewifexpression P_CIERRA L_ABRE cuerpofuncion L_CIERRA condiciones_elif condicion_else'
     
 def p_condiciones_elif(p):
     '''condiciones_elif : ELIF P_ABRE expresion P_CIERRA L_ABRE cuerpofuncion L_CIERRA condiciones_elif
                         | empty'''
 
 def p_condicion_else(p):
-    '''condicion_else : ELSE L_ABRE cuerpofuncion L_CIERRA
-                      | empty'''
+    '''condicion_else : ELSE smnewelse L_ABRE cuerpofuncion L_CIERRA smendif
+                      | empty smendif'''
 
 def p_asignacion(p):
     'asignacion : identificador IGUAL expresion PUNTOYCOMA'
@@ -144,19 +144,19 @@ def p_declara_arreglo_o_iniciacion(p):
 def p_mas_declaraciones(p):
     '''mas_declaraciones : COMA ID smnewvariable declara_arreglo_o_iniciacion mas_declaraciones
                          | empty'''
-# TODO - ors y asignaciones a la pila de operadores
+# TODO - agregar asignaciones a la pila de operadores
 def p_expresion(p):
-    'expresion : expresionii mas_expresion'
+    'expresion : expresionii smcheckpendingors mas_expresion'
 
 def p_mas_expresion(p):
-    '''mas_expresion : OR expresion
+    '''mas_expresion : OR smaddSingleOpe expresion
                    | empty'''
 
 def p_expresionii(p):
     'expresionii : expresioniii smcheckpendingands mas_expresionii'
 
 def p_mas_expresionii(p):
-    '''mas_expresionii : AND smaddand expresionii
+    '''mas_expresionii : AND smaddSingleOpe expresionii
                        | empty'''
 
 def p_expresioniii(p):
@@ -182,12 +182,13 @@ def p_mas_expresionv(p):
 
 def p_expresionvi(p):
     '''expresionvi : valor
-                   | negacion P_ABRE smAddParentesis expresion smRemoveParentesis P_CIERRA'''
+                   | negacion P_ABRE smaddSingleOpe expresion smRemoveParentesis P_CIERRA'''
 
 def p_negacion(p):
     '''negacion : NEGAR
                 | empty'''
 
+# TODO - checar jerarquia de estos operadores, tambien tienen al parecer
 def p_operadorrelacional(p):
     '''operadorrelacional : MAYOR_IGUAL
                           | MENOR_IGUAL
@@ -258,7 +259,9 @@ parser.parse(s)
 
 if aprobado == True:
     print("Aprobado")
+    i = 0
     for cuadruplo in cuadruplos:
-        print(str(cuadruplo.ope) + " " + str(cuadruplo.op1) + " " + str(cuadruplo.op2) + " " + str(cuadruplo.r))
+        print(str(i) + " - " + str(cuadruplo.ope) + " " + str(cuadruplo.op1) + " " + str(cuadruplo.op2) + " " + str(cuadruplo.r))
+        i += 1
     print(dirProced)
 

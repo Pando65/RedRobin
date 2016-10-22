@@ -72,10 +72,40 @@ def getTypeCode(memAddress):
 ########### GENERACION DE CUADRUPLOS ###########
 stackOpe = []
 stackDirMem = []
+stackJumps = []
 cubo = Cubo()
 cuadruplos = []
 
 ########### REGLAS DE SEMANTICA ###########
+
+### CICLOS IF ###
+
+# Llamada desde p_condicional
+def p_smnewifexpression(p):
+    'smnewifexpression :'
+    print("empieza if")
+    conditionExp = stackDirMem.pop()
+    if getTypeCode(conditionExp) != toCode['bool']:
+        terminate("TYPE MISMATCH")
+    else:
+        createQuadruple(toCode['gotof'], conditionExp, -1, -1)
+        stackJumps.append(len(cuadruplos) - 1)
+        
+def p_smendif(p):
+    'smendif :'
+    print("acabo if")
+    exitIf = stackJumps.pop()
+    cuadruplos[exitIf].fill(len(cuadruplos))
+    
+def p_smnewelse(p):
+    'smnewelse :'
+    print("empieza else")
+    falseIf = stackJumps.pop()
+    createQuadruple(toCode['goto'], -1, -1, -1)
+    stackJumps.append(len(cuadruplos) - 1)
+    cuadruplos[falseIf].fill(len(cuadruplos))
+    
+### termina ciclos if ###
 
 # Llamada desde p_program
 def p_smnewprogram(p):
@@ -136,8 +166,29 @@ def p_smnewvariable(p):
         else:
             dirProced[currentScopeClass]['vars'][newVarName] = {'tipo': currentType, 'size': 0, 'mem': getMemSpace(currentType, 'Class', newVarName)}
 
+# Llamada desde p_expresion
+def p_smcheckpendingors(p):
+    'smcheckpendingors :'
+    if len(stackOpe) > 0 and stackOpe[-1] == toCode['or']:
+        opDir2 = stackDirMem.pop()
+        opDir1 = stackDirMem.pop()
+        opTypeCode2 = getTypeCode(opDir2)
+        opTypeCode1 = getTypeCode(opDir1)
+        opeCode = stackOpe.pop()
+        resultType = cubo.check(opTypeCode1, opTypeCode2, opeCode) 
+        if resultType != 'error':
+            # ocupo crear la temporal que manejara el resultado
+            resultType += "Temp"
+            # virtualTable[memConts[memCont[resultType]]] = {''} Guardar algo en la temporal (?)
+            stackDirMem.append(memConts[memCont[resultType]])
+            createQuadruple(opeCode, opDir1, opDir2, memConts[memCont[resultType]])
+            memConts[memCont[resultType]] += 1
+        else:
+            terminate("TYPE MISMATCH")
+            
+            
 # Llamada desde p_expreionii
-def p_smcheckpendingands(p):
+def p_smcheckpendingsingleope(p):
     'smcheckpendingands :'
     if len(stackOpe) > 0 and stackOpe[-1] == toCode['and']:
         opDir2 = stackDirMem.pop()
@@ -151,9 +202,6 @@ def p_smcheckpendingands(p):
             resultType += "Temp"
             # virtualTable[memConts[memCont[resultType]]] = {''} Guardar algo en la temporal (?)
             stackDirMem.append(memConts[memCont[resultType]])
-            print(opeCode)
-            print(opDir1)
-            print(opDir2)
             createQuadruple(opeCode, opDir1, opDir2, memConts[memCont[resultType]])
             memConts[memCont[resultType]] += 1
         else:
@@ -218,13 +266,10 @@ def p_smcheckpendingfactors(p):
             createQuadruple(opeCode, opDir1, opDir2, memConts[memCont[resultType]])
             memConts[memCont[resultType]] += 1
             
-def p_smaddand(p):
-    'smaddand :'
-    pushToStackOpe('and')
-            
-def p_smAddParentesis(p):
-    'smAddParentesis :'
-    pushToStackOpe('(')
+
+def p_smaddSingleOpe(p):
+    'smaddSingleOpe :'
+    pushToStackOpe(p[-1])
     
 def p_smRemoveParentesis(p):
     'smRemoveParentesis :'

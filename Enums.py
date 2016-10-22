@@ -1,5 +1,5 @@
 toCode = {
-    'error': -1,
+    'error': 0,
     'number': 1,
     'real': 2,
     'bool': 3,
@@ -16,8 +16,9 @@ toCode = {
     'or': 21,
     'and': 22,
     '(': 23,
-    ')': 24
-    
+    ')': 24,
+    'goto': 50,
+    'gotof': 51
 }
 
 toSymbol = {

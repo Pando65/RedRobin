@@ -8,3 +8,6 @@ class Cuadruplo:
         self.op2 = -1
         self.ope = -1
         self.r = -1
+        
+    def fill(self, r):
+        self.r = r

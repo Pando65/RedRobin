@@ -179,9 +179,6 @@ class Cubo:
         self.semantica[toCode['bool']][toCode['bool']]  [toCode['or']] = toCode['bool']
         
     def check(self, op1, op2, ope):
-        print(op1)
-        print(op2)
-        print(ope)
         return toSymbol[self.semantica[op1][op2][ope]]
 
 

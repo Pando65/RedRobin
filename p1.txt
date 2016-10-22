@@ -1,8 +1,20 @@
 class RedRobin {
 
   RedRobin() {
-    number b;
-	number a = 1.3 + a * b;
+    number a, b, c, d;
+    if (a >= b) {
+      if (b <= a) {
+        a = b + c;
+      }
+      else {
+        c = d + a;
+      }
+      d = d + 1;
+    }
+    else {
+        c = b * a;
+    }
+    a = b + c;
   }
 
 }
