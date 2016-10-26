@@ -309,6 +309,12 @@ def p_smRemoveParentesis(p):
     opeCode = stackOpe.pop()
     if opeCode != toCode['(']:
         terminate("ERROR EXPRESION")
+        
+def p_smAsignacion(p):
+    'smAsignacion :'
+    resultDir = stackDirMem.pop()
+    varDir = stackDirMem.pop()
+    createQuadruple(toCode['='], resultDir, '-1', varDir)
             
 # Llamada desde p_valor
 def p_smnewcteint(p):

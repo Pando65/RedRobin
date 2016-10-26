@@ -131,20 +131,20 @@ def p_condicion_else(p):
                       | empty'''
 
 def p_asignacion(p):
-    'asignacion : identificador IGUAL expresion PUNTOYCOMA'
+    'asignacion : identificador IGUAL expresion smAsignacion PUNTOYCOMA'
 
 def p_declaracion(p):
     'declaracion : tipovariable ID smnewvariable declara_arreglo_o_iniciacion mas_declaraciones PUNTOYCOMA'    
 
 def p_declara_arreglo_o_iniciacion(p):
     '''declara_arreglo_o_iniciacion : B_ABRE valor B_CIERRA
-                                    | IGUAL expresion
+                                    | IGUAL expresion smAsignacion
                                     | empty'''
 
 def p_mas_declaraciones(p):
     '''mas_declaraciones : COMA ID smnewvariable declara_arreglo_o_iniciacion mas_declaraciones
                          | empty'''
-# TODO - agregar asignaciones a la pila de operadores
+
 def p_expresion(p):
     'expresion : expresionii smcheckpendingors mas_expresion'
 
