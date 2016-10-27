@@ -145,6 +145,10 @@ def p_smnewprogram(p):
     'smnewprogram : '
     global dirProced
     dirProced['RedRobin'] = {'func': {}, 'vars': {}}
+    # Declaracion predefinida de la constante 1 para la generacion de caudruplos que maneje la transformacion de negativos
+    mapCteToDir[-1] = memConts[memCont['numberCte']]
+    virtualTable[memConts[memCont['numberCte']]] = -1
+    memConts[memCont['numberCte']] += 1
     
 # Llamada desde p_funciones
 def p_smnewfunction(p):
@@ -299,6 +303,21 @@ def p_smcheckpendingfactors(p):
             createQuadruple(opeCode, opDir1, opDir2, memConts[memCont[resultType]])
             memConts[memCont[resultType]] += 1
             
+def p_smCheckPendingNegatives(p):
+    'smCheckPendingNegatives :'
+    if len(stackOpe) > 0 and stackOpe[-1] == toCode['neg']:
+        opDir2 = stackDirMem.pop()
+        opDir1 = mapCteToDir[-1]
+        opTypeCode2 = getTypeCode(opDir2)
+        opTypeCode1 = getTypeCode(opDir1)
+        stackOpe.pop()
+        resultType = cubo.check(opTypeCode1, opTypeCode2, toCode['*'])
+        if resultType != 'error':
+            resultType += 'Temp'
+             # todo - agregar a tabla de direccion virtual el valor temporal  # Answer to todo: Esto es copiado de la de arriba tonses no se si aplica
+            stackDirMem.append(memConts[memCont[resultType]])
+            createQuadruple(toCode['*'], opDir1, opDir2, memConts[memCont[resultType]])
+            memConts[memCont[resultType]] += 1
 
 def p_smaddSingleOpe(p):
     'smaddSingleOpe :'
@@ -336,6 +355,13 @@ def p_smnewctedouble(p):
         memConts[memCont['realCte']] += 1
     stackDirMem.append(mapCteToDir[p[-1]])    
 
+# Llama desde p_negacion o p_negativo
+def p_smNewNegativo(p):
+    'smNewNegativo :'
+    # Genera cuadruplo de resta a 0 para convertir una constante numerica u expresion a su negativo
+    stackOpe.append(toCode['neg'])
+
+    
 ########### FUNCIONES DE SEMANTICA ###########
 
 def setScopeFunction(newScopeFunc):

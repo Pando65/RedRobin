@@ -27,7 +27,7 @@ EXPRESIONII ::= EXPRESIONIII ('AND' EXPRESIONIII)*
 EXPRESIONIII ::= EXPRESIONIV (('=='|'<>'|'<='|'>=') EXPRESIONIV)*
 EXPRESIONIV ::= EXPRESIONV (('+'|'-') EXPRESIONV)*
 EXPRESIONV ::= EXPRESIONVI (('*'|'/') EXPRESIONVI)*
-EXPRESIONVI ::= VALOR | '!'? '(' EXPRESION ')'
+EXPRESIONVI ::= VALOR | ('!'|'-')? '(' EXPRESION ')'
 
 VALOR ::= IDENTIFICADOR | INVOCACION | 'cnst String' | VALORBOOLEANO | '-'? 'const Integer' | '-'? 'const Double'
 VALORBOOLEANO ::= 'true' | 'false'

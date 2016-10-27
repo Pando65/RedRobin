@@ -181,12 +181,12 @@ def p_mas_expresionv(p):
                       | empty'''
 
 def p_expresionvi(p):
-    '''expresionvi : valor
-                   | negacion P_ABRE smaddSingleOpe expresion smRemoveParentesis P_CIERRA'''
+    '''expresionvi : valor smCheckPendingNegatives
+                   | negacion P_ABRE smaddSingleOpe expresion smRemoveParentesis P_CIERRA smCheckPendingNegatives'''
 
 def p_negacion(p):
     '''negacion : NEGAR
-                | OPERADOR_RESTA
+                | OPERADOR_RESTA smNewNegativo
                 | empty'''
 
 # TODO - checar jerarquia de estos operadores, tambien tienen al parecer
@@ -221,7 +221,7 @@ def p_valorbooleano(p):
     newCteBool(p[1]);
     
 def p_negativo(p):
-    '''negativo : OPERADOR_RESTA
+    '''negativo : OPERADOR_RESTA smNewNegativo
                 | empty'''
              
 def p_identificador(p):

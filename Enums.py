@@ -18,7 +18,8 @@ toCode = {
     '(': 23,
     ')': 24,
     'goto': 50,
-    'gotof': 51
+    'gotof': 51,
+    'neg': 52
 }
 
 toSymbol = {
