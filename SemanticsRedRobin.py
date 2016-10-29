@@ -153,15 +153,16 @@ def p_smnewprogram(p):
 # Llamada desde p_funciones
 def p_smnewfunction(p):
     'smnewfunction : '
-    global dirProced
-    global currentScopeClass
-    global currentScopeFunction
     newScopeFunction = p[-1]
+    giveType = p[-2]
+    privlages = p[-3]
     # TODO - encontrar el tipo de la funcion, hardcodeado con empty
+    # TODO - crear al variable global donde se guardara el retorno
+    # TODO - encontrar el tipo de privilegio (public o private) hardcodeado con public
     if newScopeFunction in dirProced[currentScopeClass]['func']:
         terminate("REPEATED FUNCTION NAME")
     else:
-        dirProced[currentScopeClass]['func'][newScopeFunction] = {'vars': {}, 'giveType': 'empty', 'params': {}}
+        dirProced[currentScopeClass]['func'][newScopeFunction] = {'vars': {}, 'giveType': p[-2], 'params': {}, 'tam': {}, 'privilages': p[-3]}
         setScopeFunction(newScopeFunction)
         
 # Llamada desde p_parametros
@@ -191,6 +192,7 @@ def p_smnewvariable(p):
     'smnewvariable : '
     newVarName = p[-1]
     # TODO: ver que rollo con los arreglos y valores de la variable
+    # TODO: checar que no se llame igual que una funcion
     if currentScopeFunction != '': # si estamos dentro de una funcion
         if newVarName in dirProced[currentScopeClass]['func'][currentScopeFunction]:
             terminate("REPEATED VARIABLE NAME")

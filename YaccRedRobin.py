@@ -27,14 +27,16 @@ def p_codigo(p):
 def p_funciones(p):
     'funciones : FUNCTION privilages valor_retorno ID smnewfunction P_ABRE parametros P_CIERRA L_ABRE cuerpofuncion L_CIERRA'
     setScopeFunction('')
-
+    
 def p_valor_retorno(p):
     '''valor_retorno : tipovariable
                      | EMPTY'''
+    p[0] = p[1]
 
 def p_privilages(p):
     '''privilages : SECRET
                   | PUBLIC'''
+    p[0] = p[1]
 
 def p_tipovariable(p):
     '''tipovariable : NUMBER
@@ -42,6 +44,7 @@ def p_tipovariable(p):
                     | STRING
                     | BOOL
                     | ID'''
+    p[0] = p[1]
     setCurrentType(p[1])
 
 def p_parametros(p):

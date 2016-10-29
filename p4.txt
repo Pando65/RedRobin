@@ -1,5 +1,9 @@
 class RedRobin {
 
+  func public number funcion() {
+  
+  }
+
   RedRobin() {
     number a, b, c, d;
     if (a >= b) {
