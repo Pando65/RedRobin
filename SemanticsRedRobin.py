@@ -2,16 +2,54 @@ import sys
 from Cubo import *
 from Cuadruplo import *
 
-########### PROCEDURES DIRECTORY ###########
+# dirProced: Diccionario que guarda los procedimientos y variables del programa. Estructura:
+# [currentScopeClass]:
+#   ['func']:
+#       [currentScopeFunction]
+#           ['vars']
+#              [variableName]
+#                 ['tipo'] - Tipo de variable
+#                 ['size'] - Tamaño de variable
+#                 ['mem'] - Direccion de memoria virtual
+#           ['params']
+#               [contParam]
+#                  ['name'] - nombre del parametro
+#                  ['type'] - tipo del parametro
+#           ['tam'] - diccionario de tamaños requeridos, not defined yet
+#           ['giveType'] - Tipo de retorno de la funcion
+#           ['privilages'] - Privilegio (public o private)
+#           ['mem'] - Direccion de memoria de su variable global asignada
+#   ['vars']
+#       [variableName]
+#           ['tipo'] - Tipo de variable
+#           ['size'] - Tamaño de variable (quizas sirva para arrays, unused)
+#           ['mem'] - Direccion de memoria virtual
 dirProced = {}
+
+# currentType: Guarda el ultimo tipo de dato parseado. Su valor es el ultimo tipo de dato declarado
 currentType = ''
+
+# currentScopeClass: Guarda la clase actual que se esta parseando. Su valor se actualiza si se entra a parsear una nueva clase
 currentScopeClass = 'RedRobin'
+
+# currentScopeFunction: Guarda la funcion actual que se esta parseando. Su valor se actualiza si se entra a parsear una nueva funcion
 currentScopeFunction = ''
 
-########### VIRTUAL ADDRESSES ###########
+########### DIRECCIONES VIRTUALES ###########
+
+# virtualTable: Diccionario donde la llave es la direccion de memoria virtual. AUN NO SE SI ES NECESARIA, NO SE ESTA USANDO
 virtualTable = {}
+
+# mapCteToDir: Diccionario que dada una variable constante te regresa su direccion de memoria virtual
 mapCteToDir = {}
+
+# memConts: Arreglo de contadores enteros. Cada casilla pertenece a un tipo de dato con determinado scope. El valor de la casilla apunta a una direccion libre.
 memConts = numpy.zeros(16)
+
+# Inicializando memConts.
+# memCont: diccionario que dado un tipo y scope regresa el indice correspondiente. Se usa para facilidad de lectura en el codigo.
+# memStart: diccionario que guarda la primera posicion de memoria de cierto tipo y scope
+# memLimit: diccionario que guarda la ultima posicion de memoria de cierto tipo y scope
 memConts[memCont['numberClass']] = memStart['numberClass']
 memConts[memCont['realClass']] =   memStart['realClass']
 memConts[memCont['stringClass']] = memStart['stringClass']
@@ -32,6 +70,7 @@ memConts[memCont['realCte']] =   memStart['realCte']
 memConts[memCont['stringCte']] = memStart['stringCte']
 memConts[memCont['boolCte']] =   memStart['boolCte']
 
+# getTypeCode: dada una direccion de memoria regresa el codigo del tipo de dato correspondiente
 def getTypeCode(memAddress):
     if memAddress <= memLimit['numberClass']:
         return toCode['number']
@@ -70,6 +109,7 @@ def getTypeCode(memAddress):
         return toCode['bool']
     
 ########### GENERACION DE CUADRUPLOS ###########
+
 stackOpe = []
 stackDirMem = []
 stackJumps = []
