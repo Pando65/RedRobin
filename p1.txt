@@ -15,6 +15,11 @@ class RedRobin {
         c = b * a;
     }
     a = b + c;
+
+    for c in (2 _ 5) step 1 {
+      a = a + 10;
+    }
+    
   }
 
 }

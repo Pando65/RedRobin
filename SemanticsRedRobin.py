@@ -140,6 +140,85 @@ def p_smendwhile(p):
 
 ### termina ciclos while ###
 
+### CICLOS for ###
+
+def p_smforprepare(p):
+    'smforprepare :'
+    validateIdSemantics(p[-1])
+    #Validar que sea numero o decimal el operando que se quiere utilizar como iterador del ciclo
+    variable = stackDirMem.pop()
+    if getTypeCode(variable) != toCode['number'] and getTypeCode(variable) != toCode['real']:
+        terminate("TYPE MISMATCH")
+    else:
+        stackDirMem.append(variable)
+
+def p_smforinitialize(p):
+    'smforinitialize :'
+    #Validar que sea numero o decimal el operando que va a inicializar el iterador del ciclo
+    variable = stackDirMem.pop()
+    if getTypeCode(variable) != toCode['number'] and getTypeCode(variable) != toCode['real']:
+        terminate("TYPE MISMATCH")
+    else:
+        #TODO Validar con cubo semantico
+        createQuadruple(toCode['='], variable, -1, stackDirMem[-1])
+
+def p_smforstart(p):
+    'smforstart :'
+    stackJumps.append(len(cuadruplos))
+
+def p_smforcondition(p):
+    'smforcondition :'
+    #Validar que el valor como final del rango del ciclo for sea numerico
+    variable = stackDirMem.pop()
+    if getTypeCode(variable) != toCode['number'] and getTypeCode(variable) != toCode['real']:
+        terminate("TYPE MISMATCH")
+    else:
+        opType1 = getTypeCode(stackDirMem[-1])
+        opType2 = getTypeCode(variable)
+        resultType = cubo.check(opType1, opType2, toCode['<='])
+        if resultType != 'error':
+            resultType += 'Temp'
+            # todo - agregar a tabla de direccion virtual el valor temporal
+            createQuadruple(toCode['<='], stackDirMem[-1], variable, memConts[memCont[resultType]])
+            stackDirMem.append(memConts[memCont[resultType]])
+            memConts[memCont[resultType]] += 1
+            condicion = stackDirMem.pop()
+            createQuadruple(toCode['gotof'], condicion, -1, -1)
+            stackJumps.append(len(cuadruplos) - 1)
+        else:
+            terminate("TYPE MISMATCH")
+
+def p_smforend(p):
+    'smforend :'
+    #Pop de la pila de operandos que debe ser el valor arrojado despues del step
+    variable = stackDirMem.pop()
+    iterador = stackDirMem.pop()
+    if getTypeCode(variable) != toCode['number'] and getTypeCode(variable) != toCode['real']:
+        terminate("TYPE MISMATCH")
+    elif getTypeCode(iterador) != toCode['number'] and getTypeCode(iterador) != toCode['real']:
+        terminate("TYPE MISMATCH")
+    else:
+        opType1 = getTypeCode(iterador)
+        opType2 = getTypeCode(variable)
+        resultType = cubo.check(opType1, opType2, toCode['+'])
+        if resultType != 'error':
+            resultType += 'Temp'
+            # todo - agregar a tabla de direccion virtual el valor temporal
+            stackDirMem.append(memConts[memCont[resultType]])
+            createQuadruple(toCode['+'], iterador, variable, memConts[memCont[resultType]])
+            memConts[memCont[resultType]] += 1
+            nuevoValorIterador = stackDirMem.pop()
+            createQuadruple(toCode['='], nuevoValorIterador, -1, iterador)
+
+            saltoEnFalso = stackJumps.pop()
+            saltoNuevaIteracion = stackJumps.pop()
+            createQuadruple(toCode['goto'], -1, -1, saltoNuevaIteracion)
+            cuadruplos[saltoEnFalso].fill(len(cuadruplos))
+        else:
+            terminate("TYPE MISMATCH")
+
+### termina ciclos for ###
+
 # Llamada desde p_program
 def p_smnewprogram(p):
     'smnewprogram : '

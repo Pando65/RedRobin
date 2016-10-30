@@ -114,7 +114,7 @@ def p_ciclo(p):
              | ciclodinamico'''
 
 def p_cicloestatico(p):
-    'cicloestatico : FOR ID IN P_ABRE valor GUIONBAJO valor P_CIERRA STEP valor L_ABRE cuerpofuncion L_CIERRA'
+    'cicloestatico : FOR ID smforprepare IN P_ABRE valor smforinitialize GUIONBAJO smforstart valor smforcondition P_CIERRA STEP valor L_ABRE cuerpofuncion L_CIERRA smforend'
 
 def p_ciclodinamico(p):
     'ciclodinamico : WHILE smwhilestart P_ABRE expresion smwhilecondition P_CIERRA L_ABRE cuerpofuncion L_CIERRA smendwhile'
