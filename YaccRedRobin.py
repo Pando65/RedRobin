@@ -17,7 +17,7 @@ def p_program(p):
     'program : CLASS REDROBIN smnewprogram L_ABRE cuerpoprogram L_CIERRA'
     
 def p_cuerpoprogram(p):
-    'cuerpoprogram : codigo REDROBIN P_ABRE P_CIERRA L_ABRE cuerpofuncion L_CIERRA'
+    'cuerpoprogram : codigo REDROBIN P_ABRE P_CIERRA L_ABRE smMainFound cuerpofuncion L_CIERRA'
     
 def p_codigo(p):
     '''codigo : clases codigo
@@ -94,7 +94,7 @@ def p_retorno(p):
     'retorno : GIVE expresion PUNTOYCOMA'
 
 def p_invocacion(p):
-    'invocacion : ID composicion_atributo P_ABRE argumentos P_CIERRA'
+    'invocacion : ID composicion_atributo smNewInvocacion P_ABRE argumentos P_CIERRA smEndInvocacion'
 
 def p_argumentos(p):
     '''argumentos : valorargumentos mas_argumentos
@@ -105,12 +105,17 @@ def p_mas_argumentos(p):
                       | empty'''
 
 def p_valorargumentos(p):
-    '''valorargumentos : AMPERSAND ID composicion_atributo 
-                       | expresion'''
+    '''valorargumentos : AMPERSAND ID composicion_atributo
+                       | expresion smParamExpresion'''
+    #NOTA: no ocupe hacer un smParamID porque al usar un id ya lo estoy metiendo a la pila con validateIdSemantics(p[1]) en la regla p_identificador. Esto NO servira con los ampersand. TODO - considerar ampersands
 
 def p_composicion_atributo(p):
     '''composicion_atributo : PUNTO ID
                             | empty'''
+    if p[1] == '.': # es composicion
+        p[0] = p[2]
+    else:
+        p[0] = p[1]
 
 def p_ciclo(p):
     '''ciclo : cicloestatico

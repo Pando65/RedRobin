@@ -78,6 +78,13 @@ cuadruplos = []
 
 ########### REGLAS DE SEMANTICA ###########
 
+def p_smMainFound(p):
+    'smMainFound :'
+    cuadruplos[0].fill(len(cuadruplos))
+    
+# contador para saber el indice del parametro tanto para invocar como para declarar
+contParam = 1
+
 ### CICLOS IF ###
 elifCount = 0
 
@@ -153,26 +160,33 @@ def p_smnewprogram(p):
 # Llamada desde p_funciones
 def p_smnewfunction(p):
     'smnewfunction : '
+    global contParam
+    contParam = 1
     newScopeFunction = p[-1]
     giveType = p[-2]
     privlages = p[-3]
-    # TODO - encontrar el tipo de la funcion, hardcodeado con empty
-    # TODO - crear al variable global donde se guardara el retorno
-    # TODO - encontrar el tipo de privilegio (public o private) hardcodeado con public
+    # TODO - checar que no haya una variable global con el mismo nombre
     if newScopeFunction in dirProced[currentScopeClass]['func']:
         terminate("REPEATED FUNCTION NAME")
     else:
-        dirProced[currentScopeClass]['func'][newScopeFunction] = {'vars': {}, 'giveType': p[-2], 'params': {}, 'tam': {}, 'privilages': p[-3]}
+        memVar = getMemSpace(giveType, 'Class', newScopeFunction)
+        # añado la funcion a mi directorio de procedimientos
+        dirProced[currentScopeClass]['func'][newScopeFunction] = {'vars': {}, 'giveType': p[-2], 'params': {}, 'tam': {}, 'privilages': p[-3], 'mem': memVar}
+        # creo la variable que guardara el valor de retorno
+        dirProced['RedRobin']['vars'][newScopeFunction] = {'tipo': giveType, 'size': 0, 'mem': memVar}
         setScopeFunction(newScopeFunction)
+
         
 # Llamada desde p_parametros
 def p_smnewparam(p):
     'smnewparam :'
+    global contParam
     newParamName = p[-1]
-    # agrego a hash de params TODO - actualizar al posicion del parametro, dar dir de memoria a variable
-    dirProced[currentScopeClass]['func'][currentScopeFunction]['params'][newParamName] = {'pos': 1, 'type': currentType}
+    # agrego a hash de params
+    dirProced[currentScopeClass]['func'][currentScopeFunction]['params'][contParam] = {'name': newParamName, 'type': currentType}
     # agrego a hash de vars
-    dirProced[currentScopeClass]['func'][currentScopeFunction]['vars'][newParamName] = {'tipo': currentType, 'size': 0, 'mem': getMemSpace(currentType, 'Func', newParamName)}         
+    dirProced[currentScopeClass]['func'][currentScopeFunction]['vars'][newParamName] = {'tipo': currentType, 'size': 0, 'mem': getMemSpace(currentType, 'Func', newParamName)}
+    contParam += 1
 
 # Llamada desde p_clases
 def p_smnewclass(p):
@@ -335,7 +349,7 @@ def p_smAsignacion(p):
     'smAsignacion :'
     resultDir = stackDirMem.pop()
     varDir = stackDirMem.pop()
-    createQuadruple(toCode['='], resultDir, '-1', varDir)
+    createQuadruple(toCode['='], resultDir, -1, varDir)
             
 # Llamada desde p_valor
 def p_smnewcteint(p):
@@ -363,6 +377,50 @@ def p_smNewNegativo(p):
     # Genera cuadruplo de resta a 0 para convertir una constante numerica u expresion a su negativo
     stackOpe.append(toCode['neg'])
 
+    
+#### SEMANTICA DE FUNCIONEEES #####
+# TODO - manejar los returns
+
+currentFunction = ""
+
+# Llamada desde p_invocacion
+def p_smNewInvocacion(p):
+    'smNewInvocacion :'
+    global contParam
+    global currentFunction
+    funName = p[-2]
+    if funName in dirProced[currentScopeClass]['func']:
+        contParam = 1
+        currentFunction = funName
+        createQuadruple(toCode['era'], -1, -1, dirProced[currentScopeClass]['func'][funName]['mem'])
+    else:
+        terminate("Function " + funName + " not declared")
+        
+# Llamada desde p_valorargumentos
+def p_smParamExpresion(p):
+    'smParamExpresion :'
+    global contParam
+    if contParam in dirProced[currentScopeClass]['func'][currentFunction]['params']: 
+        paramDir = stackDirMem.pop()
+        nameVarParam = dirProced[currentScopeClass]['func'][currentFunction]['params'][contParam]['name']
+        dirVarParam = dirProced[currentScopeClass]['func'][currentFunction]['vars'][nameVarParam]['mem']
+        if cubo.check(getTypeCode(dirVarParam), getTypeCode(paramDir), toCode['=']) != 'error':
+            createQuadruple(toCode['param'], paramDir, -1, dirVarParam)
+            contParam += 1
+        else:
+            terminate("Error in params of function " + currentFunction)
+    else:
+        terminate("Wrong number of arguments")
+        
+# Llamada dedes p_invocacion
+def p_smEndInvocacion(p):
+    'smEndInvocacion :'
+    global contParam
+    if len(dirProced[currentScopeClass]['func'][currentFunction]['params']) == contParam - 1:
+        createQuadruple(toCode['gosub'], -1, -1, dirProced[currentScopeClass]['func'][currentFunction]['mem'])
+    else:
+        terminate("wrong number of arguments")
+        
     
 ########### FUNCIONES DE SEMANTICA ###########
 
@@ -428,4 +486,7 @@ def newCteBool(newBool):
     else:
         stackDirMem.append(memConts[memCont['boolCte']])
     
+    
+# creo cuadruplo go to main
+createQuadruple(toCode['goto'], -1, -1, -1)    
         
