@@ -19,7 +19,10 @@ toCode = {
     ')': 24,
     'goto': 50,
     'gotof': 51,
-    'neg': 52
+    'neg': 52,
+    'era': 53,
+    'gosub': 54,
+    'param': 55
 }
 
 toSymbol = {
