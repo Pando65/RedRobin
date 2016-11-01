@@ -94,7 +94,12 @@ def p_retorno(p):
     'retorno : GIVE expresion PUNTOYCOMA'
 
 def p_invocacion(p):
-    'invocacion : ID composicion_atributo smNewInvocacion P_ABRE argumentos P_CIERRA smEndInvocacion'
+    '''invocacion : ID composicion_atributo smNewInvocacion P_ABRE argumentos P_CIERRA smEndInvocacion
+                  | PRINT P_ABRE argumentosPrint P_CIERRA
+                  | READ P_ABRE argumentoPosible P_CIERRA 
+                  | TONUMBER P_ABRE argumentoPosible P_CIERRA
+                  | TOREAL P_ABRE argumentoPosible P_CIERRA
+                  | TOSTRING P_ABRE argumentoPosible P_CIERRA'''
 
 def p_argumentos(p):
     '''argumentos : valorargumentos mas_argumentos
@@ -112,10 +117,22 @@ def p_valorargumentos(p):
 def p_composicion_atributo(p):
     '''composicion_atributo : PUNTO ID
                             | empty'''
+    #TODO -- Aceptar arreglos como atributo de objetos
     if p[1] == '.': # es composicion
         p[0] = p[2]
     else:
         p[0] = p[1]
+                            
+def p_argumentosPrint(p):
+    '''argumentosPrint : argumentoPosible mas_prints
+                       | empty'''
+
+def p_mas_prints(p):
+    '''mas_prints : COMA argumentoPosible mas_prints
+                  | empty'''
+
+def p_argumentoPosible(p):
+    '''argumentoPosible : expresion'''
 
 def p_ciclo(p):
     '''ciclo : cicloestatico

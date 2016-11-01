@@ -58,7 +58,12 @@ reserved = {
     'or' : 'OR',
     'func' : 'FUNCTION',
     'true' : 'TRUE',
-    'false' : 'FALSE'
+    'false' : 'FALSE',
+    'print' : 'PRINT',
+    'read' : 'READ',
+    'toNumber' : 'TONUMBER',
+    'toReal' : 'TOREAL',
+    'toString' : 'TOSTRING'
 }
 
 t_L_ABRE = r'\{'
