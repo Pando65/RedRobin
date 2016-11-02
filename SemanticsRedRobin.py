@@ -15,10 +15,11 @@ from Cuadruplo import *
 #               [contParam]
 #                  ['name'] - nombre del parametro
 #                  ['type'] - tipo del parametro
-#           ['tam'] - diccionario de tamaños requeridos, not defined yet
+#           ['tam'] - diccionario de tamaños requeridos, not defined yet TODO
 #           ['giveType'] - Tipo de retorno de la funcion
 #           ['privilages'] - Privilegio (public o private)
 #           ['mem'] - Direccion de memoria de su variable global asignada
+#           ['quad'] - Cuadruplo de inicio
 #   ['vars']
 #       [variableName]
 #           ['tipo'] - Tipo de variable
@@ -290,7 +291,7 @@ def p_smnewfunction(p):
     else:
         memVar = getMemSpace(giveType, 'Class', newScopeFunction)
         # añado la funcion a mi directorio de procedimientos
-        dirProced[currentScopeClass]['func'][newScopeFunction] = {'vars': {}, 'giveType': p[-2], 'params': {}, 'tam': {}, 'privilages': p[-3], 'mem': memVar}
+        dirProced[currentScopeClass]['func'][newScopeFunction] = {'vars': {}, 'giveType': p[-2], 'params': {}, 'tam': {}, 'privilages': p[-3], 'mem': memVar, 'quad': len(cuadruplos) }
         # creo la variable que guardara el valor de retorno
         dirProced['RedRobin']['vars'][newScopeFunction] = {'tipo': giveType, 'size': 0, 'mem': memVar}
         setScopeFunction(newScopeFunction)
@@ -536,7 +537,7 @@ def p_smEndInvocacion(p):
     'smEndInvocacion :'
     global contParam
     if len(dirProced[currentScopeClass]['func'][currentFunction]['params']) == contParam - 1:
-        createQuadruple(toCode['gosub'], -1, -1, dirProced[currentScopeClass]['func'][currentFunction]['mem'])
+        createQuadruple(toCode['gosub'], -1, -1, dirProced[currentScopeClass]['func'][currentFunction]['quad'])
     else:
         terminate("wrong number of arguments")
         
@@ -581,6 +582,7 @@ def getMemSpace(varType, scope, varName):
 # Llamada de p_identificador
 def validateIdSemantics(currentIdName):
     # TODO: validar que el tipo de variable concuerde con su declaracion
+    # TODO: validar que no se llame igual que una funcion
     # Checo si existe la variable como:
         # Variable Global de la clase actual
         # Funcion dentro de la clase actual        
