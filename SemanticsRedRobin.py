@@ -566,6 +566,21 @@ def p_smQuadToNumber(p):
         memConts[memCont[resultType]] += 1
     else:
         terminate("invalid argument")
+
+# Llamada desde p_invocacion
+def p_smQuadToReal(p):
+    'smQuadToReal :'
+    operand = stackDirMem.pop()
+    resultType = cubo.check(getTypeCode(operand), toCode['null'], toCode['toReal'])
+    if resultType != 'error':
+        resultType += 'Temp'
+        # todo - agregar a tabla de direccion virtual el valor temporal  # Answer to todo: Esto es copiado de la de arriba tonses no se si aplica
+        stackDirMem.append(memConts[memCont[resultType]])
+        createQuadruple(toCode['toReal'], operand, -1, memConts[memCont[resultType]])
+        memConts[memCont[resultType]] += 1
+    else:
+        terminate("invalid argument")
+        
 ########### FUNCIONES DE SEMANTICA ###########
 
 def setScopeFunction(newScopeFunc):

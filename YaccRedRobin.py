@@ -97,7 +97,7 @@ def p_retorno(p):
 def p_invocacion(p):
     '''invocacion : ID composicion_atributo smNewInvocacion P_ABRE argumentos P_CIERRA smEndInvocacion
                   | TONUMBER P_ABRE argumentoPosible smQuadToNumber P_CIERRA
-                  | TOREAL P_ABRE argumentoPosible P_CIERRA
+                  | TOREAL P_ABRE argumentoPosible smQuadToReal P_CIERRA
                   | TOSTRING P_ABRE argumentoPosible P_CIERRA'''
 
 def p_argumentos(p):
@@ -279,7 +279,7 @@ def p_error(p):
 # Build the parser
 parser = yacc.yacc()
 
-filename = "p1.txt"
+filename = "p4.txt"
 # filename = input("Ingresa nombre de archivo con lenguaje Red Robin: ") 
 f = open(filename, 'r')
 s = f.read()

@@ -26,7 +26,8 @@ toCode = {
     'print': 56,
     'read' : 57,
     'toNumber' : 58,
-    'null' : 59
+    'toReal' : 59,
+    'null' : 60
 }
 
 toSymbol = {
