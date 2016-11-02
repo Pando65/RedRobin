@@ -124,11 +124,11 @@ def p_composicion_atributo(p):
         p[0] = p[1]
                             
 def p_argumentosPrint(p):
-    '''argumentosPrint : argumentoPosible mas_prints
+    '''argumentosPrint : argumentoPosible smPrintQuadruple mas_prints
                        | empty'''
 
 def p_mas_prints(p):
-    '''mas_prints : COMA argumentoPosible mas_prints
+    '''mas_prints : COMA argumentoPosible smPrintQuadruple mas_prints
                   | empty'''
 
 def p_argumentoPosible(p):

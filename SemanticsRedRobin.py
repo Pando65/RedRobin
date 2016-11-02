@@ -541,7 +541,12 @@ def p_smEndInvocacion(p):
     else:
         terminate("wrong number of arguments")
         
-    
+# Llamada desde p_argumentosPrint o p_mas_prints
+def p_smPrintQuadruple(p):
+    'smPrintQuadruple :'
+    operandToPrint = stackDirMem.pop()
+    createQuadruple(toCode['print'], -1, -1, operandToPrint)
+
 ########### FUNCIONES DE SEMANTICA ###########
 
 def setScopeFunction(newScopeFunc):

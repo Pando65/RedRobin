@@ -22,7 +22,8 @@ toCode = {
     'neg': 52,
     'era': 53,
     'gosub': 54,
-    'param': 55
+    'param': 55,
+    'print': 56
 }
 
 toSymbol = {

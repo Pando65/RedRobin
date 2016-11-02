@@ -35,7 +35,7 @@ class RedRobin {
     }
     
     a = 10 + 2;    
-    print(a, d);
+    print(a, d, 5 + 7);
     read(c);
     real aux;
     aux = toReal(a);
