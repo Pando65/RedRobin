@@ -23,7 +23,8 @@ toCode = {
     'era': 53,
     'gosub': 54,
     'param': 55,
-    'print': 56
+    'print': 56,
+    'read' : 57
 }
 
 toSymbol = {

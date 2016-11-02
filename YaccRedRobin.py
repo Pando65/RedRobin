@@ -93,10 +93,10 @@ def p_cuerpofuncion(p):
 def p_retorno(p):
     'retorno : GIVE expresion PUNTOYCOMA'
 
-def p_invocacion(p):
+def p_invocacion(p):    #TODO --- Print y read NOOOOOOOOO deben ir dentro de la regla de invocacion porque invocacion es llamada por valor, print y read no arrojan valor!
     '''invocacion : ID composicion_atributo smNewInvocacion P_ABRE argumentos P_CIERRA smEndInvocacion
                   | PRINT P_ABRE argumentosPrint P_CIERRA
-                  | READ P_ABRE argumentoPosible P_CIERRA 
+                  | READ P_ABRE identificador smReadQuadruple P_CIERRA 
                   | TONUMBER P_ABRE argumentoPosible P_CIERRA
                   | TOREAL P_ABRE argumentoPosible P_CIERRA
                   | TOSTRING P_ABRE argumentoPosible P_CIERRA'''

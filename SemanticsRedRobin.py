@@ -547,6 +547,12 @@ def p_smPrintQuadruple(p):
     operandToPrint = stackDirMem.pop()
     createQuadruple(toCode['print'], -1, -1, operandToPrint)
 
+# Llamada desde p_inovacion
+def p_smReadQuadruple(p):
+    'smReadQuadruple :'
+    operandRead = stackDirMem.pop()
+    createQuadruple(toCode['read'], -1, -1, operandRead)
+    
 ########### FUNCIONES DE SEMANTICA ###########
 
 def setScopeFunction(newScopeFunc):
