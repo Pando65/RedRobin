@@ -87,6 +87,7 @@ def p_cuerpofuncion(p):
                      | condicional cuerpofuncion
                      | ciclo cuerpofuncion
                      | invocacion PUNTOYCOMA cuerpofuncion
+                     | io PUNTOYCOMA cuerpofuncion
                      | retorno cuerpofuncion
                      | empty'''
 
@@ -95,8 +96,6 @@ def p_retorno(p):
 
 def p_invocacion(p):    #TODO --- Print y read NOOOOOOOOO deben ir dentro de la regla de invocacion porque invocacion es llamada por valor, print y read no arrojan valor!
     '''invocacion : ID composicion_atributo smNewInvocacion P_ABRE argumentos P_CIERRA smEndInvocacion
-                  | PRINT P_ABRE argumentosPrint P_CIERRA
-                  | READ P_ABRE identificador smReadQuadruple P_CIERRA 
                   | TONUMBER P_ABRE argumentoPosible P_CIERRA
                   | TOREAL P_ABRE argumentoPosible P_CIERRA
                   | TOSTRING P_ABRE argumentoPosible P_CIERRA'''
@@ -122,7 +121,11 @@ def p_composicion_atributo(p):
         p[0] = p[2]
     else:
         p[0] = p[1]
-                            
+
+def p_io(p):
+    '''io : PRINT P_ABRE argumentosPrint P_CIERRA
+          | READ P_ABRE identificador smReadQuadruple P_CIERRA '''
+
 def p_argumentosPrint(p):
     '''argumentosPrint : argumentoPosible smPrintQuadruple mas_prints
                        | empty'''
