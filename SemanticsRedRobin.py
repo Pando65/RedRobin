@@ -491,6 +491,16 @@ def p_smnewctedouble(p):
         memConts[memCont['realCte']] += 1
     stackDirMem.append(mapCteToDir[p[-1]])    
 
+# Llamada desde p_valor
+def p_smNewCteString(p):
+    'smNewCteString :'
+    # nueva constate string, crear la direccion de mem si no existe
+    if not p[-1] in mapCteToDir:
+        mapCteToDir[p[-1]] = memConts[memCont['stringCte']]
+        virtualTable[memConts[memCont['stringCte']]] = p[-1]
+        memConts[memCont['stringCte']] += 1
+    stackDirMem.append(mapCteToDir[p[-1]])
+
 # Llama desde p_negacion o p_negativo
 def p_smNewNegativo(p):
     'smNewNegativo :'
@@ -580,7 +590,21 @@ def p_smQuadToReal(p):
         memConts[memCont[resultType]] += 1
     else:
         terminate("invalid argument")
-        
+
+# Llamada desde p_invocacion
+def p_smQuadToString(p):
+    'smQuadToString :'
+    operand = stackDirMem.pop()
+    resultType = cubo.check(getTypeCode(operand), toCode['null'], toCode['toString'])
+    if resultType != 'error':
+        resultType += 'Temp'
+        # TODO - agregar a tabla de direccion virtual el valor temporal  # Answer to todo: Esto es copiado de la de arriba tonses no se si aplica
+        stackDirMem.append(memConts[memCont[resultType]])
+        createQuadruple(toCode['toString'], operand, -1, memConts[memCont[resultType]])
+        memConts[memCont[resultType]] += 1
+    else:
+        terminate("invalid argument")
+
 ########### FUNCIONES DE SEMANTICA ###########
 
 def setScopeFunction(newScopeFunc):

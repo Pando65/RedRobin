@@ -98,7 +98,7 @@ def p_invocacion(p):
     '''invocacion : ID composicion_atributo smNewInvocacion P_ABRE argumentos P_CIERRA smEndInvocacion
                   | TONUMBER P_ABRE argumentoPosible smQuadToNumber P_CIERRA
                   | TOREAL P_ABRE argumentoPosible smQuadToReal P_CIERRA
-                  | TOSTRING P_ABRE argumentoPosible P_CIERRA'''
+                  | TOSTRING P_ABRE argumentoPosible smQuadToString P_CIERRA'''
 
 def p_argumentos(p):
     '''argumentos : valorargumentos mas_argumentos
@@ -238,7 +238,7 @@ def p_operadorfactor(p):
 def p_valor(p):
     '''valor : identificador
              | invocacion
-             | CONST_STRING
+             | CONST_STRING smNewCteString
              | valorbooleano
              | negativo CONST_INTEGER smnewcteint
              | negativo CONST_DOUBLE smnewctedouble'''
