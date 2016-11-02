@@ -34,7 +34,7 @@ class RedRobin {
         b = b - 1;
     }
     
-    a = 10 + 2;
+    a = 10 + toNumber(2.5);
     print(a, d, 5 + 7);
     read(c);
     real aux;

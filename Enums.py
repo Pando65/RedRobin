@@ -24,7 +24,9 @@ toCode = {
     'gosub': 54,
     'param': 55,
     'print': 56,
-    'read' : 57
+    'read' : 57,
+    'toNumber' : 58,
+    'null' : 59
 }
 
 toSymbol = {

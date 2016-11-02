@@ -547,12 +547,25 @@ def p_smPrintQuadruple(p):
     operandToPrint = stackDirMem.pop()
     createQuadruple(toCode['print'], -1, -1, operandToPrint)
 
-# Llamada desde p_inovacion
+# Llamada desde p_io
 def p_smReadQuadruple(p):
     'smReadQuadruple :'
     operandRead = stackDirMem.pop()
     createQuadruple(toCode['read'], -1, -1, operandRead)
-    
+
+# Llamada desde p_invocacion
+def p_smQuadToNumber(p):
+    'smQuadToNumber :'
+    operand = stackDirMem.pop()
+    resultType = cubo.check(getTypeCode(operand), toCode['null'], toCode['toNumber'])
+    if resultType != 'error':
+        resultType += 'Temp'
+        # todo - agregar a tabla de direccion virtual el valor temporal  # Answer to todo: Esto es copiado de la de arriba tonses no se si aplica
+        stackDirMem.append(memConts[memCont[resultType]])
+        createQuadruple(toCode['toNumber'], operand, -1, memConts[memCont[resultType]])
+        memConts[memCont[resultType]] += 1
+    else:
+        terminate("invalid argument")
 ########### FUNCIONES DE SEMANTICA ###########
 
 def setScopeFunction(newScopeFunc):
