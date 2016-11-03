@@ -289,11 +289,14 @@ def p_smnewfunction(p):
     if newScopeFunction in dirProced[currentScopeClass]['func']:
         terminate("REPEATED FUNCTION NAME")
     else:
-        memVar = getMemSpace(giveType, 'Class', newScopeFunction)
-        # añado la funcion a mi directorio de procedimientos
-        dirProced[currentScopeClass]['func'][newScopeFunction] = {'vars': {}, 'giveType': p[-2], 'params': {}, 'tam': {}, 'privilages': p[-3], 'mem': memVar, 'quad': len(cuadruplos) }
-        # creo la variable que guardara el valor de retorno
-        dirProced['RedRobin']['vars'][newScopeFunction] = {'tipo': giveType, 'size': 0, 'mem': memVar}
+        if giveType != 'empty':
+            memVar = getMemSpace(giveType, 'Class', newScopeFunction)
+            # añado la funcion a mi directorio de procedimientos
+            dirProced[currentScopeClass]['func'][newScopeFunction] = {'vars': {}, 'giveType': p[-2], 'params': {}, 'tam': {}, 'privilages': p[-3], 'mem': memVar, 'quad': len(cuadruplos) }
+            # creo la variable que guardara el valor de retorno
+            dirProced['RedRobin']['vars'][newScopeFunction] = {'tipo': giveType, 'size': 0, 'mem': memVar}
+        else:
+            dirProced[currentScopeClass]['func'][newScopeFunction] = {'vars': {}, 'giveType': p[-2], 'params': {}, 'tam': {}, 'privilages': p[-3], 'mem': -1, 'quad': len(cuadruplos) }
         setScopeFunction(newScopeFunction)
 
         
@@ -514,6 +517,23 @@ def p_smNewNegativo(p):
 currentFunction = ""
 
 # Llamada desde p_invocacion
+def p_smNewFuncNoReturn(p):
+    'smNewFuncNoReturn :'
+    global contParam
+    global currentFunction
+    funName = p[-2]
+    if funName in dirProced[currentScopeClass]['func']:
+        # Funcion invocada debe ser 'void'
+        if dirProced[currentScopeClass]['func'][funName]['giveType'] == 'empty':
+            contParam = 1
+            currentFunction = funName
+            createQuadruple(toCode['era'], -1, -1, dirProced[currentScopeClass]['func'][funName]['mem'])
+        else:
+            terminate("No variable to catch returned value")
+    else:
+        terminate("Function " + funName + " not declared")
+
+# Llamada desde p_valor
 def p_smNewInvocacion(p):
     'smNewInvocacion :'
     global contParam
@@ -542,7 +562,7 @@ def p_smParamExpresion(p):
     else:
         terminate("Wrong number of arguments")
         
-# Llamada dedes p_invocacion
+# Llamada dedes p_valor
 def p_smEndInvocacion(p):
     'smEndInvocacion :'
     global contParam
@@ -604,6 +624,11 @@ def p_smQuadToString(p):
         memConts[memCont[resultType]] += 1
     else:
         terminate("invalid argument")
+
+# Llamada desde p_declara_arreglo_o_iniciacion
+def p_smDeclaredToStack(p):
+    'smDeclaredToStack :'
+    validateIdSemantics(p[-3])
 
 ########### FUNCIONES DE SEMANTICA ###########
 

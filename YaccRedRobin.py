@@ -86,7 +86,7 @@ def p_cuerpofuncion(p):
                      | asignacion cuerpofuncion
                      | condicional cuerpofuncion
                      | ciclo cuerpofuncion
-                     | invocacion PUNTOYCOMA cuerpofuncion
+                     | funcionsinretorno PUNTOYCOMA cuerpofuncion
                      | io PUNTOYCOMA cuerpofuncion
                      | retorno cuerpofuncion
                      | empty'''
@@ -94,11 +94,8 @@ def p_cuerpofuncion(p):
 def p_retorno(p):
     'retorno : GIVE expresion PUNTOYCOMA'
 
-def p_invocacion(p):
-    '''invocacion : ID composicion_atributo smNewInvocacion P_ABRE argumentos P_CIERRA smEndInvocacion
-                  | TONUMBER P_ABRE argumentoPosible smQuadToNumber P_CIERRA
-                  | TOREAL P_ABRE argumentoPosible smQuadToReal P_CIERRA
-                  | TOSTRING P_ABRE argumentoPosible smQuadToString P_CIERRA'''
+def p_funcionsinretorno(p):
+    'funcionsinretorno : ID composicion_atributo smNewFuncNoReturn P_ABRE argumentos P_CIERRA smEndInvocacion'
 
 def p_argumentos(p):
     '''argumentos : valorargumentos mas_argumentos
@@ -166,7 +163,7 @@ def p_declaracion(p):
 
 def p_declara_arreglo_o_iniciacion(p):
     '''declara_arreglo_o_iniciacion : B_ABRE valor B_CIERRA
-                                    | IGUAL expresion smAsignacion
+                                    | IGUAL smDeclaredToStack expresion smAsignacion
                                     | empty'''
 
 def p_mas_declaraciones(p):
@@ -242,6 +239,12 @@ def p_valor(p):
              | valorbooleano
              | negativo CONST_INTEGER smnewcteint
              | negativo CONST_DOUBLE smnewctedouble'''
+
+def p_invocacion(p):
+    '''invocacion : ID composicion_atributo smNewInvocacion P_ABRE argumentos P_CIERRA smEndInvocacion
+                  | TONUMBER P_ABRE argumentoPosible smQuadToNumber P_CIERRA
+                  | TOREAL P_ABRE argumentoPosible smQuadToReal P_CIERRA
+                  | TOSTRING P_ABRE argumentoPosible smQuadToString P_CIERRA'''
 
 def p_valorbooleano(p):
     '''valorbooleano : TRUE
