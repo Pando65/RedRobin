@@ -70,6 +70,11 @@ def p_clases(p):
 def p_herencia(p):
     '''herencia : INHERIT ID
                 | empty'''
+    if p[1] == 'inherit':
+        p[0] = p[2]
+#        print("herencia")
+    else:
+        p[0] = p[1]
 
 def p_cuerpoclase(p):
     '''cuerpoclase : privilages declaracion mas_cuerpoclase

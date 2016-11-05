@@ -1,9 +1,11 @@
 import sys
 from Cubo import *
 from Cuadruplo import *
+from MemoriasVirtuales import *
 
 # dirProced: Diccionario que guarda los procedimientos y variables del programa. Estructura:
 # [currentScopeClass]:
+#   ['parent'] - Padre de la clase en caso de existir
 #   ['func']:
 #       [currentScopeFunction]
 #           ['vars']
@@ -25,6 +27,14 @@ from Cuadruplo import *
 #           ['tipo'] - Tipo de variable
 #           ['size'] - Tamaño de variable (quizas sirva para arrays, unused)
 #           ['mem'] - Direccion de memoria virtual
+#   ['obj']
+#       [objectName]
+#           ['class'] - clase a la que pertenece este objeto
+#           ['attr']
+#               [attrName]
+#                   ['tipo'] - Tipo de variable
+#                   ['size'] - Tamaño de variable (quizas sirva para arrays, unused)
+#                   ['mem'] - Direccion de memoria virtual
 dirProced = {}
 
 # currentType: Guarda el ultimo tipo de dato parseado. Su valor es el ultimo tipo de dato declarado
@@ -35,98 +45,38 @@ currentScopeClass = 'RedRobin'
 
 # currentScopeFunction: Guarda la funcion actual que se esta parseando. Su valor se actualiza si se entra a parsear una nueva funcion
 currentScopeFunction = ''
-
-########### DIRECCIONES VIRTUALES ###########
-
-# virtualTable: Diccionario donde la llave es la direccion de memoria virtual. AUN NO SE SI ES NECESARIA, NO SE ESTA USANDO
-virtualTable = {}
-
-# mapCteToDir: Diccionario que dada una variable constante te regresa su direccion de memoria virtual
-mapCteToDir = {}
-
-# memConts: Arreglo de contadores enteros. Cada casilla pertenece a un tipo de dato con determinado scope. El valor de la casilla apunta a una direccion libre.
-memConts = numpy.zeros(16)
-
-# Inicializando memConts.
-# memCont: diccionario que dado un tipo y scope regresa el indice correspondiente. Se usa para facilidad de lectura en el codigo.
-# memStart: diccionario que guarda la primera posicion de memoria de cierto tipo y scope
-# memLimit: diccionario que guarda la ultima posicion de memoria de cierto tipo y scope
-memConts[memCont['numberClass']] = memStart['numberClass']
-memConts[memCont['realClass']] =   memStart['realClass']
-memConts[memCont['stringClass']] = memStart['stringClass']
-memConts[memCont['boolClass']] =   memStart['boolClass']
-
-memConts[memCont['numberFunc']] = memStart['numberFunc']
-memConts[memCont['realFunc']] =   memStart['realFunc']
-memConts[memCont['stringFunc']] = memStart['stringFunc']
-memConts[memCont['boolFunc']] =   memStart['boolFunc']
-
-memConts[memCont['numberTemp']] = memStart['numberTemp']
-memConts[memCont['realTemp']] =   memStart['realTemp']
-memConts[memCont['stringTemp']] = memStart['stringTemp']
-memConts[memCont['boolTemp']] =   memStart['boolTemp']
-
-memConts[memCont['numberCte']] = memStart['numberCte']
-memConts[memCont['realCte']] =   memStart['realCte']
-memConts[memCont['stringCte']] = memStart['stringCte']
-memConts[memCont['boolCte']] =   memStart['boolCte']
-
-# getTypeCode: dada una direccion de memoria regresa el codigo del tipo de dato correspondiente
-def getTypeCode(memAddress):
-    if memAddress <= memLimit['numberClass']:
-        return toCode['number']
-    if memAddress <= memLimit['realClass']:
-        return toCode['real']
-    if memAddress <= memLimit['stringClass']:
-        return toCode['string']
-    if memAddress <= memLimit['boolClass']:
-        return toCode['bool']
-    
-    if memAddress <= memLimit['numberFunc']:
-        return toCode['number']
-    if memAddress <= memLimit['realFunc']:
-        return toCode['real']
-    if memAddress <= memLimit['stringFunc']:
-        return toCode['string']
-    if memAddress <= memLimit['boolFunc']:
-        return toCode['bool']
-    
-    if memAddress <= memLimit['numberTemp']:
-        return toCode['number']
-    if memAddress <= memLimit['realTemp']:
-        return toCode['real']
-    if memAddress <= memLimit['stringTemp']:
-        return toCode['string']
-    if memAddress <= memLimit['boolTemp']:
-        return toCode['bool']
-    
-    if memAddress <= memLimit['numberCte']:
-        return toCode['number']
-    if memAddress <= memLimit['realCte']:
-        return toCode['real']
-    if memAddress <= memLimit['stringCte']:
-        return toCode['string']
-    if memAddress <= memLimit['boolCte']:
-        return toCode['bool']
     
 ########### GENERACION DE CUADRUPLOS ###########
 
+# stackOpe: Pila que guarda los operadores pendientes por resolver
 stackOpe = []
+
+# stackDirMem: pila que guardar las direcciones de los operandos pendientes por resolver
 stackDirMem = []
+
+# stackJumps: pila de saltos que garda cuadruplos pendientes por llenar
 stackJumps = []
-cubo = Cubo()
+
+# Cuadruplos: lista que almacena todos los cuadruplos generados
 cuadruplos = []
+
+# Instanciamos el cubo semantico
+cubo = Cubo()
+
+# contador para saber el indice del parametro actual tanto para invocar como para declarar
+contParam = 1
 
 ########### REGLAS DE SEMANTICA ###########
 
+# smMainFound: Se encarga de crear el cuadruplo inicial que llevara el flujo a la primera instruccion del main (RedRobin)
+# Llamada desde p_cuerpoprogram
 def p_smMainFound(p):
     'smMainFound :'
     cuadruplos[0].fill(len(cuadruplos))
-    
-# contador para saber el indice del parametro tanto para invocar como para declarar
-contParam = 1
 
 ### CICLOS IF ###
+
+# Contador para saber cuantos cuadruplos de elif se dejaron pendientes por llenar
 elifCount = 0
 
 # Llamada desde p_condicional
@@ -271,7 +221,7 @@ def p_smforend(p):
 def p_smnewprogram(p):
     'smnewprogram : '
     global dirProced
-    dirProced['RedRobin'] = {'func': {}, 'vars': {}}
+    dirProced['RedRobin'] = {'func': {}, 'vars': {}, 'obj': {}}
     # Declaracion predefinida de la constante 1 para la generacion de caudruplos que maneje la transformacion de negativos
     mapCteToDir[-1] = memConts[memCont['numberCte']]
     virtualTable[memConts[memCont['numberCte']]] = -1
@@ -311,33 +261,103 @@ def p_smnewparam(p):
 # Llamada desde p_clases
 def p_smnewclass(p):
     'smnewclass :'
-    # Nuevo scope de clase
-    global dirProced
+    # Nuevo scope de clase, estoy definiendo una nueva calse
     global currentScopeClass
     newScopeClass = p[-2]
+    # Si ya existe, es error
     if newScopeClass in dirProced:
         terminate("REPEATED CLASS NAME")
     else:
-        dirProced[newScopeClass] = {'func': {}, 'vars': {}}
+        parent = ''
+        parentObjects = {}
+        parentVariables = {}        
+        # Pregunto si tengo un padre
+        if p[-1] != None:
+            parent = p[-1]
+            # Si tengo un padre debo copiar todas su variables y sus objetos. Estos objetos no pueden tener mas objetos
+            
+            # Jalo las variables de mi padre
+            parentVariables = dirProced[parent]['vars']
+            
+            # Obtengo los objetos de mi padre, tampoco pueden tener mas objetos para evitar composicion de mas de 1 nivel
+            parentObjects = dirProced[parent]['obj']
+            
+            # Valido lo anterior TODO - checar si funciona que no se repitan nombres
+            # mi padre SI puede tener objetos, pero esos objetos NO pueden tener mas objetos
+            # por cada objeto reviso si en su definicion de clase tiene objetos
+            for objName in parentObjects:
+                objectClass = parentObjects[objName]['class']
+                if len(dirProced[objectClass]['obj']) > 0:
+                    terminate("MORE THAN 1 LEVEL IN COMPOSITION2")
+#                if objName in dirProced[currentScopeClass]['obj']:
+#                    terminate("REPEATED NAME")      
+        dirProced[newScopeClass] = {'func': {}, 'vars': parentVariables, 'obj': parentObjects, 'parent': parent}
         setScopeClass(newScopeClass)
         
+def isRepeated(newVarName):
+    # Si estamos dentro de una funcion
+    if currentScopeFunction != '':
+        # que no se llame igual a una varibale local de la funcion actual
+        if newVarName in dirProced[currentScopeClass]['func'][currentScopeFunction]['vars']:
+            return True
+    else:
+        # Si es una variable de clase
+        if newVarName in dirProced[currentScopeClass]['vars']:
+            return True
+        # Si ya hay una funcion que se llama asi
+        if newVarName in dirProced[currentScopeClass]['func']:
+            return True
+        # Si ya hay un objeto que se llama asi
+        if newVarName in dirProced[currentScopeClass]['obj']:
+            return True
+    return False
+
+def isAtomic(mType):
+    if mType == 'number' or mType == 'real' or mType == 'bool' or mType == 'string':
+        return True
+    return False
+    
 # Llamada desde p_declaracion y p_masdeclaraciones
 def p_smnewvariable(p):
     'smnewvariable : '
     newVarName = p[-1]
     # TODO: ver que rollo con los arreglos y valores de la variable
-    # TODO: checar que no se llame igual que una funcion
-    if currentScopeFunction != '': # si estamos dentro de una funcion
-        if newVarName in dirProced[currentScopeClass]['func'][currentScopeFunction]:
-            terminate("REPEATED VARIABLE NAME")
-        else:
-            dirProced[currentScopeClass]['func'][currentScopeFunction]['vars'][newVarName] = {'tipo': currentType, 'size': 0, 'mem': getMemSpace(currentType, 'Func', newVarName)}
+    if isRepeated(newVarName):
+        terminate("REPETAED VARIABLE NAME")
+    
+    # Si estamos dentro de una funcion
+    # TODO - objetos dentro de funciones
+    if currentScopeFunction != '': 
+        dirProced[currentScopeClass]['func'][currentScopeFunction]['vars'][newVarName] = {'tipo': currentType, 'size': 0, 'mem': getMemSpace(currentType, 'Func', newVarName)}
     else:
-        # si es una variable de clase
-        if newVarName in dirProced[currentScopeClass]['vars']:
-            terminate("REPEATED VARIABLE NAME")
-        else:
+        # Si estamos fuera de una funcion
+        if isAtomic(currentType):
             dirProced[currentScopeClass]['vars'][newVarName] = {'tipo': currentType, 'size': 0, 'mem': getMemSpace(currentType, 'Class', newVarName)}
+        else:
+            # SEGUN YO TODO ESTO YA ESTA, TESTEAR
+            # TODO: AL MANDAR A UNA RUTINA, MANDAR LAS DIRECCIONES DE LA INSTANCIA A SU CORRESPONDIENTE DIRECCION FANTASMA, COMO PARAMETROS POR REFERENCIA
+            # Es un objeto
+            # Valido que la clase del objeto exista
+            if currentType not in dirProced or currentType == 'RedRobin':
+                terminate("WRONG OBJECT TYPE")
+            # Depende si estoy en la clase main red robin o en alguna otra clase el comportamiento cambia
+            if currentScopeClass == 'RedRobin':
+                # TODO: copiar el hash de variables y asignarles una direccion real de memoria virtual
+                # TODO: revisar el padre e igual copiar
+                # TODO: composicion
+                
+                
+                dirProced['RedRobin']['obj'][newVarName] = {'class': currentType, 'attr': {}}
+            else:
+                # Si tiene mas objetos mi composicion, seria error
+                if len(dirProced[currentType]['obj']) > 0:
+                    terminate("MORE THAN 1 LEVEL IN COMPOSITION1")
+                
+                # Arrastro las variables de la clase que estoy "instanciando" en esta clase
+                variables = dirProced[currentType]['vars']
+                
+                # Actualizo el directorio de variables de la clase "papa"
+                dirProced[currentScopeClass]['obj'][newVarName] = {'class': currentType, 'attr': variables}
 
 # Llamada desde p_expresion
 def p_smcheckpendingors(p):

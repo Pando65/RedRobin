@@ -1,0 +1,19 @@
+class RedRobin {
+    class Base {
+        public number x;
+    }
+    class Jugador {
+        public number op;
+        public real peso;
+        public Base j;
+    }
+    
+    class Equipo inherit Jugador {
+        public string nombre;
+        public Base k;
+    }
+
+    RedRobin() {
+    
+    }
+}

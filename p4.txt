@@ -1,6 +1,6 @@
 class RedRobin {
 
-  func public real funcion(number: r, x) {
+  func public number funcion(number: r, x) {
     number a;
     a = 2 + 3;
   }
