@@ -10,9 +10,9 @@ PARAMETROS ::= ( TIPOVARIABLE ('[' ']')? ':' 'id' (',' 'id')* ( ';' TIPOVARIABLE
 CLASES ::= 'class' 'id' ('inherit' 'id')? '{' CUERPOCLASE '}'
 CUERPOCLASE ::= (PRIVILAGES DECLARACION | FUNCIONES)+
 
-CUERPOFUNCION ::= (DECLARACION | ASIGNACION | CONDICIONAL | CICLO | INVOCACION ';' | IO ';' | RETORNO )*
+CUERPOFUNCION ::= (DECLARACION | ASIGNACION | CONDICIONAL | CICLO | FUNCIONSINRETORNO ';' | IO ';' | RETORNO )*
 RETORNO ::= 'give' EXPRESION ';'
-INVOCACION ::= ('id' ('.' 'id')? '(' ARGUMENTOS | ('toNumber' | 'toReal' | 'toString') '(' ARGUMENTOPOSIBLE) ')'
+FUNCIONSINRETORNO ::= 'id' ('.' 'id')? '(' ARGUMENTOS ')'
 IO ::= 'print' '(' ARGUMENTOSPRINT ')' | 'read' '(' IDENTIFICADOR ')'
 ARGUMENTOS ::= (VALORARGUMENTOS (',' VALORARGUMENTOS)*)?
 VALORARGUMENTOS ::= '&'? IDENTIFICADOR | EXPRESION
@@ -34,5 +34,6 @@ EXPRESIONV ::= EXPRESIONVI (('*'|'/') EXPRESIONVI)*
 EXPRESIONVI ::= VALOR | ('!'|'-')? '(' EXPRESION ')'
 
 VALOR ::= IDENTIFICADOR | INVOCACION | 'cnst String' | VALORBOOLEANO | '-'? 'const Integer' | '-'? 'const Double'
+INVOCACION ::= ( 'id' ('.' 'id')? '(' ARGUMENTOS | ('toNumber' | 'toReal' | 'toString') '(' ARGUMENTOPOSIBLE ) ')'
 VALORBOOLEANO ::= 'true' | 'false'
 IDENTIFICADOR ::= 'id' ('.' 'id' )? ( '[' VALOR ']' )?
