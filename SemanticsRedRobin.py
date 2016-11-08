@@ -1,4 +1,5 @@
 import sys
+import copy
 from Cubo import *
 from Cuadruplo import *
 from MemoriasVirtuales import *
@@ -280,20 +281,29 @@ def p_smnewclass(p):
             # Si tengo un padre debo copiar todas su variables y sus objetos. Estos objetos no pueden tener mas objetos
             
             # Jalo las variables de mi padre
-            parentVariables = dirProced[parent]['vars']
+            parentVariables = copy.deepcopy(dirProced[parent]['vars'])
             
             # Obtengo los objetos de mi padre, tampoco pueden tener mas objetos para evitar composicion de mas de 1 nivel
-            parentObjects = dirProced[parent]['obj']
+            parentObjects = copy.deepcopy(dirProced[parent]['obj'])
             
-            # Valido lo anterior TODO - checar si funciona que no se repitan nombres
+            # Valido lo anterior
             # mi padre SI puede tener objetos, pero esos objetos NO pueden tener mas objetos
             # por cada objeto reviso si en su definicion de clase tiene objetos
             for objName in parentObjects:
                 objectClass = parentObjects[objName]['class']
                 if len(dirProced[objectClass]['obj']) > 0:
                     terminate("MORE THAN 1 LEVEL IN COMPOSITION2")
-#                if objName in dirProced[currentScopeClass]['obj']:
-#                    terminate("REPEATED NAME")      
+                    
+            # Cada atributo de objeto debe tener direccion de memoria unica para mantener la unicidad de memorias dentro del scope
+            for objName in parentObjects:
+                dicAttr = parentObjects[objName]['attr']
+                for nameVar in dicAttr: 
+                    parentObjects[objName]['attr'][nameVar]['mem'] = getMemSpace(dicAttr[nameVar]['tipo'], 'Class', nameVar)
+                    
+            # Hago lo mismo de arriba con las variables
+            for varName in parentVariables:
+                parentVariables[varName]['mem'] = getMemSpace(parentVariables[varName]['tipo'], 'Class', varName)
+                
         dirProced[newScopeClass] = {'func': {}, 'vars': parentVariables, 'obj': parentObjects, 'parent': parent}
         setScopeClass(newScopeClass)
         
@@ -333,11 +343,10 @@ def p_smnewvariable(p):
     if currentScopeFunction != '': 
         dirProced[currentScopeClass]['func'][currentScopeFunction]['vars'][newVarName] = {'tipo': currentType, 'size': 0, 'mem': getMemSpace(currentType, 'Func', newVarName)}
     else:
-        # Si estamos fuera de una funcion
+        # else-  Si estamos fuera de una funcion
         if isAtomic(currentType):
             dirProced[currentScopeClass]['vars'][newVarName] = {'tipo': currentType, 'size': 0, 'mem': getMemSpace(currentType, 'Class', newVarName)}
         else:
-            # SEGUN YO TODO ESTO YA ESTA, TESTEAR
             # TODO: AL MANDAR A UNA RUTINA, MANDAR LAS DIRECCIONES DE LA INSTANCIA A SU CORRESPONDIENTE DIRECCION FANTASMA, COMO PARAMETROS POR REFERENCIA
             # Es un objeto
             # Valido que la clase del objeto exista
@@ -345,19 +354,31 @@ def p_smnewvariable(p):
                 terminate("WRONG OBJECT TYPE")
             # Depende si estoy en la clase main red robin o en alguna otra clase el comportamiento cambia
             if currentScopeClass == 'RedRobin':
-                # TODO: copiar el hash de variables y asignarles una direccion real de memoria virtual
-                # TODO: revisar el padre e igual copiar
-                # TODO: composicion
+                # TODO: copiar el hash de variables y asignarles una direccion real de memoria virtual (ya se hace abajo)
+                # Hay que crear una instancia de la clase
+                dicAttr = copy.deepcopy(dirProced[currentType]['vars']);
+                for varName in dicAttr:
+                    dicAttr[varName]['mem'] = getMemSpace(dicAttr[varName]['tipo'], 'Class', varName)
+                    
+                    
+                dicObj = copy.deepcopy(dirProced[currentType]['obj']);
+                for objName in dicObj:
+                    dicAttrObj = dicObj[objName]['attr']
+                    for attrName in dicAttrObj:
+                        dicObj[objName]['attr'][attrName]['mem'] = getMemSpace(dicObj[objName]['attr'][attrName]['tipo'], 'Class', attrName)
                 
-                
-                dirProced['RedRobin']['obj'][newVarName] = {'class': currentType, 'attr': {}}
+                dirProced['RedRobin']['obj'][newVarName] = {'class': currentType, 'attr': dicAttr, 'obj': dicObj}
             else:
                 # Si tiene mas objetos mi composicion, seria error
                 if len(dirProced[currentType]['obj']) > 0:
                     terminate("MORE THAN 1 LEVEL IN COMPOSITION1")
                 
                 # Arrastro las variables de la clase que estoy "instanciando" en esta clase
-                variables = dirProced[currentType]['vars']
+                variables = copy.deepcopy(dirProced[currentType]['vars'])
+                
+                # Asigno direcciones nuevas para mantener unicidad 
+                for varName in variables:
+                    variables[varName]['mem'] = getMemSpace(variables[varName]['tipo'], 'Class', varName)
                 
                 # Actualizo el directorio de variables de la clase "papa"
                 dirProced[currentScopeClass]['obj'][newVarName] = {'class': currentType, 'attr': variables}
