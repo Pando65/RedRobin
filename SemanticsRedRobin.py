@@ -307,22 +307,22 @@ def p_smnewclass(p):
         dirProced[newScopeClass] = {'func': {}, 'vars': parentVariables, 'obj': parentObjects, 'parent': parent}
         setScopeClass(newScopeClass)
         
-def isRepeated(newVarName):
+def exists(newVarName):
     # Si estamos dentro de una funcion
     if currentScopeFunction != '':
-        # que no se llame igual a una varibale local de la funcion actual
+        # Si es una variable dentro de la funcion
         if newVarName in dirProced[currentScopeClass]['func'][currentScopeFunction]['vars']:
             return True
-    else:
-        # Si es una variable de clase
-        if newVarName in dirProced[currentScopeClass]['vars']:
-            return True
-        # Si ya hay una funcion que se llama asi
-        if newVarName in dirProced[currentScopeClass]['func']:
-            return True
-        # Si ya hay un objeto que se llama asi
-        if newVarName in dirProced[currentScopeClass]['obj']:
-            return True
+
+    # Si es una variable de clase
+    if newVarName in dirProced[currentScopeClass]['vars']:
+        return True
+    # Si ya hay una funcion que se llama asi
+    if newVarName in dirProced[currentScopeClass]['func']:
+        return True
+    # Si ya hay un objeto que se llama asi
+    if newVarName in dirProced[currentScopeClass]['obj']:
+        return True
     return False
 
 def isAtomic(mType):
@@ -335,7 +335,8 @@ def p_smnewvariable(p):
     'smnewvariable : '
     newVarName = p[-1]
     # TODO: ver que rollo con los arreglos y valores de la variable
-    if isRepeated(newVarName):
+    # Si el nobre ya existe, está repetido
+    if exists(newVarName):
         terminate("REPETAED VARIABLE NAME")
     
     # Si estamos dentro de una funcion
@@ -669,7 +670,7 @@ def p_smQuadToString(p):
 # Llamada desde p_declara_arreglo_o_iniciacion
 def p_smDeclaredToStack(p):
     'smDeclaredToStack :'
-    validateIdSemantics(p[-3])
+    validateIdSemantics(p[-3], None, None)
 
 ########### FUNCIONES DE SEMANTICA ###########
 
@@ -709,24 +710,40 @@ def getMemSpace(varType, scope, varName):
     return memConts[memCont[memType]] - 1
     
 # Llamada de p_identificador
-def validateIdSemantics(currentIdName):
+def validateIdSemantics(currentIdName, currentObjPath, currentArray):
     # TODO: validar que el tipo de variable concuerde con su declaracion
-    # TODO: validar que no se llame igual que una funcion
-    # Checo si existe la variable como:
-        # Variable Global de la clase actual
-        # Funcion dentro de la clase actual        
-        # Variable local dentro funcion
-    if not currentIdName in dirProced[currentScopeClass]['vars'] and not currentIdName in dirProced[currentScopeClass]['func'] and (currentScopeFunction == '' or not currentIdName in dirProced[currentScopeClass]['func'][currentScopeFunction]['vars']):
-        terminate("Variable " + currentIdName + " not declared")
+    # TODO: que exista el nombre, no queire decir que sea una variable
+            # puedo tener objeto perro y usar un numero perro, deberia ser error
+            # tal vez con arreglar el primer to do sea suficiente
+    # Voy a delegar orientado a objetos a otra funcion
+    if currentObjPath != None:
+        validateObjSemantics(currentIdName, currentObjPath, currentArray)
     else:
+        if not exists(currentIdName):
+            terminate("Variable " + currentIdName + " not declared")
         # variable valida, insertar a pila
-#        print("class scope " + currentScopeClass)
-#        print("func scope " + currentScopeFunction)
-#        print("var name " +  currentIdName)
         if currentIdName in dirProced[currentScopeClass]['vars']:
             stackDirMem.append(dirProced[currentScopeClass]['vars'][currentIdName]['mem'])
         elif currentScopeFunction == '' or currentIdName in dirProced[currentScopeClass]['func'][currentScopeFunction]['vars']:
             stackDirMem.append(dirProced[currentScopeClass]['func'][currentScopeFunction]['vars'][currentIdName]['mem'])
+        
+def validateObjSemantics(currentObjPath, currentIdName, currentArray):
+    # TODO: implementar arreglos
+    # TODO: considerar composicion en red robin
+    if currentScopeClass == 'RedRobin':
+        print("ok")
+    else:
+        # Se que currentObjPath tendra solo un objeto "padre"
+        # Valido que exista el objeto
+        if currentObjPath in dirProced[currentScopeClass]['obj']:
+            # Valido que exista el nombre dentro del objeto
+            if currentIdName in dirProced[currentScopeClass]['obj'][currentObjPath]['attr']:
+                # existe, lo meto a la pila
+                stackDirMem.append(dirProced[currentScopeClass]['obj'][currentObjPath]['attr'][currentIdName]['mem'])
+            else:
+                terminate("Attribute " + currentIdName + " not found")
+        else:
+            terminate("Object " + currentObjPath + " not found")
             
 def newCteBool(newBool):
     virtualTable[memConts[memCont['boolCte']]] = 'false'
