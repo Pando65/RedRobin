@@ -1,19 +1,25 @@
 class RedRobin {
     class Base {
-        public number x;
+        public number B;
     }
     class Jugador {
-        public number op;
-        public real peso;
-        public Base j;
+        public number J;
+        public Base Bcomposicion;
     }
     
     class Equipo inherit Jugador {
-        public string nombre;
-        public Base k;
+        public number E;
+        public Base Bherenciacomposicion;
+        
+        func public empty probando() {
+            number i;
+            i = E + Bherenciacomposicion.B;
+            i = i + Bcomposicion.B + 12;
+            i = J + E;
+        }
     }
 
     RedRobin() {
-    
+        Equipo e1, e2;
     }
 }

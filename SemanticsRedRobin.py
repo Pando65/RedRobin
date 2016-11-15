@@ -1,4 +1,5 @@
 import sys
+import copy
 from Cubo import *
 from Cuadruplo import *
 from MemoriasVirtuales import *
@@ -280,39 +281,48 @@ def p_smnewclass(p):
             # Si tengo un padre debo copiar todas su variables y sus objetos. Estos objetos no pueden tener mas objetos
             
             # Jalo las variables de mi padre
-            parentVariables = dirProced[parent]['vars']
+            parentVariables = copy.deepcopy(dirProced[parent]['vars'])
             
             # Obtengo los objetos de mi padre, tampoco pueden tener mas objetos para evitar composicion de mas de 1 nivel
-            parentObjects = dirProced[parent]['obj']
+            parentObjects = copy.deepcopy(dirProced[parent]['obj'])
             
-            # Valido lo anterior TODO - checar si funciona que no se repitan nombres
+            # Valido lo anterior
             # mi padre SI puede tener objetos, pero esos objetos NO pueden tener mas objetos
             # por cada objeto reviso si en su definicion de clase tiene objetos
             for objName in parentObjects:
                 objectClass = parentObjects[objName]['class']
                 if len(dirProced[objectClass]['obj']) > 0:
                     terminate("MORE THAN 1 LEVEL IN COMPOSITION2")
-#                if objName in dirProced[currentScopeClass]['obj']:
-#                    terminate("REPEATED NAME")      
+                    
+            # Cada atributo de objeto debe tener direccion de memoria unica para mantener la unicidad de memorias dentro del scope
+            for objName in parentObjects:
+                dicAttr = parentObjects[objName]['attr']
+                for nameVar in dicAttr: 
+                    parentObjects[objName]['attr'][nameVar]['mem'] = getMemSpace(dicAttr[nameVar]['tipo'], 'Class', nameVar)
+                    
+            # Hago lo mismo de arriba con las variables
+            for varName in parentVariables:
+                parentVariables[varName]['mem'] = getMemSpace(parentVariables[varName]['tipo'], 'Class', varName)
+                
         dirProced[newScopeClass] = {'func': {}, 'vars': parentVariables, 'obj': parentObjects, 'parent': parent}
         setScopeClass(newScopeClass)
         
-def isRepeated(newVarName):
+def exists(newVarName):
     # Si estamos dentro de una funcion
     if currentScopeFunction != '':
-        # que no se llame igual a una varibale local de la funcion actual
+        # Si es una variable dentro de la funcion
         if newVarName in dirProced[currentScopeClass]['func'][currentScopeFunction]['vars']:
             return True
-    else:
-        # Si es una variable de clase
-        if newVarName in dirProced[currentScopeClass]['vars']:
-            return True
-        # Si ya hay una funcion que se llama asi
-        if newVarName in dirProced[currentScopeClass]['func']:
-            return True
-        # Si ya hay un objeto que se llama asi
-        if newVarName in dirProced[currentScopeClass]['obj']:
-            return True
+
+    # Si es una variable de clase
+    if newVarName in dirProced[currentScopeClass]['vars']:
+        return True
+    # Si ya hay una funcion que se llama asi
+    if newVarName in dirProced[currentScopeClass]['func']:
+        return True
+    # Si ya hay un objeto que se llama asi
+    if newVarName in dirProced[currentScopeClass]['obj']:
+        return True
     return False
 
 def isAtomic(mType):
@@ -325,7 +335,8 @@ def p_smnewvariable(p):
     'smnewvariable : '
     newVarName = p[-1]
     # TODO: ver que rollo con los arreglos y valores de la variable
-    if isRepeated(newVarName):
+    # Si el nobre ya existe, está repetido
+    if exists(newVarName):
         terminate("REPETAED VARIABLE NAME")
     
     # Si estamos dentro de una funcion
@@ -333,11 +344,10 @@ def p_smnewvariable(p):
     if currentScopeFunction != '': 
         dirProced[currentScopeClass]['func'][currentScopeFunction]['vars'][newVarName] = {'tipo': currentType, 'size': 0, 'mem': getMemSpace(currentType, 'Func', newVarName)}
     else:
-        # Si estamos fuera de una funcion
+        # else-  Si estamos fuera de una funcion
         if isAtomic(currentType):
             dirProced[currentScopeClass]['vars'][newVarName] = {'tipo': currentType, 'size': 0, 'mem': getMemSpace(currentType, 'Class', newVarName)}
         else:
-            # SEGUN YO TODO ESTO YA ESTA, TESTEAR
             # TODO: AL MANDAR A UNA RUTINA, MANDAR LAS DIRECCIONES DE LA INSTANCIA A SU CORRESPONDIENTE DIRECCION FANTASMA, COMO PARAMETROS POR REFERENCIA
             # Es un objeto
             # Valido que la clase del objeto exista
@@ -345,19 +355,31 @@ def p_smnewvariable(p):
                 terminate("WRONG OBJECT TYPE")
             # Depende si estoy en la clase main red robin o en alguna otra clase el comportamiento cambia
             if currentScopeClass == 'RedRobin':
-                # TODO: copiar el hash de variables y asignarles una direccion real de memoria virtual
-                # TODO: revisar el padre e igual copiar
-                # TODO: composicion
+                # TODO: copiar el hash de variables y asignarles una direccion real de memoria virtual (ya se hace abajo)
+                # Hay que crear una instancia de la clase
+                dicAttr = copy.deepcopy(dirProced[currentType]['vars']);
+                for varName in dicAttr:
+                    dicAttr[varName]['mem'] = getMemSpace(dicAttr[varName]['tipo'], 'Class', varName)
+                    
+                    
+                dicObj = copy.deepcopy(dirProced[currentType]['obj']);
+                for objName in dicObj:
+                    dicAttrObj = dicObj[objName]['attr']
+                    for attrName in dicAttrObj:
+                        dicObj[objName]['attr'][attrName]['mem'] = getMemSpace(dicObj[objName]['attr'][attrName]['tipo'], 'Class', attrName)
                 
-                
-                dirProced['RedRobin']['obj'][newVarName] = {'class': currentType, 'attr': {}}
+                dirProced['RedRobin']['obj'][newVarName] = {'class': currentType, 'attr': dicAttr, 'obj': dicObj}
             else:
                 # Si tiene mas objetos mi composicion, seria error
                 if len(dirProced[currentType]['obj']) > 0:
                     terminate("MORE THAN 1 LEVEL IN COMPOSITION1")
                 
                 # Arrastro las variables de la clase que estoy "instanciando" en esta clase
-                variables = dirProced[currentType]['vars']
+                variables = copy.deepcopy(dirProced[currentType]['vars'])
+                
+                # Asigno direcciones nuevas para mantener unicidad 
+                for varName in variables:
+                    variables[varName]['mem'] = getMemSpace(variables[varName]['tipo'], 'Class', varName)
                 
                 # Actualizo el directorio de variables de la clase "papa"
                 dirProced[currentScopeClass]['obj'][newVarName] = {'class': currentType, 'attr': variables}
@@ -648,7 +670,7 @@ def p_smQuadToString(p):
 # Llamada desde p_declara_arreglo_o_iniciacion
 def p_smDeclaredToStack(p):
     'smDeclaredToStack :'
-    validateIdSemantics(p[-3])
+    validateIdSemantics(p[-3], None, None)
 
 ########### FUNCIONES DE SEMANTICA ###########
 
@@ -688,24 +710,40 @@ def getMemSpace(varType, scope, varName):
     return memConts[memCont[memType]] - 1
     
 # Llamada de p_identificador
-def validateIdSemantics(currentIdName):
+def validateIdSemantics(currentIdName, currentObjPath, currentArray):
     # TODO: validar que el tipo de variable concuerde con su declaracion
-    # TODO: validar que no se llame igual que una funcion
-    # Checo si existe la variable como:
-        # Variable Global de la clase actual
-        # Funcion dentro de la clase actual        
-        # Variable local dentro funcion
-    if not currentIdName in dirProced[currentScopeClass]['vars'] and not currentIdName in dirProced[currentScopeClass]['func'] and (currentScopeFunction == '' or not currentIdName in dirProced[currentScopeClass]['func'][currentScopeFunction]['vars']):
-        terminate("Variable " + currentIdName + " not declared")
+    # TODO: que exista el nombre, no queire decir que sea una variable
+            # puedo tener objeto perro y usar un numero perro, deberia ser error
+            # tal vez con arreglar el primer to do sea suficiente
+    # Voy a delegar orientado a objetos a otra funcion
+    if currentObjPath != None:
+        validateObjSemantics(currentIdName, currentObjPath, currentArray)
     else:
+        if not exists(currentIdName):
+            terminate("Variable " + currentIdName + " not declared")
         # variable valida, insertar a pila
-#        print("class scope " + currentScopeClass)
-#        print("func scope " + currentScopeFunction)
-#        print("var name " +  currentIdName)
         if currentIdName in dirProced[currentScopeClass]['vars']:
             stackDirMem.append(dirProced[currentScopeClass]['vars'][currentIdName]['mem'])
         elif currentScopeFunction == '' or currentIdName in dirProced[currentScopeClass]['func'][currentScopeFunction]['vars']:
             stackDirMem.append(dirProced[currentScopeClass]['func'][currentScopeFunction]['vars'][currentIdName]['mem'])
+        
+def validateObjSemantics(currentObjPath, currentIdName, currentArray):
+    # TODO: implementar arreglos
+    # TODO: considerar composicion en red robin
+    if currentScopeClass == 'RedRobin':
+        print("ok")
+    else:
+        # Se que currentObjPath tendra solo un objeto "padre"
+        # Valido que exista el objeto
+        if currentObjPath in dirProced[currentScopeClass]['obj']:
+            # Valido que exista el nombre dentro del objeto
+            if currentIdName in dirProced[currentScopeClass]['obj'][currentObjPath]['attr']:
+                # existe, lo meto a la pila
+                stackDirMem.append(dirProced[currentScopeClass]['obj'][currentObjPath]['attr'][currentIdName]['mem'])
+            else:
+                terminate("Attribute " + currentIdName + " not found")
+        else:
+            terminate("Object " + currentObjPath + " not found")
             
 def newCteBool(newBool):
     virtualTable[memConts[memCont['boolCte']]] = 'false'

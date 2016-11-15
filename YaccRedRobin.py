@@ -262,11 +262,14 @@ def p_negativo(p):
              
 def p_identificador(p):
     'identificador : ID atributo arreglo'
-    validateIdSemantics(p[1])
+    validateIdSemantics(p[1], p[2], p[3])
 
+# TODO IMPORTANTE: SE DEBERIA PERMITIR UN PUNTO MAS PARA PERMITIR COMPOSICION EN RED ROBIN
 def p_atributo(p):
     '''atributo : PUNTO ID
                 | empty'''
+    if p[1] == '.':
+        p[0] = p[2]
     
 def p_arreglo(p):
     '''arreglo : B_ABRE valor B_CIERRA
@@ -287,7 +290,7 @@ def p_error(p):
 # Build the parser
 parser = yacc.yacc()
 
-filename = "p4.txt"
+filename = "p5.txt"
 # filename = input("Ingresa nombre de archivo con lenguaje Red Robin: ") 
 f = open(filename, 'r')
 s = f.read()
