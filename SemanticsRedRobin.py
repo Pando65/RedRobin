@@ -222,7 +222,7 @@ def p_smnewprogram(p):
     'smnewprogram : '
     global dirProced
     dirProced['RedRobin'] = {'func': {}, 'vars': {}, 'obj': {}}
-    # Declaracion predefinida de la constante 1 para la generacion de caudruplos que maneje la transformacion de negativos
+    # Declaracion predefinida de la constante -1 para la generacion de caudruplos que maneje la transformacion de negativos
     mapCteToDir[-1] = memConts[memCont['numberCte']]
     virtualTable[memConts[memCont['numberCte']]] = -1
     memConts[memCont['numberCte']] += 1

@@ -1,0 +1,10 @@
+class RedRobin {
+
+  RedRobin() {
+    number a, b, c, d;
+    
+    a = 5 + 2 * 10;
+    b = a / 4;
+    print("a=", a, "b=", b);
+  }
+}

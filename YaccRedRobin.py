@@ -295,10 +295,22 @@ parser.parse(s)
 
 
 if aprobado == True:
-    print("Aprobado")
+    print("Compilacion exitosa")
     i = 0
     for cuadruplo in cuadruplos:
         print(str(i) + " - " + str(cuadruplo.ope) + " " + str(cuadruplo.op1) + " " + str(cuadruplo.op2) + " " + str(cuadruplo.r))
         i += 1
     print(dirProced)
 
+    # Se genera el codigo objeto
+    codigoObjeto = open(filename[:-4] + "_bin.txt", 'w')
+    # Se inserta la cantidad de valores constantes
+    codigoObjeto.write(str(len(mapCteToDir)) + '\n')
+    for keyConstante, valorDireccion  in mapCteToDir.items():
+        codigoObjeto.write(str(keyConstante) + '~' + str(valorDireccion) + '\n')
+
+    codigoObjeto.write(str(len(cuadruplos)) + '\n')
+    for numCuadruplo in range(0, len(cuadruplos)):
+        codigoObjeto.write(str(numCuadruplo) + '~' + str(cuadruplos[numCuadruplo].ope) + '~' + str(cuadruplos[numCuadruplo].op1) + '~' + 
+                            str(cuadruplos[numCuadruplo].op2) + '~' + str(cuadruplos[numCuadruplo].r) + '\n')
+        
