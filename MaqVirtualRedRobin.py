@@ -138,6 +138,62 @@ def asigna():
     else:
         memEjecucion[liCuadruplos[apunCuadruplo].r] = valor1
 
+def mayoroigual():
+    global apunCuadruplo
+
+    operando1 = liCuadruplos[apunCuadruplo].op1
+    operando2 = liCuadruplos[apunCuadruplo].op2
+
+    valor1 = memEjecucion[operando1]
+    valor2 = memEjecucion[operando2]
+
+    if valor1 >= valor2:
+        memEjecucion[liCuadruplos[apunCuadruplo].r] = True
+    else:
+        memEjecucion[liCuadruplos[apunCuadruplo].r] = False
+
+def menoroigual():
+    global apunCuadruplo
+
+    operando1 = liCuadruplos[apunCuadruplo].op1
+    operando2 = liCuadruplos[apunCuadruplo].op2
+
+    valor1 = memEjecucion[operando1]
+    valor2 = memEjecucion[operando2]
+
+    if valor1 <= valor2:
+        memEjecucion[liCuadruplos[apunCuadruplo].r] = True
+    else:
+        memEjecucion[liCuadruplos[apunCuadruplo].r] = False
+
+def esigual():
+    global apunCuadruplo
+
+    operando1 = liCuadruplos[apunCuadruplo].op1
+    operando2 = liCuadruplos[apunCuadruplo].op2
+
+    valor1 = memEjecucion[operando1]
+    valor2 = memEjecucion[operando2]
+
+    if valor1 == valor2:
+        memEjecucion[liCuadruplos[apunCuadruplo].r] = True
+    else:
+        memEjecucion[liCuadruplos[apunCuadruplo].r] = False
+
+def esdiferente():
+    global apunCuadruplo
+
+    operando1 = liCuadruplos[apunCuadruplo].op1
+    operando2 = liCuadruplos[apunCuadruplo].op2
+
+    valor1 = memEjecucion[operando1]
+    valor2 = memEjecucion[operando2]
+
+    if valor1 != valor2:
+        memEjecucion[liCuadruplos[apunCuadruplo].r] = True
+    else:
+        memEjecucion[liCuadruplos[apunCuadruplo].r] = False
+
 def goTo():
     global apunCuadruplo
     destino = liCuadruplos[apunCuadruplo].r
@@ -162,10 +218,10 @@ fromCode = {
     14 : multiplica, #*
     15 : divide, #/
     16 : asigna, #=
-#    '>=': 17,
-#    '<=': 18,
-#    '==': 19,
-#    '<>': 20,
+    17 : mayoroigual, #>=
+    18 : menoroigual, #<=
+    19 : esigual, #==
+    20 : esdiferente, #<>
 #    'or': 21,
 #    'and': 22,
 #    '(': 23,

@@ -12,5 +12,9 @@ class RedRobin {
 
     c = z;
     print(c);
+
+    bool variableBooleana;
+    variableBooleana = "ah" >= "h";
+    print(variableBooleana);
   }
 }
