@@ -194,6 +194,28 @@ def esdiferente():
     else:
         memEjecucion[liCuadruplos[apunCuadruplo].r] = False
 
+def condicionalor():
+    global apunCuadruplo
+
+    operando1 = liCuadruplos[apunCuadruplo].op1
+    operando2 = liCuadruplos[apunCuadruplo].op2
+
+    valor1 = memEjecucion[operando1]
+    valor2 = memEjecucion[operando2]
+
+    memEjecucion[liCuadruplos[apunCuadruplo].r] = valor1 or valor2
+
+def condicionaland():
+    global apunCuadruplo
+
+    operando1 = liCuadruplos[apunCuadruplo].op1
+    operando2 = liCuadruplos[apunCuadruplo].op2
+
+    valor1 = memEjecucion[operando1]
+    valor2 = memEjecucion[operando2]
+
+    memEjecucion[liCuadruplos[apunCuadruplo].r] = valor1 and valor2
+
 def goTo():
     global apunCuadruplo
     destino = liCuadruplos[apunCuadruplo].r
@@ -222,8 +244,8 @@ fromCode = {
     18 : menoroigual, #<=
     19 : esigual, #==
     20 : esdiferente, #<>
-#    'or': 21,
-#    'and': 22,
+    21 : condicionalor, #or
+    22 : condicionaland, #and
 #    '(': 23,
 #    ')': 24,
     50 : goTo, #goto
@@ -262,7 +284,7 @@ for ite in range(1, 1 + cantConstantes):
         #Es constante string
         valor = separacionConstantes[0]
     elif direccion <= 16099:
-        #Es constante string
+        #Es constante boolean
         if separacionConstantes[0] == 'true':
             valor = True
         else:

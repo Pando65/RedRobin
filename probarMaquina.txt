@@ -16,5 +16,7 @@ class RedRobin {
     bool variableBooleana;
     variableBooleana = "ah" >= "h";
     print(variableBooleana);
+    bool temporale = 5 == 5, temporale2 = 5 <> 5;
+    print(temporale or temporale2);
   }
 }
