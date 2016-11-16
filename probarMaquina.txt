@@ -2,9 +2,15 @@ class RedRobin {
 
   RedRobin() {
     number a, b, c, d;
-    
+    real z;
     a = 5 + 2 * 10;
     b = a / 4;
-    print("a=", a, "b=", b);
+    z = b * 1;
+    print("a=", a, "b=", b, "z=", z);
+    z = z * 2.4;
+    print(z);
+
+    c = z;
+    print(c);
   }
 }

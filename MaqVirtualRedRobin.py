@@ -16,6 +16,64 @@ liCuadruplos = []
 #Apunta al cuadruplo al que se esta ejecutando
 apunCuadruplo = 0
 
+# Diccionarios de rangos de direcciones para cada tipo de variable
+memStart = {
+    'numberClass': 100,
+    'realClass': 1100,
+    'stringClass': 2100,
+    'boolClass': 3100,
+    
+    'numberFunc': 4100,
+    'realFunc': 5100,
+    'stringFunc': 6100,
+    'boolFunc': 7100,
+    
+    'numberTemp': 8100,
+    'realTemp': 9100,
+    'stringTemp': 10100,
+    'boolTemp': 11100,
+    
+    'numberCte': 12100,
+    'realCte': 13100,
+    'stringCte': 14100,
+    'boolCte': 15100
+}
+
+memLimit = {
+    'numberClass': 1099,
+    'realClass': 2099,
+    'stringClass': 3099,
+    'boolClass': 4099,
+    
+    'numberFunc': 5099,
+    'realFunc': 6099,
+    'stringFunc': 7099,
+    'boolFunc': 8099,
+    
+    'numberTemp': 9099,
+    'realTemp': 10099,
+    'stringTemp': 11099,
+    'boolTemp': 12099,
+    
+    'numberCte': 13099,
+    'realCte': 14099,
+    'stringCte': 15099,
+    'boolCte': 16099 
+}
+
+#Indica si una direccion almacena valor numerico entero
+def isNumber(numDireccion):
+    if numDireccion >= memStart['numberClass'] and numDireccion <= memLimit['numberClass']:
+        return True
+    if numDireccion >= memStart['numberFunc'] and numDireccion <= memLimit['numberFunc']:
+        return True
+    if numDireccion >= memStart['numberTemp'] and numDireccion <= memLimit['numberTemp']:
+        return True
+    if numDireccion >= memStart['numberCte'] and numDireccion <= memLimit['numberCte']:
+        return True
+    
+    return False
+
 def terminate(message):
     print(message)
     sys.exit()
@@ -74,7 +132,11 @@ def asigna():
     operando1 = liCuadruplos[apunCuadruplo].op1
     valor1 = memEjecucion[operando1]
 
-    memEjecucion[liCuadruplos[apunCuadruplo].r] = valor1
+    #Se checa si la direccion a asignar valor es entera para almacenar solo la parte entera
+    if isNumber(liCuadruplos[apunCuadruplo].r):
+        memEjecucion[liCuadruplos[apunCuadruplo].r] = int(valor1)
+    else:
+        memEjecucion[liCuadruplos[apunCuadruplo].r] = valor1
 
 def goTo():
     global apunCuadruplo
@@ -84,7 +146,14 @@ def goTo():
 
 def imprimir():
     global apunCuadruplo
-    print(memEjecucion[liCuadruplos[apunCuadruplo].r])
+    if isinstance(memEjecucion[liCuadruplos[apunCuadruplo].r], str):
+        print(memEjecucion[liCuadruplos[apunCuadruplo].r][1:-1])
+    else:
+        # Se verifica si se trata de una variable entera segun la direccion
+        if isNumber(liCuadruplos[apunCuadruplo].r):
+            print(int(memEjecucion[liCuadruplos[apunCuadruplo].r]))
+        else:
+            print(memEjecucion[liCuadruplos[apunCuadruplo].r])
 
 #Enumeracion de funciones
 fromCode = {
