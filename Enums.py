@@ -36,7 +36,32 @@ toSymbol = {
     1: 'number',
     2: 'real',
     3: 'bool',
-    4: 'string'
+    4: 'string',
+    12: '+',
+    13: '-',
+    14: '*',
+    15: '/',
+    16: '=',
+    17: '>=',
+    18: '<=',
+    19: '==',
+    20: '<>',
+    21: 'or',
+    22: 'and',
+    23: '(',
+    24: ')',
+    50: 'goto',
+    51: 'gotof',
+    52: 'neg',
+    53: 'era',
+    54: 'gosub',
+    55: 'param',
+    56: 'print',
+    57: 'read',
+    58: 'toNumber',
+    59: 'toReal',
+    60: 'toString',
+    61: 'null'
 }
 
 memStart = {

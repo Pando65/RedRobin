@@ -569,7 +569,7 @@ def p_smNewFuncNoReturn(p):
         if dirProced[currentScopeClass]['func'][funName]['giveType'] == 'empty':
             contParam = 1
             currentFunction = funName
-            createQuadruple(toCode['era'], -1, -1, dirProced[currentScopeClass]['func'][funName]['mem'])
+            createQuadruple(toCode['era'], -1, -1, dirProced[currentScopeClass]['func'][funName]['quad'])
         else:
             terminate("No variable to catch returned value")
     else:
@@ -584,7 +584,7 @@ def p_smNewInvocacion(p):
     if funName in dirProced[currentScopeClass]['func']:
         contParam = 1
         currentFunction = funName
-        createQuadruple(toCode['era'], -1, -1, dirProced[currentScopeClass]['func'][funName]['mem'])
+        createQuadruple(toCode['era'], -1, -1, dirProced[currentScopeClass]['func'][funName]['quad'])
     else:
         terminate("Function " + funName + " not declared")
         
@@ -610,6 +610,13 @@ def p_smEndInvocacion(p):
     global contParam
     if len(dirProced[currentScopeClass]['func'][currentFunction]['params']) == contParam - 1:
         createQuadruple(toCode['gosub'], -1, -1, dirProced[currentScopeClass]['func'][currentFunction]['quad'])
+        dirRetorno = dirProced[currentScopeClass]['func'][currentFunction]['mem']
+        if dirRetorno != -1:
+            returnType = toSymbol[getTypeCode(dirRetorno)]
+            newtemp = memConts[memCont[returnType + 'Temp']]
+            createQuadruple(toCode['='], dirRetorno, -1, newtemp)
+            stackDirMem.append(newtemp)
+            memConts[memCont[returnType + 'Class']] += 1
     else:
         terminate("wrong number of arguments")
         

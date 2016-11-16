@@ -290,7 +290,7 @@ def p_error(p):
 # Build the parser
 parser = yacc.yacc()
 
-filename = "p5.txt"
+filename = "p4.txt"
 # filename = input("Ingresa nombre de archivo con lenguaje Red Robin: ") 
 f = open(filename, 'r')
 s = f.read()
@@ -301,7 +301,7 @@ if aprobado == True:
     print("Compilacion exitosa")
     i = 0
     for cuadruplo in cuadruplos:
-        print(str(i) + " - " + str(cuadruplo.ope) + " " + str(cuadruplo.op1) + " " + str(cuadruplo.op2) + " " + str(cuadruplo.r))
+        print(str(i) + " - " + toSymbol[cuadruplo.ope] + " " + str(cuadruplo.op1) + " " + str(cuadruplo.op2) + " " + str(cuadruplo.r))
         i += 1
     print(dirProced)
 
