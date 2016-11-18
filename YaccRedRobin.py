@@ -15,6 +15,7 @@ aprobado = True
 
 def p_program(p):
     'program : CLASS REDROBIN smnewprogram L_ABRE cuerpoprogram L_CIERRA'
+    createQuadruple(toCode['endprogram'], -1, -1, -1)
     
 def p_cuerpoprogram(p):
     'cuerpoprogram : codigo REDROBIN P_ABRE P_CIERRA L_ABRE smMainFound cuerpofuncion L_CIERRA'
@@ -27,6 +28,7 @@ def p_codigo(p):
 def p_funciones(p):
     'funciones : FUNCTION privilages valor_retorno ID smnewfunction P_ABRE parametros P_CIERRA L_ABRE cuerpofuncion L_CIERRA'
     setScopeFunction('')
+    createQuadruple(toCode["endproc"], -1, -1, -1)
     
 def p_valor_retorno(p):
     '''valor_retorno : tipovariable

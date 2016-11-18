@@ -625,9 +625,16 @@ def p_smNewGive(p):
 
     # el tipo de expresion debe coincidir con el tipo de retorno
     funcType = dirProced[currentScopeClass]['func'][currentScopeFunction]['giveType']
+    
+    if funcType == "empty":
+        terminate("unexpeted give in non give function")
+    # direccion de la funcion global que almacena el retorno
+    dirReturnGlobal = dirProced[currentScopeClass]['func'][currentScopeFunction]['mem']
+        
     if toCode[funcType] == getTypeCode(memReturn):
         # creamos el cuadruplo de retorno
-        createQuadruple(toCode["give"], -1, -1, memReturn)
+        createQuadruple(toCode["give"], memReturn, -1, dirReturnGlobal)
+        createQuadruple(toCode["endproc"], -1, -1, -1)
     else:
         terminate("wrong give type")
 
