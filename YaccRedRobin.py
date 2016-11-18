@@ -246,7 +246,7 @@ def p_valor(p):
              | negativo CONST_DOUBLE smnewctedouble'''
 
 def p_invocacion(p):
-    '''invocacion : ID composicion_atributo smNewInvocacion P_ABRE argumentos P_CIERRA smEndInvocacion
+    '''invocacion : ID composicion_atributo smNewInvocacion P_ABRE smaddParentesis argumentos smRemoveParentesis P_CIERRA smEndInvocacion
                   | TONUMBER P_ABRE argumentoPosible smQuadToNumber P_CIERRA
                   | TOREAL P_ABRE argumentoPosible smQuadToReal P_CIERRA
                   | TOSTRING P_ABRE argumentoPosible smQuadToString P_CIERRA'''
@@ -311,6 +311,10 @@ if aprobado == True:
     codigoObjeto.write(str(len(mapCteToDir)) + '\n')
     for keyConstante, valorDireccion  in mapCteToDir.items():
         codigoObjeto.write(str(keyConstante) + '~' + str(valorDireccion) + '\n')
+    print("-----")
+    
+    print(stackDirMem)
+    print(stackOpe)
 
     codigoObjeto.write(str(len(cuadruplos)) + '\n')
     for numCuadruplo in range(0, len(cuadruplos)):

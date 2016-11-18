@@ -504,10 +504,16 @@ def p_smaddSingleOpe(p):
     'smaddSingleOpe :'
     pushToStackOpe(p[-1])
     
+def p_smaddParentesis(p):
+    'smaddParentesis :'
+    pushToStackOpe('(')
+    
 def p_smRemoveParentesis(p):
     'smRemoveParentesis :'
     opeCode = stackOpe.pop()
     if opeCode != toCode['(']:
+        print(toSymbol[opeCode])
+        print(len(cuadruplos))
         terminate("ERROR EXPRESION")
         
 def p_smAsignacion(p):
@@ -616,7 +622,7 @@ def p_smEndInvocacion(p):
             newtemp = memConts[memCont[returnType + 'Temp']]
             createQuadruple(toCode['='], dirRetorno, -1, newtemp)
             stackDirMem.append(newtemp)
-            memConts[memCont[returnType + 'Class']] += 1
+            memConts[memCont[returnType + 'Temp']] += 1
     else:
         terminate("wrong number of arguments")
         
