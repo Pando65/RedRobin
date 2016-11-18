@@ -28,7 +28,8 @@ toCode = {
     'toNumber' : 58,
     'toReal' : 59,
     'toString': 60,
-    'null' : 61
+    'null' : 61,
+    'give': 62
 }
 
 toSymbol = {
@@ -61,7 +62,8 @@ toSymbol = {
     58: 'toNumber',
     59: 'toReal',
     60: 'toString',
-    61: 'null'
+    61: 'null',
+    62: 'give'
 }
 
 memStart = {

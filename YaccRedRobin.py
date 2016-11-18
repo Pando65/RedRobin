@@ -97,7 +97,7 @@ def p_cuerpofuncion(p):
                      | empty'''
 
 def p_retorno(p):
-    'retorno : GIVE expresion PUNTOYCOMA'
+    'retorno : GIVE expresion smNewGive PUNTOYCOMA'
 
 def p_funcionsinretorno(p):
     'funcionsinretorno : ID composicion_atributo smNewFuncNoReturn P_ABRE argumentos P_CIERRA smEndInvocacion'

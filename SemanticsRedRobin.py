@@ -337,11 +337,12 @@ def p_smnewvariable(p):
     # TODO: ver que rollo con los arreglos y valores de la variable
     # Si el nobre ya existe, está repetido
     if exists(newVarName):
-        terminate("REPETAED VARIABLE NAME")
+        terminate("REPETAED VARIABLE NAME:" + newVarName)
     
     # Si estamos dentro de una funcion
     # TODO - objetos dentro de funciones
     if currentScopeFunction != '': 
+        # TODO- objetos dentro de funciones
         dirProced[currentScopeClass]['func'][currentScopeFunction]['vars'][newVarName] = {'tipo': currentType, 'size': 0, 'mem': getMemSpace(currentType, 'Func', newVarName)}
     else:
         # else-  Si estamos fuera de una funcion
@@ -563,12 +564,14 @@ def p_smNewNegativo(p):
 # TODO - manejar los returns
 
 currentFunction = ""
+giveValue = False
 
 # Llamada desde p_invocacion
 def p_smNewFuncNoReturn(p):
     'smNewFuncNoReturn :'
     global contParam
     global currentFunction
+    global giveValue
     funName = p[-2]
     if funName in dirProced[currentScopeClass]['func']:
         # Funcion invocada debe ser 'void'
@@ -610,6 +613,24 @@ def p_smParamExpresion(p):
     else:
         terminate("Wrong number of arguments")
         
+        
+# Llamada de p_retorno
+def p_smNewGive(p):
+    'smNewGive :'
+    if currentScopeFunction == "":
+        terminate("Give not in a function")
+    
+    # obtenemos la direccion del valor de retorno
+    memReturn = stackDirMem.pop()
+
+    # el tipo de expresion debe coincidir con el tipo de retorno
+    funcType = dirProced[currentScopeClass]['func'][currentScopeFunction]['giveType']
+    if toCode[funcType] == getTypeCode(memReturn):
+        # creamos el cuadruplo de retorno
+        createQuadruple(toCode["give"], -1, -1, memReturn)
+    else:
+        terminate("wrong give type")
+
 # Llamada dedes p_valor
 def p_smEndInvocacion(p):
     'smEndInvocacion :'
