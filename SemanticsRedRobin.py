@@ -177,7 +177,6 @@ def p_smforcondition(p):
         resultType = cubo.check(opType1, opType2, toCode['<='])
         if resultType != 'error':
             resultType += 'Temp'
-            # todo - agregar a tabla de direccion virtual el valor temporal
             createQuadruple(toCode['<='], stackDirMem[-1], variable, memConts[memCont[resultType]])
             stackDirMem.append(memConts[memCont[resultType]])
             memConts[memCont[resultType]] += 1
@@ -225,7 +224,7 @@ def p_smnewprogram(p):
     dirProced['RedRobin'] = {'func': {}, 'vars': {}, 'obj': {}}
     # Declaracion predefinida de la constante -1 para la generacion de caudruplos que maneje la transformacion de negativos
     mapCteToDir[-1] = memConts[memCont['numberCte']]
-    virtualTable[memConts[memCont['numberCte']]] = -1
+#b    virtualTable[memConts[memCont['numberCte']]] = -1
     memConts[memCont['numberCte']] += 1
     
 # Llamada desde p_funciones
@@ -398,7 +397,6 @@ def p_smcheckpendingors(p):
         if resultType != 'error':
             # ocupo crear la temporal que manejara el resultado
             resultType += "Temp"
-            # virtualTable[memConts[memCont[resultType]]] = {''} Guardar algo en la temporal (?)
             stackDirMem.append(memConts[memCont[resultType]])
             createQuadruple(opeCode, opDir1, opDir2, memConts[memCont[resultType]])
             memConts[memCont[resultType]] += 1
@@ -419,7 +417,6 @@ def p_smcheckpendingsingleope(p):
         if resultType != 'error':
             # ocupo crear la temporal que manejara el resultado
             resultType += "Temp"
-            # virtualTable[memConts[memCont[resultType]]] = {''} Guardar algo en la temporal (?)
             stackDirMem.append(memConts[memCont[resultType]])
             createQuadruple(opeCode, opDir1, opDir2, memConts[memCont[resultType]])
             memConts[memCont[resultType]] += 1
@@ -440,7 +437,6 @@ def p_smcheckpendingrelational(p):
         if resultType != 'error':
             # ocupo crear la temporal que manejara el resultado
             resultType += "Temp"
-            # virtualTable[memConts[memCont[resultType]]] = {''} Guardar algo en la temporal (?)
             stackDirMem.append(memConts[memCont[resultType]])
             createQuadruple(opeCode, opDir1, opDir2, memConts[memCont[resultType]])
             memConts[memCont[resultType]] += 1
@@ -462,7 +458,6 @@ def p_smcheckpendingterms(p):
         if resultType != 'error':
             # ocupo crear la temporal que manejara el resultado
             resultType += "Temp"
-            # virtualTable[memConts[memCont[resultType]]] = {''} Guardar algo en la temporal (?)
             stackDirMem.append(memConts[memCont[resultType]])
             createQuadruple(opeCode, opDir1, opDir2, memConts[memCont[resultType]])
             memConts[memCont[resultType]] += 1
@@ -480,7 +475,6 @@ def p_smcheckpendingfactors(p):
         resultType = cubo.check(opTypeCode1, opTypeCode2, opeCode)
         if resultType != 'error':
             resultType += 'Temp'
-            # todo - agregar a tabla de direccion virtual el valor temporal
             stackDirMem.append(memConts[memCont[resultType]])
             createQuadruple(opeCode, opDir1, opDir2, memConts[memCont[resultType]])
             memConts[memCont[resultType]] += 1
@@ -496,7 +490,6 @@ def p_smCheckPendingNegatives(p):
         resultType = cubo.check(opTypeCode1, opTypeCode2, toCode['*'])
         if resultType != 'error':
             resultType += 'Temp'
-             # todo - agregar a tabla de direccion virtual el valor temporal  # Answer to todo: Esto es copiado de la de arriba tonses no se si aplica
             stackDirMem.append(memConts[memCont[resultType]])
             createQuadruple(toCode['*'], opDir1, opDir2, memConts[memCont[resultType]])
             memConts[memCont[resultType]] += 1
@@ -529,7 +522,6 @@ def p_smnewcteint(p):
     # nueva constate entera, crear la direccion de mem si no existe
     if not p[-1] in mapCteToDir:
         mapCteToDir[p[-1]] = memConts[memCont['numberCte']]
-        virtualTable[memConts[memCont['numberCte']]] = p[-1]
         memConts[memCont['numberCte']] += 1
     stackDirMem.append(mapCteToDir[p[-1]])
     
@@ -539,7 +531,6 @@ def p_smnewctedouble(p):
     # nueva constate double, crear la direccion de mem si no existe
     if not p[-1] in mapCteToDir:
         mapCteToDir[p[-1]] = memConts[memCont['realCte']]
-        virtualTable[memConts[memCont['realCte']]] = p[-1]
         memConts[memCont['realCte']] += 1
     stackDirMem.append(mapCteToDir[p[-1]])    
 
@@ -549,7 +540,6 @@ def p_smNewCteString(p):
     # nueva constate string, crear la direccion de mem si no existe
     if not p[-1] in mapCteToDir:
         mapCteToDir[p[-1]] = memConts[memCont['stringCte']]
-        virtualTable[memConts[memCont['stringCte']]] = p[-1]
         memConts[memCont['stringCte']] += 1
     stackDirMem.append(mapCteToDir[p[-1]])
 
@@ -745,8 +735,6 @@ def createQuadruple(ope, op1, op2, r):
     
 def getMemSpace(varType, scope, varName):
     memType = varType + scope
-    #todo - ver que guardo, val depende del tipo
-    virtualTable[memConts[memCont[memType]]] = {'name': varName, 'val': -1}
     memConts[memCont[memType]] += 1
     return memConts[memCont[memType]] - 1
     
@@ -787,8 +775,6 @@ def validateObjSemantics(currentObjPath, currentIdName, currentArray):
             terminate("Object " + currentObjPath + " not found")
             
 def newCteBool(newBool):
-    virtualTable[memConts[memCont['boolCte']]] = 'false'
-    virtualTable[memConts[memCont['boolCte']] + 1] = 'true'
     if newBool == 'true':
         stackDirMem.append(memConts[memCont['boolCte']] + 1)
     else:
