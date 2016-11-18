@@ -224,7 +224,6 @@ def p_smnewprogram(p):
     dirProced['RedRobin'] = {'func': {}, 'vars': {}, 'obj': {}}
     # Declaracion predefinida de la constante -1 para la generacion de caudruplos que maneje la transformacion de negativos
     mapCteToDir[-1] = memConts[memCont['numberCte']]
-#b    virtualTable[memConts[memCont['numberCte']]] = -1
     memConts[memCont['numberCte']] += 1
     
 # Llamada desde p_funciones
@@ -554,7 +553,8 @@ def p_smNewNegativo(p):
 # TODO - manejar los returns
 
 currentFunction = ""
-giveValue = False
+# key: real, value: temp o fantasma
+hashRef = {}
 
 # Llamada desde p_invocacion
 def p_smNewFuncNoReturn(p):
@@ -582,21 +582,51 @@ def p_smNewInvocacion(p):
     funName = p[-2]
     if funName in dirProced[currentScopeClass]['func']:
         contParam = 1
+        hashRef.clear()
         currentFunction = funName
         createQuadruple(toCode['era'], -1, -1, dirProced[currentScopeClass]['func'][funName]['quad'])
     else:
         terminate("Function " + funName + " not declared")
         
 # Llamada desde p_valorargumentos
-def p_smParamExpresion(p):
-    'smParamExpresion :'
+def p_smArgumentoRef(p):
+    'smArgumentoRef :'
     global contParam
-    if contParam in dirProced[currentScopeClass]['func'][currentFunction]['params']: 
-        paramDir = stackDirMem.pop()
+    # TODO - considerar composicion y arreglos
+    if contParam in dirProced[currentScopeClass]['func'][currentFunction]['params']:
+        varName = p[-2]
+        validateIdSemantics(varName, None, None)
+        argDir = stackDirMem.pop()
         nameVarParam = dirProced[currentScopeClass]['func'][currentFunction]['params'][contParam]['name']
         dirVarParam = dirProced[currentScopeClass]['func'][currentFunction]['vars'][nameVarParam]['mem']
-        if cubo.check(getTypeCode(dirVarParam), getTypeCode(paramDir), toCode['=']) != 'error':
-            createQuadruple(toCode['param'], paramDir, -1, dirVarParam)
+        # Verificamos que el argumento sea del mismo tipo que el parametro
+        # Obtenemos la direccion asignada a ese parametro para la generacion de cuadruplos
+        # TODO - ver si esto de jalar la direccion de vars se va a quedar así, dado que en teoria se va a eliminar el hash de vars del dir de procedimientos despues de q acabe la funcion        
+        if cubo.check(getTypeCode(dirVarParam), getTypeCode(argDir), toCode['=']) != 'error':
+            createQuadruple(toCode['param'], argDir, -1, dirVarParam)
+            hashRef[argDir] = dirVarParam
+            contParam += 1
+        else:
+            terminate("Error in params of function " + currentFunction)
+    else:
+        terminate("Wrong number of arguments")
+        
+# Llamada desde p_valorargumentos
+def p_smArgumentoExpresion(p):
+    'smArgumentoExpresion :'
+    global contParam
+    # Verificamos que el numero de argumentos siga dentro del rango
+    if contParam in dirProced[currentScopeClass]['func'][currentFunction]['params']: 
+        # Obtenemos la direccion del argumento
+        argDir = stackDirMem.pop()
+        # Obtenemos el nombre declarado del parametro, segun su posicion
+        nameVarParam = dirProced[currentScopeClass]['func'][currentFunction]['params'][contParam]['name']
+        # Obtenemos la direccion asignada a ese parametro para la generacion de cuadruplos
+        # TODO - ver si esto de jalar la direccion de vars se va a quedar así, dado que en teoria se va a eliminar el hash de vars del dir de procedimientos despues de q acabe la funcion
+        dirVarParam = dirProced[currentScopeClass]['func'][currentFunction]['vars'][nameVarParam]['mem']
+        # Verificamos que el argumento sea del mismo tipo que el parametro
+        if cubo.check(getTypeCode(dirVarParam), getTypeCode(argDir), toCode['=']) != 'error':
+            createQuadruple(toCode['param'], argDir, -1, dirVarParam)
             contParam += 1
         else:
             terminate("Error in params of function " + currentFunction)
@@ -641,6 +671,11 @@ def p_smEndInvocacion(p):
             createQuadruple(toCode['='], dirRetorno, -1, newtemp)
             stackDirMem.append(newtemp)
             memConts[memCont[returnType + 'Temp']] += 1
+        # Actualizamos los valores por referncia
+        # TODO - atributos de objeto
+        for real in hashRef:
+            createQuadruple(toCode["ref"], hashRef[real], -1, real)
+        
     else:
         terminate("wrong number of arguments")
         

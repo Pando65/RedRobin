@@ -113,10 +113,9 @@ def p_mas_argumentos(p):
                       | empty'''
 
 def p_valorargumentos(p):
-    '''valorargumentos : AMPERSAND ID composicion_atributo
-                       | expresion smParamExpresion'''
-    #NOTA: no ocupe hacer un smParamID porque al usar un id ya lo estoy metiendo a la pila con validateIdSemantics(p[1]) en la regla p_identificador. Esto NO servira con los ampersand. TODO - considerar ampersands
-
+    '''valorargumentos : AMPERSAND ID composicion_atributo smArgumentoRef
+                       | expresion smArgumentoExpresion'''
+    
 def p_composicion_atributo(p):
     '''composicion_atributo : PUNTO ID
                             | empty'''
