@@ -384,6 +384,16 @@ def p_smnewvariable(p):
                 dirProced[currentScopeClass]['obj'][newVarName] = {'class': currentType, 'attr': variables}
 
 # Llamada desde p_expresion
+
+def p_smNewArray(p):
+    'smNewArray :'
+    arraySize = p[-3]
+    varName = p[-6]
+    if currentScopeFunction != "":
+        dirProced[currentScopeClass]['func'][currentScopeFunction]['vars'][varName]['size'] = arraySize
+    else:
+        dirProced[currentScopeClass]['vars'][varName]['size'] = arraySize
+    
 def p_smcheckpendingors(p):
     'smcheckpendingors :'
     if len(stackOpe) > 0 and stackOpe[-1] == toCode['or']:

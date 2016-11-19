@@ -168,7 +168,7 @@ def p_declaracion(p):
     'declaracion : tipovariable ID smnewvariable declara_arreglo_o_iniciacion mas_declaraciones PUNTOYCOMA'    
 
 def p_declara_arreglo_o_iniciacion(p):
-    '''declara_arreglo_o_iniciacion : B_ABRE valor B_CIERRA
+    '''declara_arreglo_o_iniciacion : B_ABRE CONST_INTEGER smnewcteint B_CIERRA smNewArray
                                     | IGUAL smDeclaredToStack expresion smAsignacion
                                     | empty'''
 
