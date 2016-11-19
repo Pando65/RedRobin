@@ -239,12 +239,15 @@ def p_operadorfactor(p):
     pushToStackOpe(p[1])
     
 def p_valor(p):
-    '''valor : identificador
-             | invocacion
-             | CONST_STRING smNewCteString
-             | valorbooleano
-             | negativo CONST_INTEGER smnewcteint
-             | negativo CONST_DOUBLE smnewctedouble'''
+    'valor : negativo valorAdapter'
+    
+def p_valorAdapter(p):
+    '''valorAdapter : identificador
+                    | invocacion
+                    | CONST_STRING smNewCteString
+                    | valorbooleano
+                    | CONST_INTEGER smnewcteint
+                    | CONST_DOUBLE smnewctedouble'''
 
 def p_invocacion(p):
     '''invocacion : ID composicion_atributo smNewInvocacion P_ABRE smaddParentesis argumentos smRemoveParentesis P_CIERRA smEndInvocacion

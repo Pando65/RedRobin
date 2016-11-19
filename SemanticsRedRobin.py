@@ -461,7 +461,7 @@ def p_smcheckpendingterms(p):
             createQuadruple(opeCode, opDir1, opDir2, memConts[memCont[resultType]])
             memConts[memCont[resultType]] += 1
         else:
-            terminate("TYPE MISMATCH")
+            terminate("TYPE MISSMATCH")
             
 def p_smcheckpendingfactors(p):
     'smcheckpendingfactors :'
@@ -477,6 +477,8 @@ def p_smcheckpendingfactors(p):
             stackDirMem.append(memConts[memCont[resultType]])
             createQuadruple(opeCode, opDir1, opDir2, memConts[memCont[resultType]])
             memConts[memCont[resultType]] += 1
+        else:
+            terminate("TYPE MISSMATCH")            
             
 def p_smCheckPendingNegatives(p):
     'smCheckPendingNegatives :'
@@ -492,6 +494,8 @@ def p_smCheckPendingNegatives(p):
             stackDirMem.append(memConts[memCont[resultType]])
             createQuadruple(toCode['*'], opDir1, opDir2, memConts[memCont[resultType]])
             memConts[memCont[resultType]] += 1
+        else:
+            terminate("TYPE MISSMATCH")
 
 def p_smaddSingleOpe(p):
     'smaddSingleOpe :'
@@ -596,12 +600,14 @@ def p_smArgumentoRef(p):
     if contParam in dirProced[currentScopeClass]['func'][currentFunction]['params']:
         varName = p[-2]
         validateIdSemantics(varName, None, None)
+        # Obtenemos la direccion del argumento
         argDir = stackDirMem.pop()
+        # Obtenemos el nombre declarado del parametro, segun su posicion
         nameVarParam = dirProced[currentScopeClass]['func'][currentFunction]['params'][contParam]['name']
+        # Obtenemos la direccion asignada a ese parametro para la generacion de cuadruplos
+        # TODO - ver si esto de jalar la direccion de vars se va a quedar así, dado que en teoria se va a eliminar el hash de vars del dir de procedimientos despues de q acabe la funcion
         dirVarParam = dirProced[currentScopeClass]['func'][currentFunction]['vars'][nameVarParam]['mem']
         # Verificamos que el argumento sea del mismo tipo que el parametro
-        # Obtenemos la direccion asignada a ese parametro para la generacion de cuadruplos
-        # TODO - ver si esto de jalar la direccion de vars se va a quedar así, dado que en teoria se va a eliminar el hash de vars del dir de procedimientos despues de q acabe la funcion        
         if cubo.check(getTypeCode(dirVarParam), getTypeCode(argDir), toCode['=']) != 'error':
             createQuadruple(toCode['param'], argDir, -1, dirVarParam)
             hashRef[argDir] = dirVarParam
