@@ -143,7 +143,7 @@ def p_smendwhile(p):
 
 def p_smforprepare(p):
     'smforprepare :'
-    validateIdSemantics(p[-1])
+    validateIdSemantics(p[-1], None, None)
     #Validar que sea numero o decimal el operando que se quiere utilizar como iterador del ciclo
     variable = stackDirMem.pop()
     if getTypeCode(variable) != toCode['number'] and getTypeCode(variable) != toCode['real']:

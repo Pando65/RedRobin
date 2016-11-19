@@ -222,6 +222,23 @@ def goTo():
     apunCuadruplo = destino
     fromCode[ liCuadruplos[apunCuadruplo].ope ]()
 
+def goTof():
+    global apunCuadruplo
+    
+    operando1 = liCuadruplos[apunCuadruplo].op1
+
+    valor1 = memEjecucion[operando1]
+
+    if not valor1:
+        destino = liCuadruplos[apunCuadruplo].r
+        apunCuadruplo = destino
+        fromCode[ liCuadruplos[apunCuadruplo].ope ]()
+
+def negativo():
+    global apunCuadruplo
+
+
+
 def imprimir():
     global apunCuadruplo
     if isinstance(memEjecucion[liCuadruplos[apunCuadruplo].r], str):
@@ -249,8 +266,8 @@ fromCode = {
 #    '(': 23,
 #    ')': 24,
     50 : goTo, #goto
-#    'gotof': 51,
-#    'neg': 52,
+    51 : goTof, #gotof
+    52 : negativo, #neg
 #    'era': 53,
 #    'gosub': 54,
 #    'param': 55,
@@ -263,7 +280,7 @@ fromCode = {
 }
 
 # Se pregunta por archivo ejecutable
-filename = "probarMaquina_bin.txt"
+filename = "p5_bin.txt"
 # filename = input("Ingresa nombre de archivo con condigo objeto de Red Robin: ") 
 f = open(filename, 'r')
 listaRenglones = f.readlines()

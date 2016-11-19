@@ -7,16 +7,20 @@ class RedRobin {
     b = a / 4;
     z = b * 1;
     print("a=", a, "b=", b, "z=", z);
-    z = z * 2.4;
-    print(z);
 
-    c = z;
-    print(c);
-
-    bool variableBooleana;
+    bool variableBooleana, variableBooleana2;
     variableBooleana = "ah" >= "h";
-    print(variableBooleana);
-    bool temporale = 5 == 5, temporale2 = 5 <> 5;
-    print(temporale or temporale2);
+    variableBooleana2 = "ah" <= "h";
+    
+    for a in (2 _ 123) step -21 {
+      d = a * 1;
+      print("a");
+      print(a);
+      print(a);
+      print("d");
+      print(d);
+    }
+
+    print("Pos ya");
   }
 }
