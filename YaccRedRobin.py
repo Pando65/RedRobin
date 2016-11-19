@@ -266,15 +266,8 @@ def p_negativo(p):
                 | empty'''
              
 def p_identificador(p):
-    'identificador : ID atributo arreglo'
+    'identificador : ID composicion_atributo arreglo'
     validateIdSemantics(p[1], p[2], p[3])
-
-# TODO IMPORTANTE: SE DEBERIA PERMITIR UN PUNTO MAS PARA PERMITIR COMPOSICION EN RED ROBIN
-def p_atributo(p):
-    '''atributo : PUNTO ID
-                | empty'''
-    if p[1] == '.':
-        p[0] = p[2]
     
 def p_arreglo(p):
     '''arreglo : B_ABRE smaddParentesis expresion smRemoveParentesis B_CIERRA
