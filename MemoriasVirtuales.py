@@ -35,6 +35,7 @@ memConts[memCont['boolCte']] =   memStart['boolCte']
 
 # getTypeCode: dada una direccion de memoria regresa el codigo del tipo de dato correspondiente
 def getTypeCode(memAddress):
+    memAddress = abs(memAddress)
     if memAddress <= memLimit['numberClass']:
         return toCode['number']
     if memAddress <= memLimit['realClass']:

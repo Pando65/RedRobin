@@ -387,12 +387,20 @@ def p_smnewvariable(p):
 
 def p_smNewArray(p):
     'smNewArray :'
+    # Descartamos la direccion, ocupamos el numero en si
+    stackDirMem.pop()
+    # Obtenemos el numero del lexico
     arraySize = p[-3]
+    # Obtenemos el nombre del arreglo, ya fue declarado, solo hay que aumentar el size
     varName = p[-6]
+    # Obtenemos el tipo del arreglo para saber q tipo de memorias darle
+    typeArray = currentType
     if currentScopeFunction != "":
         dirProced[currentScopeClass]['func'][currentScopeFunction]['vars'][varName]['size'] = arraySize
+        memConts[memCont[typeArray + 'Func']] += (int(arraySize) - 1)
     else:
         dirProced[currentScopeClass]['vars'][varName]['size'] = arraySize
+        memConts[memCont[typeArray + 'Class']] += (int(arraySize) - 1)
     
 def p_smcheckpendingors(p):
     'smcheckpendingors :'
@@ -463,7 +471,7 @@ def p_smcheckpendingterms(p):
         opTypeCode2 = getTypeCode(opDir2)
         opTypeCode1 = getTypeCode(opDir1)
         opeCode = stackOpe.pop()
-        resultType = cubo.check(opTypeCode1, opTypeCode2, opeCode) 
+        resultType = cubo.check(abs(opTypeCode1), abs(opTypeCode2), opeCode) 
         if resultType != 'error':
             # ocupo crear la temporal que manejara el resultado
             resultType += "Temp"
@@ -527,7 +535,10 @@ def p_smAsignacion(p):
     'smAsignacion :'
     resultDir = stackDirMem.pop()
     varDir = stackDirMem.pop()
-    createQuadruple(toCode['='], resultDir, -1, varDir)
+    if cubo.check(getTypeCode(resultDir), getTypeCode(varDir), toCode['=']) != 'error':
+        createQuadruple(toCode['='], resultDir, -1, varDir)
+    else:
+        terminate("TYPE MISSMATCH")
             
 # Llamada desde p_valor
 def p_smnewcteint(p):
@@ -801,11 +812,36 @@ def validateIdSemantics(currentIdName, currentObjPath, currentArray):
     else:
         if not exists(currentIdName):
             terminate("Variable " + currentIdName + " not declared")
-        # variable valida, insertar a pila
-        if currentIdName in dirProced[currentScopeClass]['vars']:
-            stackDirMem.append(dirProced[currentScopeClass]['vars'][currentIdName]['mem'])
-        elif currentScopeFunction == '' or currentIdName in dirProced[currentScopeClass]['func'][currentScopeFunction]['vars']:
-            stackDirMem.append(dirProced[currentScopeClass]['func'][currentScopeFunction]['vars'][currentIdName]['mem'])
+        # si es arreglo hacer validaciones
+        if currentArray == '[':
+            # Obtengo la expresion de indexamiento
+            indexMem = stackDirMem.pop()
+            # Si no es numero, termino
+            if getTypeCode(indexMem) != toCode['number']:
+                terminate("bad index for array")
+            # Declaro variables auxiliares
+            limitArray = 0
+            typeVarCode = 0
+            newTemp = 0
+            dirBase = 0
+            if currentScopeFunction == "":
+                limitArray = dirProced[currentScopeClass]['vars'][currentIdName]['size']
+                dirBase = dirProced[currentScopeClass]['vars'][currentIdName]['mem'] 
+                typeVarCode = getTypeCode(dirBase)
+            else:
+                limitArray = dirProced[currentScopeClass]['func'][currentScopeFunction]['vars'][currentIdName]['size']
+                dirBase = dirProced[currentScopeClass]['func'][currentScopeFunction]['vars'][currentIdName]['mem']
+                typeVarCode = getTypeCode(dirBase)
+            newTemp = getMemSpace(toSymbol[typeVarCode], 'Temp', "-")                
+            createQuadruple(toCode['ver'], indexMem, 0, int(limitArray) - 1)
+            createQuadruple(toCode['+'], dirBase, indexMem, newTemp)
+            stackDirMem.append(newTemp * -1)
+        else:
+            # variable valida, insertar a pila
+            if currentIdName in dirProced[currentScopeClass]['vars']:
+                stackDirMem.append(dirProced[currentScopeClass]['vars'][currentIdName]['mem'])
+            elif currentScopeFunction == '' or currentIdName in dirProced[currentScopeClass]['func'][currentScopeFunction]['vars']:
+                stackDirMem.append(dirProced[currentScopeClass]['func'][currentScopeFunction]['vars'][currentIdName]['mem'])
         
 def validateObjSemantics(currentObjPath, currentIdName, currentArray):
     # TODO: implementar arreglos

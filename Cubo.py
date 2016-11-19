@@ -207,6 +207,6 @@ class Cubo:
         self.semantica[toCode['bool']][toCode['null']]  [toCode['toString']] = toCode['error']
         
     def check(self, op1, op2, ope):
-        return toSymbol[self.semantica[op1][op2][ope]]
+        return toSymbol[self.semantica[abs(op1)][abs(op2)][ope]]
 
 
