@@ -177,7 +177,6 @@ def p_smforcondition(p):
         resultType = cubo.check(opType1, opType2, toCode['<='])
         if resultType != 'error':
             resultType += 'Temp'
-            # todo - agregar a tabla de direccion virtual el valor temporal
             createQuadruple(toCode['<='], stackDirMem[-1], variable, memConts[memCont[resultType]])
             stackDirMem.append(memConts[memCont[resultType]])
             memConts[memCont[resultType]] += 1
@@ -225,7 +224,6 @@ def p_smnewprogram(p):
     dirProced['RedRobin'] = {'func': {}, 'vars': {}, 'obj': {}}
     # Declaracion predefinida de la constante -1 para la generacion de caudruplos que maneje la transformacion de negativos
     mapCteToDir[-1] = memConts[memCont['numberCte']]
-    virtualTable[memConts[memCont['numberCte']]] = -1
     memConts[memCont['numberCte']] += 1
     
 # Llamada desde p_funciones
@@ -337,11 +335,12 @@ def p_smnewvariable(p):
     # TODO: ver que rollo con los arreglos y valores de la variable
     # Si el nobre ya existe, está repetido
     if exists(newVarName):
-        terminate("REPETAED VARIABLE NAME")
+        terminate("REPETAED VARIABLE NAME:" + newVarName)
     
     # Si estamos dentro de una funcion
     # TODO - objetos dentro de funciones
     if currentScopeFunction != '': 
+        # TODO- objetos dentro de funciones
         dirProced[currentScopeClass]['func'][currentScopeFunction]['vars'][newVarName] = {'tipo': currentType, 'size': 0, 'mem': getMemSpace(currentType, 'Func', newVarName)}
     else:
         # else-  Si estamos fuera de una funcion
@@ -397,7 +396,6 @@ def p_smcheckpendingors(p):
         if resultType != 'error':
             # ocupo crear la temporal que manejara el resultado
             resultType += "Temp"
-            # virtualTable[memConts[memCont[resultType]]] = {''} Guardar algo en la temporal (?)
             stackDirMem.append(memConts[memCont[resultType]])
             createQuadruple(opeCode, opDir1, opDir2, memConts[memCont[resultType]])
             memConts[memCont[resultType]] += 1
@@ -418,7 +416,6 @@ def p_smcheckpendingsingleope(p):
         if resultType != 'error':
             # ocupo crear la temporal que manejara el resultado
             resultType += "Temp"
-            # virtualTable[memConts[memCont[resultType]]] = {''} Guardar algo en la temporal (?)
             stackDirMem.append(memConts[memCont[resultType]])
             createQuadruple(opeCode, opDir1, opDir2, memConts[memCont[resultType]])
             memConts[memCont[resultType]] += 1
@@ -439,7 +436,6 @@ def p_smcheckpendingrelational(p):
         if resultType != 'error':
             # ocupo crear la temporal que manejara el resultado
             resultType += "Temp"
-            # virtualTable[memConts[memCont[resultType]]] = {''} Guardar algo en la temporal (?)
             stackDirMem.append(memConts[memCont[resultType]])
             createQuadruple(opeCode, opDir1, opDir2, memConts[memCont[resultType]])
             memConts[memCont[resultType]] += 1
@@ -461,12 +457,11 @@ def p_smcheckpendingterms(p):
         if resultType != 'error':
             # ocupo crear la temporal que manejara el resultado
             resultType += "Temp"
-            # virtualTable[memConts[memCont[resultType]]] = {''} Guardar algo en la temporal (?)
             stackDirMem.append(memConts[memCont[resultType]])
             createQuadruple(opeCode, opDir1, opDir2, memConts[memCont[resultType]])
             memConts[memCont[resultType]] += 1
         else:
-            terminate("TYPE MISMATCH")
+            terminate("TYPE MISSMATCH")
             
 def p_smcheckpendingfactors(p):
     'smcheckpendingfactors :'
@@ -479,10 +474,11 @@ def p_smcheckpendingfactors(p):
         resultType = cubo.check(opTypeCode1, opTypeCode2, opeCode)
         if resultType != 'error':
             resultType += 'Temp'
-            # todo - agregar a tabla de direccion virtual el valor temporal
             stackDirMem.append(memConts[memCont[resultType]])
             createQuadruple(opeCode, opDir1, opDir2, memConts[memCont[resultType]])
             memConts[memCont[resultType]] += 1
+        else:
+            terminate("TYPE MISSMATCH")            
             
 def p_smCheckPendingNegatives(p):
     'smCheckPendingNegatives :'
@@ -495,19 +491,26 @@ def p_smCheckPendingNegatives(p):
         resultType = cubo.check(opTypeCode1, opTypeCode2, toCode['*'])
         if resultType != 'error':
             resultType += 'Temp'
-             # todo - agregar a tabla de direccion virtual el valor temporal  # Answer to todo: Esto es copiado de la de arriba tonses no se si aplica
             stackDirMem.append(memConts[memCont[resultType]])
             createQuadruple(toCode['*'], opDir1, opDir2, memConts[memCont[resultType]])
             memConts[memCont[resultType]] += 1
+        else:
+            terminate("TYPE MISSMATCH")
 
 def p_smaddSingleOpe(p):
     'smaddSingleOpe :'
     pushToStackOpe(p[-1])
     
+def p_smaddParentesis(p):
+    'smaddParentesis :'
+    pushToStackOpe('(')
+    
 def p_smRemoveParentesis(p):
     'smRemoveParentesis :'
     opeCode = stackOpe.pop()
     if opeCode != toCode['(']:
+        print(toSymbol[opeCode])
+        print(len(cuadruplos))
         terminate("ERROR EXPRESION")
         
 def p_smAsignacion(p):
@@ -522,7 +525,6 @@ def p_smnewcteint(p):
     # nueva constate entera, crear la direccion de mem si no existe
     if not p[-1] in mapCteToDir:
         mapCteToDir[p[-1]] = memConts[memCont['numberCte']]
-        virtualTable[memConts[memCont['numberCte']]] = p[-1]
         memConts[memCont['numberCte']] += 1
     stackDirMem.append(mapCteToDir[p[-1]])
     
@@ -532,7 +534,6 @@ def p_smnewctedouble(p):
     # nueva constate double, crear la direccion de mem si no existe
     if not p[-1] in mapCteToDir:
         mapCteToDir[p[-1]] = memConts[memCont['realCte']]
-        virtualTable[memConts[memCont['realCte']]] = p[-1]
         memConts[memCont['realCte']] += 1
     stackDirMem.append(mapCteToDir[p[-1]])    
 
@@ -542,7 +543,6 @@ def p_smNewCteString(p):
     # nueva constate string, crear la direccion de mem si no existe
     if not p[-1] in mapCteToDir:
         mapCteToDir[p[-1]] = memConts[memCont['stringCte']]
-        virtualTable[memConts[memCont['stringCte']]] = p[-1]
         memConts[memCont['stringCte']] += 1
     stackDirMem.append(mapCteToDir[p[-1]])
 
@@ -557,19 +557,22 @@ def p_smNewNegativo(p):
 # TODO - manejar los returns
 
 currentFunction = ""
+# key: real, value: temp o fantasma
+hashRef = {}
 
 # Llamada desde p_invocacion
 def p_smNewFuncNoReturn(p):
     'smNewFuncNoReturn :'
     global contParam
     global currentFunction
+    global giveValue
     funName = p[-2]
     if funName in dirProced[currentScopeClass]['func']:
         # Funcion invocada debe ser 'void'
         if dirProced[currentScopeClass]['func'][funName]['giveType'] == 'empty':
             contParam = 1
             currentFunction = funName
-            createQuadruple(toCode['era'], -1, -1, dirProced[currentScopeClass]['func'][funName]['mem'])
+            createQuadruple(toCode['era'], -1, -1, dirProced[currentScopeClass]['func'][funName]['quad'])
         else:
             terminate("No variable to catch returned value")
     else:
@@ -583,33 +586,102 @@ def p_smNewInvocacion(p):
     funName = p[-2]
     if funName in dirProced[currentScopeClass]['func']:
         contParam = 1
+        hashRef.clear()
         currentFunction = funName
-        createQuadruple(toCode['era'], -1, -1, dirProced[currentScopeClass]['func'][funName]['mem'])
+        createQuadruple(toCode['era'], -1, -1, dirProced[currentScopeClass]['func'][funName]['quad'])
     else:
         terminate("Function " + funName + " not declared")
         
 # Llamada desde p_valorargumentos
-def p_smParamExpresion(p):
-    'smParamExpresion :'
+def p_smArgumentoRef(p):
+    'smArgumentoRef :'
     global contParam
-    if contParam in dirProced[currentScopeClass]['func'][currentFunction]['params']: 
-        paramDir = stackDirMem.pop()
+    # TODO - considerar composicion y arreglos
+    if contParam in dirProced[currentScopeClass]['func'][currentFunction]['params']:
+        varName = p[-2]
+        validateIdSemantics(varName, None, None)
+        # Obtenemos la direccion del argumento
+        argDir = stackDirMem.pop()
+        # Obtenemos el nombre declarado del parametro, segun su posicion
         nameVarParam = dirProced[currentScopeClass]['func'][currentFunction]['params'][contParam]['name']
+        # Obtenemos la direccion asignada a ese parametro para la generacion de cuadruplos
+        # TODO - ver si esto de jalar la direccion de vars se va a quedar así, dado que en teoria se va a eliminar el hash de vars del dir de procedimientos despues de q acabe la funcion
         dirVarParam = dirProced[currentScopeClass]['func'][currentFunction]['vars'][nameVarParam]['mem']
-        if cubo.check(getTypeCode(dirVarParam), getTypeCode(paramDir), toCode['=']) != 'error':
-            createQuadruple(toCode['param'], paramDir, -1, dirVarParam)
+        # Verificamos que el argumento sea del mismo tipo que el parametro
+        if cubo.check(getTypeCode(dirVarParam), getTypeCode(argDir), toCode['=']) != 'error':
+            createQuadruple(toCode['param'], argDir, -1, dirVarParam)
+            hashRef[argDir] = dirVarParam
             contParam += 1
         else:
             terminate("Error in params of function " + currentFunction)
     else:
         terminate("Wrong number of arguments")
         
+# Llamada desde p_valorargumentos
+def p_smArgumentoExpresion(p):
+    'smArgumentoExpresion :'
+    global contParam
+    # Verificamos que el numero de argumentos siga dentro del rango
+    if contParam in dirProced[currentScopeClass]['func'][currentFunction]['params']: 
+        # Obtenemos la direccion del argumento
+        argDir = stackDirMem.pop()
+        # Obtenemos el nombre declarado del parametro, segun su posicion
+        nameVarParam = dirProced[currentScopeClass]['func'][currentFunction]['params'][contParam]['name']
+        # Obtenemos la direccion asignada a ese parametro para la generacion de cuadruplos
+        # TODO - ver si esto de jalar la direccion de vars se va a quedar así, dado que en teoria se va a eliminar el hash de vars del dir de procedimientos despues de q acabe la funcion
+        dirVarParam = dirProced[currentScopeClass]['func'][currentFunction]['vars'][nameVarParam]['mem']
+        # Verificamos que el argumento sea del mismo tipo que el parametro
+        if cubo.check(getTypeCode(dirVarParam), getTypeCode(argDir), toCode['=']) != 'error':
+            createQuadruple(toCode['param'], argDir, -1, dirVarParam)
+            contParam += 1
+        else:
+            terminate("Error in params of function " + currentFunction)
+    else:
+        terminate("Wrong number of arguments")
+        
+        
+# Llamada de p_retorno
+def p_smNewGive(p):
+    'smNewGive :'
+    if currentScopeFunction == "":
+        terminate("Give not in a function")
+    
+    # obtenemos la direccion del valor de retorno
+    memReturn = stackDirMem.pop()
+
+    # el tipo de expresion debe coincidir con el tipo de retorno
+    funcType = dirProced[currentScopeClass]['func'][currentScopeFunction]['giveType']
+    
+    if funcType == "empty":
+        terminate("unexpeted give in non give function")
+    # direccion de la funcion global que almacena el retorno
+    dirReturnGlobal = dirProced[currentScopeClass]['func'][currentScopeFunction]['mem']
+        
+    if toCode[funcType] == getTypeCode(memReturn):
+        # creamos el cuadruplo de retorno
+        createQuadruple(toCode["give"], memReturn, -1, dirReturnGlobal)
+        createQuadruple(toCode["endproc"], -1, -1, -1)
+    else:
+        terminate("wrong give type")
+
 # Llamada dedes p_valor
 def p_smEndInvocacion(p):
     'smEndInvocacion :'
     global contParam
     if len(dirProced[currentScopeClass]['func'][currentFunction]['params']) == contParam - 1:
         createQuadruple(toCode['gosub'], -1, -1, dirProced[currentScopeClass]['func'][currentFunction]['quad'])
+        dirRetorno = dirProced[currentScopeClass]['func'][currentFunction]['mem']
+        if dirRetorno != -1:
+            returnType = toSymbol[getTypeCode(dirRetorno)]
+            newtemp = memConts[memCont[returnType + 'Temp']]
+            createQuadruple(toCode['='], dirRetorno, -1, newtemp)
+            stackDirMem.append(newtemp)
+            memConts[memCont[returnType + 'Temp']] += 1
+        # Actualizamos los valores por referncia
+        # TODO - atributos de objeto
+        for real in hashRef:
+            createQuadruple(toCode["ref"], hashRef[real], -1, real)
+        
     else:
         terminate("wrong number of arguments")
         
@@ -704,8 +776,6 @@ def createQuadruple(ope, op1, op2, r):
     
 def getMemSpace(varType, scope, varName):
     memType = varType + scope
-    #todo - ver que guardo, val depende del tipo
-    virtualTable[memConts[memCont[memType]]] = {'name': varName, 'val': -1}
     memConts[memCont[memType]] += 1
     return memConts[memCont[memType]] - 1
     
@@ -746,8 +816,6 @@ def validateObjSemantics(currentObjPath, currentIdName, currentArray):
             terminate("Object " + currentObjPath + " not found")
             
 def newCteBool(newBool):
-    virtualTable[memConts[memCont['boolCte']]] = 'false'
-    virtualTable[memConts[memCont['boolCte']] + 1] = 'true'
     if newBool == 'true':
         stackDirMem.append(memConts[memCont['boolCte']] + 1)
     else:

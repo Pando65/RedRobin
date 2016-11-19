@@ -15,6 +15,7 @@ aprobado = True
 
 def p_program(p):
     'program : CLASS REDROBIN smnewprogram L_ABRE cuerpoprogram L_CIERRA'
+    createQuadruple(toCode['endprogram'], -1, -1, -1)
     
 def p_cuerpoprogram(p):
     'cuerpoprogram : codigo REDROBIN P_ABRE P_CIERRA L_ABRE smMainFound cuerpofuncion L_CIERRA'
@@ -27,6 +28,7 @@ def p_codigo(p):
 def p_funciones(p):
     'funciones : FUNCTION privilages valor_retorno ID smnewfunction P_ABRE parametros P_CIERRA L_ABRE cuerpofuncion L_CIERRA'
     setScopeFunction('')
+    createQuadruple(toCode["endproc"], -1, -1, -1)
     
 def p_valor_retorno(p):
     '''valor_retorno : tipovariable
@@ -97,7 +99,7 @@ def p_cuerpofuncion(p):
                      | empty'''
 
 def p_retorno(p):
-    'retorno : GIVE expresion PUNTOYCOMA'
+    'retorno : GIVE expresion smNewGive PUNTOYCOMA'
 
 def p_funcionsinretorno(p):
     'funcionsinretorno : ID composicion_atributo smNewFuncNoReturn P_ABRE argumentos P_CIERRA smEndInvocacion'
@@ -111,10 +113,9 @@ def p_mas_argumentos(p):
                       | empty'''
 
 def p_valorargumentos(p):
-    '''valorargumentos : AMPERSAND ID composicion_atributo
-                       | expresion smParamExpresion'''
-    #NOTA: no ocupe hacer un smParamID porque al usar un id ya lo estoy metiendo a la pila con validateIdSemantics(p[1]) en la regla p_identificador. Esto NO servira con los ampersand. TODO - considerar ampersands
-
+    '''valorargumentos : AMPERSAND ID composicion_atributo smArgumentoRef
+                       | expresion smArgumentoExpresion'''
+    
 def p_composicion_atributo(p):
     '''composicion_atributo : PUNTO ID
                             | empty'''
@@ -238,15 +239,18 @@ def p_operadorfactor(p):
     pushToStackOpe(p[1])
     
 def p_valor(p):
-    '''valor : identificador
-             | invocacion
-             | CONST_STRING smNewCteString
-             | valorbooleano
-             | negativo CONST_INTEGER smnewcteint
-             | negativo CONST_DOUBLE smnewctedouble'''
+    'valor : negativo valorAdapter'
+    
+def p_valorAdapter(p):
+    '''valorAdapter : identificador
+                    | invocacion
+                    | CONST_STRING smNewCteString
+                    | valorbooleano
+                    | CONST_INTEGER smnewcteint
+                    | CONST_DOUBLE smnewctedouble'''
 
 def p_invocacion(p):
-    '''invocacion : ID composicion_atributo smNewInvocacion P_ABRE argumentos P_CIERRA smEndInvocacion
+    '''invocacion : ID composicion_atributo smNewInvocacion P_ABRE smaddParentesis argumentos smRemoveParentesis P_CIERRA smEndInvocacion
                   | TONUMBER P_ABRE argumentoPosible smQuadToNumber P_CIERRA
                   | TOREAL P_ABRE argumentoPosible smQuadToReal P_CIERRA
                   | TOSTRING P_ABRE argumentoPosible smQuadToString P_CIERRA'''
@@ -290,7 +294,7 @@ def p_error(p):
 # Build the parser
 parser = yacc.yacc()
 
-filename = "p5.txt"
+filename = "p4.txt"
 # filename = input("Ingresa nombre de archivo con lenguaje Red Robin: ") 
 f = open(filename, 'r')
 s = f.read()
@@ -301,7 +305,7 @@ if aprobado == True:
     print("Compilacion exitosa")
     i = 0
     for cuadruplo in cuadruplos:
-        print(str(i) + " - " + str(cuadruplo.ope) + " " + str(cuadruplo.op1) + " " + str(cuadruplo.op2) + " " + str(cuadruplo.r))
+        print(str(i) + " - " + toSymbol[cuadruplo.ope] + " " + str(cuadruplo.op1) + " " + str(cuadruplo.op2) + " " + str(cuadruplo.r))
         i += 1
     print(dirProced)
 
@@ -311,6 +315,10 @@ if aprobado == True:
     codigoObjeto.write(str(len(mapCteToDir)) + '\n')
     for keyConstante, valorDireccion  in mapCteToDir.items():
         codigoObjeto.write(str(keyConstante) + '~' + str(valorDireccion) + '\n')
+    print("-----")
+    
+    print(stackDirMem)
+    print(stackOpe)
 
     codigoObjeto.write(str(len(cuadruplos)) + '\n')
     for numCuadruplo in range(0, len(cuadruplos)):

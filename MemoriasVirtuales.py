@@ -3,9 +3,6 @@ from Enums import *
 
 ########### DIRECCIONES VIRTUALES ###########
 
-# virtualTable: Diccionario donde la llave es la direccion de memoria virtual. AUN NO SE SI ES NECESARIA, NO SE ESTA USANDO
-virtualTable = {}
-
 # mapCteToDir: Diccionario que dada una variable constante te regresa su direccion de memoria virtual
 mapCteToDir = {}
 
