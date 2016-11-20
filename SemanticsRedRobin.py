@@ -23,6 +23,7 @@ from MemoriasVirtuales import *
 #           ['privilages'] - Privilegio (public o private)
 #           ['mem'] - Direccion de memoria de su variable global asignada
 #           ['quad'] - Cuadruplo de inicio
+#           ['class'] - clase en donde esta su definicion
 #   ['vars']
 #       [variableName]
 #           ['tipo'] - Tipo de variable
@@ -233,19 +234,19 @@ def p_smnewfunction(p):
     contParam = 1
     newScopeFunction = p[-1]
     giveType = p[-2]
+    if giveType != 'number' and giveType != 'real' and giveType != 'string' and giveType != 'bool' and giveType != 'empty':
+        terminate("ONLY PRIMITIVE TYPES CAN BE RETURNED")
     privlages = p[-3]
     # TODO - checar que no haya una variable global con el mismo nombre
     if newScopeFunction in dirProced[currentScopeClass]['func']:
         terminate("REPEATED FUNCTION NAME")
     else:
+        memVar = -1
         if giveType != 'empty':
             memVar = getMemSpace(giveType, 'Class', newScopeFunction)
-            # añado la funcion a mi directorio de procedimientos
-            dirProced[currentScopeClass]['func'][newScopeFunction] = {'vars': {}, 'giveType': p[-2], 'params': {}, 'tam': {}, 'privilages': p[-3], 'mem': memVar, 'quad': len(cuadruplos) }
             # creo la variable que guardara el valor de retorno
             dirProced['RedRobin']['vars'][newScopeFunction] = {'tipo': giveType, 'size': 0, 'mem': memVar}
-        else:
-            dirProced[currentScopeClass]['func'][newScopeFunction] = {'vars': {}, 'giveType': p[-2], 'params': {}, 'tam': {}, 'privilages': p[-3], 'mem': -1, 'quad': len(cuadruplos) }
+        dirProced[currentScopeClass]['func'][newScopeFunction] = {'vars': {}, 'giveType': p[-2], 'params': {}, 'tam': {}, 'privilages': p[-3], 'mem': memVar, 'quad': len(cuadruplos), 'class': currentScopeClass }
         setScopeFunction(newScopeFunction)
 
         
@@ -594,6 +595,7 @@ def p_smNewNegativo(p):
 currentFunction = ""
 # key: real, value: temp o fantasma
 hashRef = {}
+hashRefTam = {}
 
 # Llamada desde p_invocacion
 def p_smNewFuncNoReturn(p):
@@ -607,8 +609,24 @@ def p_smNewFuncNoReturn(p):
         if dirProced[currentScopeClass]['func'][funName]['giveType'] == 'empty':
             contParam = 1
             hashRef.clear()
+            hashRefTam.clear()
             currentFunction = funName
             createQuadruple(toCode['era'], -1, -1, dirProced[currentScopeClass]['func'][funName]['quad'])
+            # si la funcion es heredada, de una vez pido por referencia todos los atributos de la clase donde originalmente esta la funcion
+            if dirProced[currentScopeClass]['func'][funName]['class'] != currentScopeClass:
+                for varName in dirProced[ dirProced[currentScopeClass]['func'][funName]['class'] ]['vars']:
+                    dirReal = dirProced[currentScopeClass]['vars'][varName]['mem']
+                    parentClass = dirProced[currentScopeClass]['func'][funName]['class']
+                    hashRef[dirReal] = dirProced[parentClass]['vars'][varName]['mem']
+                    hashRefTam[dirReal] = dirProced[currentScopeClass]['vars'][varName]['size']
+                    
+                for objName in dirProced[ dirProced[currentScopeClass]['func'][funName]['class'] ]['obj']:
+                    # recorro todas las variables atomicas del objeto actual
+                    objClass = dirProced[ dirProced[currentScopeClass]['func'][funName]['class'] ]['obj'][objName]['class']
+                    for attrName in dirProced[objClass]['vars']:
+                        dirReal = dirProced[currentScopeClass]['obj'][objName]['attr'][attrName]['mem']
+                        hashRef[dirReal] = dirProced[objClass]['vars'][attrName]['mem']
+                        hashRefTam[dirReal] = dirProced[currentScopeClass]['obj'][objName]['attr'][attrName]['size']
         else:
             terminate("No variable to catch returned value")
     else:
@@ -623,8 +641,24 @@ def p_smNewInvocacion(p):
     if funName in dirProced[currentScopeClass]['func']:
         contParam = 1
         hashRef.clear()
+        hashRefTam.clear()
         currentFunction = funName
         createQuadruple(toCode['era'], -1, -1, dirProced[currentScopeClass]['func'][funName]['quad'])
+        # si la funcion es heredada, de una vez pido por referencia todos los atributos de la clase donde originalmente esta la funcion
+        if dirProced[currentScopeClass]['func'][funName]['class'] != currentScopeClass:
+            for varName in dirProced[ dirProced[currentScopeClass]['func'][funName]['class'] ]['vars']:
+                dirReal = dirProced[currentScopeClass]['vars'][varName]['mem']
+                parentClass = dirProced[currentScopeClass]['func'][funName]['class']
+                hashRef[dirReal] = dirProced[parentClass]['vars'][varName]['mem']
+                hashRefTam[dirReal] = dirProced[currentScopeClass]['vars'][varName]['size']
+                    
+            for objName in dirProced[ dirProced[currentScopeClass]['func'][funName]['class'] ]['obj']:
+                # recorro todas las variables atomicas del objeto actual
+                objClass = dirProced[ dirProced[currentScopeClass]['func'][funName]['class'] ]['obj'][objName]['class']
+                for attrName in dirProced[objClass]['vars']:
+                    dirReal = dirProced[currentScopeClass]['obj'][objName]['attr'][attrName]['mem']
+                    hashRef[dirReal] = dirProced[objClass]['vars'][attrName]['mem']
+                    hashRefTam[dirReal] = dirProced[currentScopeClass]['obj'][objName]['attr'][attrName]['size']
     else:
         terminate("Function " + funName + " not declared")
         
@@ -645,6 +679,7 @@ def p_smArgumentoRef(p):
         if cubo.check(getTypeCode(dirVarParam), getTypeCode(argDir), toCode['=']) != 'error':
             createQuadruple(toCode['param'], argDir, -1, dirVarParam)
             hashRef[argDir] = dirVarParam
+            hashRefTam[argDir] = dirProced[currentScopeClass]['func'][currentFunction]['vars'][nameVarParam]['size']
             contParam += 1
         else:
             terminate("Error in params of function " + currentFunction)
@@ -708,7 +743,7 @@ def p_smEndInvocacion(p):
         # Actualizamos los valores por referncia
         # TODO - atributos de objeto
         for real in hashRef:
-            createQuadruple(toCode["ref"], hashRef[real], -1, real)
+            createQuadruple(toCode["ref"], hashRef[real], hashRefTam[real], real)
         # creamos el cuadruplo que guarda el valor de retorno
         if dirRetorno != -1:
             returnType = toSymbol[getTypeCode(dirRetorno)]
@@ -848,7 +883,6 @@ def validateObjSemantics(currentObjPath, currentIdName, currentArray):
             # Valido que exista el nombre dentro del objeto
             if currentIdName in dirProced[currentScopeClass]['obj'][currentObjPath]['attr']:
                 if currentArray == '[':
-                    print("arreglo de objeto")
                     arrayRutine(currentIdName, currentObjPath)
                 else:
                     # existe, lo meto a la pila

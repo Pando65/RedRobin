@@ -10,6 +10,10 @@ class RedRobin {
         func public empty heredada() {
             J = J + 1;
         }
+        
+        func public number heredadaConReturn() {
+            give 3 + 3;
+        }
     }
     
     class Equipo inherit Jugador {
@@ -21,7 +25,7 @@ class RedRobin {
             i = E + Bhcomp.B - Bcomposicion.arreglo[E + 3];
             i = i + Bcomposicion.B + 12;
             i = J + E;
-            heredada();
+            i = heredadaConReturn();
         }        
     }
 
