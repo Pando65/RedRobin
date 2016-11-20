@@ -272,7 +272,8 @@ def p_smnewclass(p):
     else:
         parent = ''
         parentObjects = {}
-        parentVariables = {}        
+        parentVariables = {}   
+        parentFunctions = {}
         # Pregunto si tengo un padre
         if p[-1] != None:
             parent = p[-1]
@@ -280,6 +281,9 @@ def p_smnewclass(p):
             
             # Jalo las variables de mi padre
             parentVariables = copy.deepcopy(dirProced[parent]['vars'])
+            
+            # Jalo las funciones de mi padre
+            parentFunctions = copy.deepcopy(dirProced[parent]['func'])
             
             # Obtengo los objetos de mi padre, tampoco pueden tener mas objetos para evitar composicion de mas de 1 nivel
             parentObjects = copy.deepcopy(dirProced[parent]['obj'])
@@ -302,7 +306,7 @@ def p_smnewclass(p):
             for varName in parentVariables:
                 parentVariables[varName]['mem'] = getMemSpace(parentVariables[varName]['tipo'], 'Class', varName)
                 
-        dirProced[newScopeClass] = {'func': {}, 'vars': parentVariables, 'obj': parentObjects, 'parent': parent}
+        dirProced[newScopeClass] = {'func': parentFunctions, 'vars': parentVariables, 'obj': parentObjects, 'parent': parent}
         setScopeClass(newScopeClass)
         
 def exists(newVarName):
@@ -602,6 +606,7 @@ def p_smNewFuncNoReturn(p):
         # Funcion invocada debe ser 'void'
         if dirProced[currentScopeClass]['func'][funName]['giveType'] == 'empty':
             contParam = 1
+            hashRef.clear()
             currentFunction = funName
             createQuadruple(toCode['era'], -1, -1, dirProced[currentScopeClass]['func'][funName]['quad'])
         else:
