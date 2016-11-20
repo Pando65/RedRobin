@@ -354,18 +354,23 @@ def p_smnewvariable(p):
                 terminate("WRONG OBJECT TYPE")
             # Depende si estoy en la clase main red robin o en alguna otra clase el comportamiento cambia
             if currentScopeClass == 'RedRobin':
-                # TODO: copiar el hash de variables y asignarles una direccion real de memoria virtual (ya se hace abajo)
                 # Hay que crear una instancia de la clase
                 dicAttr = copy.deepcopy(dirProced[currentType]['vars']);
                 for varName in dicAttr:
                     dicAttr[varName]['mem'] = getMemSpace(dicAttr[varName]['tipo'], 'Class', varName)
-                    
+                    arraySize = dicAttr[varName]['size']
+                    # Pido todas las memorias que ocupo en caso de q sea un arreglo
+                    if int(arraySize) > 0:
+                        memConts[memCont[dicAttr[varName]['tipo'] + 'Class']] += (int(arraySize) - 1)
                     
                 dicObj = copy.deepcopy(dirProced[currentType]['obj']);
                 for objName in dicObj:
                     dicAttrObj = dicObj[objName]['attr']
                     for attrName in dicAttrObj:
                         dicObj[objName]['attr'][attrName]['mem'] = getMemSpace(dicObj[objName]['attr'][attrName]['tipo'], 'Class', attrName)
+                        arraySize = dicObj[objName]['attr'][attrName]['size']
+                        if int(arraySize) > 0:
+                            memConts[memCont[dicObj[objName]['attr'][attrName]['tipo']+ 'Class']] += (int(arraySize) - 1)
                 
                 dirProced['RedRobin']['obj'][newVarName] = {'class': currentType, 'attr': dicAttr, 'obj': dicObj}
             else:
@@ -379,6 +384,9 @@ def p_smnewvariable(p):
                 # Asigno direcciones nuevas para mantener unicidad 
                 for varName in variables:
                     variables[varName]['mem'] = getMemSpace(variables[varName]['tipo'], 'Class', varName)
+                    arraySize = variables[varName]['size']
+                    if int(arraySize) > 0:
+                        memConts[memCont[variables[varName]['tipo'] + 'Class']] += (int(arraySize) - 1)                    
                 
                 # Actualizo el directorio de variables de la clase "papa"
                 dirProced[currentScopeClass]['obj'][newVarName] = {'class': currentType, 'attr': variables}
@@ -391,6 +399,8 @@ def p_smNewArray(p):
     stackDirMem.pop()
     # Obtenemos el numero del lexico
     arraySize = p[-3]
+    if int(arraySize) <= 0:
+        terminate("array size must be greater than 0");
     # Obtenemos el nombre del arreglo, ya fue declarado, solo hay que aumentar el size
     varName = p[-6]
     # Obtenemos el tipo del arreglo para saber q tipo de memorias darle
@@ -690,16 +700,17 @@ def p_smEndInvocacion(p):
     if len(dirProced[currentScopeClass]['func'][currentFunction]['params']) == contParam - 1:
         createQuadruple(toCode['gosub'], -1, -1, dirProced[currentScopeClass]['func'][currentFunction]['quad'])
         dirRetorno = dirProced[currentScopeClass]['func'][currentFunction]['mem']
+        # Actualizamos los valores por referncia
+        # TODO - atributos de objeto
+        for real in hashRef:
+            createQuadruple(toCode["ref"], hashRef[real], -1, real)
+        # creamos el cuadruplo que guarda el valor de retorno
         if dirRetorno != -1:
             returnType = toSymbol[getTypeCode(dirRetorno)]
             newtemp = memConts[memCont[returnType + 'Temp']]
             createQuadruple(toCode['='], dirRetorno, -1, newtemp)
             stackDirMem.append(newtemp)
             memConts[memCont[returnType + 'Temp']] += 1
-        # Actualizamos los valores por referncia
-        # TODO - atributos de objeto
-        for real in hashRef:
-            createQuadruple(toCode["ref"], hashRef[real], -1, real)
         
     else:
         terminate("wrong number of arguments")
@@ -822,14 +833,16 @@ def validateIdSemantics(currentIdName, currentObjPath, currentArray):
             typeVarCode = 0
             newTemp = 0
             dirBase = 0
-            if currentScopeFunction == "":
-                limitArray = dirProced[currentScopeClass]['vars'][currentIdName]['size']
-                dirBase = dirProced[currentScopeClass]['vars'][currentIdName]['mem'] 
-                typeVarCode = getTypeCode(dirBase)
-            else:
+            # busco donde esta declarado el arreglo para obtener datos
+            if currentScopeFunction != "" and currentIdName in dirProced[currentScopeClass]['func'][currentScopeFunction]['vars']:
                 limitArray = dirProced[currentScopeClass]['func'][currentScopeFunction]['vars'][currentIdName]['size']
                 dirBase = dirProced[currentScopeClass]['func'][currentScopeFunction]['vars'][currentIdName]['mem']
-                typeVarCode = getTypeCode(dirBase)
+            else:
+                limitArray = dirProced[currentScopeClass]['vars'][currentIdName]['size']
+                dirBase = dirProced[currentScopeClass]['vars'][currentIdName]['mem']
+            
+            # genero cuadruplos del arreglo
+            typeVarCode = getTypeCode(dirBase)
             newTemp = getMemSpace(toSymbol[typeVarCode], 'Temp', "-")                
             createQuadruple(toCode['ver'], indexMem, 0, int(limitArray) - 1)
             createQuadruple(toCode['+'], dirBase, indexMem, newTemp)
@@ -852,8 +865,11 @@ def validateObjSemantics(currentObjPath, currentIdName, currentArray):
         if currentObjPath in dirProced[currentScopeClass]['obj']:
             # Valido que exista el nombre dentro del objeto
             if currentIdName in dirProced[currentScopeClass]['obj'][currentObjPath]['attr']:
-                # existe, lo meto a la pila
-                stackDirMem.append(dirProced[currentScopeClass]['obj'][currentObjPath]['attr'][currentIdName]['mem'])
+                if currentArray == "[":
+                    print("arreglo")
+                else:
+                    # existe, lo meto a la pila
+                    stackDirMem.append(dirProced[currentScopeClass]['obj'][currentObjPath]['attr'][currentIdName]['mem'])
             else:
                 terminate("Attribute " + currentIdName + " not found")
         else:

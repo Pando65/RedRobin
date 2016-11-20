@@ -11,10 +11,12 @@ class RedRobin {
   }
 
   RedRobin() {
-    number a, b, c, d;
+    number a, b, c, e[10], d;
     a = 3;
+    e[3 + a] = 4 + e[e[b + e[9]]] - e[2];
     
     sinRetorno();
+    c = funcion(&a, b - c + 3) + funcion(e[3 + a], d);
 
     if (a >= b) {
         b = c * d / 3;
