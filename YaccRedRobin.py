@@ -113,7 +113,7 @@ def p_mas_argumentos(p):
                       | empty'''
 
 def p_valorargumentos(p):
-    '''valorargumentos : AMPERSAND ID composicion_atributo smArgumentoRef
+    '''valorargumentos : AMPERSAND identificador smArgumentoRef
                        | expresion smArgumentoExpresion'''
     
 def p_composicion_atributo(p):

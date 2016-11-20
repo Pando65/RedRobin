@@ -619,8 +619,6 @@ def p_smArgumentoRef(p):
     global contParam
     # TODO - considerar composicion y arreglos
     if contParam in dirProced[currentScopeClass]['func'][currentFunction]['params']:
-        varName = p[-2]
-        validateIdSemantics(varName, None, None)
         # Obtenemos la direccion del argumento
         argDir = stackDirMem.pop()
         # Obtenemos el nombre declarado del parametro, segun su posicion
