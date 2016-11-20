@@ -823,30 +823,7 @@ def validateIdSemantics(currentIdName, currentObjPath, currentArray):
             terminate("Variable " + currentIdName + " not declared")
         # si es arreglo hacer validaciones
         if currentArray == '[':
-            # Obtengo la expresion de indexamiento
-            indexMem = stackDirMem.pop()
-            # Si no es numero, termino
-            if getTypeCode(indexMem) != toCode['number']:
-                terminate("bad index for array")
-            # Declaro variables auxiliares
-            limitArray = 0
-            typeVarCode = 0
-            newTemp = 0
-            dirBase = 0
-            # busco donde esta declarado el arreglo para obtener datos
-            if currentScopeFunction != "" and currentIdName in dirProced[currentScopeClass]['func'][currentScopeFunction]['vars']:
-                limitArray = dirProced[currentScopeClass]['func'][currentScopeFunction]['vars'][currentIdName]['size']
-                dirBase = dirProced[currentScopeClass]['func'][currentScopeFunction]['vars'][currentIdName]['mem']
-            else:
-                limitArray = dirProced[currentScopeClass]['vars'][currentIdName]['size']
-                dirBase = dirProced[currentScopeClass]['vars'][currentIdName]['mem']
-            
-            # genero cuadruplos del arreglo
-            typeVarCode = getTypeCode(dirBase)
-            newTemp = getMemSpace(toSymbol[typeVarCode], 'Temp', "-")                
-            createQuadruple(toCode['ver'], indexMem, 0, int(limitArray) - 1)
-            createQuadruple(toCode['+'], dirBase, indexMem, newTemp)
-            stackDirMem.append(newTemp * -1)
+            arrayRutine(currentIdName, None)
         else:
             # variable valida, insertar a pila
             if currentIdName in dirProced[currentScopeClass]['vars']:
@@ -865,8 +842,9 @@ def validateObjSemantics(currentObjPath, currentIdName, currentArray):
         if currentObjPath in dirProced[currentScopeClass]['obj']:
             # Valido que exista el nombre dentro del objeto
             if currentIdName in dirProced[currentScopeClass]['obj'][currentObjPath]['attr']:
-                if currentArray == "[":
-                    print("arreglo")
+                if currentArray == '[':
+                    print("arreglo de objeto")
+                    arrayRutine(currentIdName, currentObjPath)
                 else:
                     # existe, lo meto a la pila
                     stackDirMem.append(dirProced[currentScopeClass]['obj'][currentObjPath]['attr'][currentIdName]['mem'])
@@ -880,6 +858,35 @@ def newCteBool(newBool):
         stackDirMem.append(memConts[memCont['boolCte']] + 1)
     else:
         stackDirMem.append(memConts[memCont['boolCte']])
+        
+def arrayRutine(currentIdName, currentObjPath):
+    # Obtengo la expresion de indexamiento
+    indexMem = stackDirMem.pop()
+    # Si no es numero, termino
+    if getTypeCode(indexMem) != toCode['number']:
+        terminate("bad index for array")
+    # Declaro variables auxiliares
+    limitArray = 0
+    typeVarCode = 0
+    newTemp = 0
+    dirBase = 0
+    # busco donde esta declarado el arreglo para obtener datos
+    if currentObjPath != None:
+        limitArray = dirProced[currentScopeClass]['obj'][currentObjPath]['attr'][currentIdName]['size']
+        dirBase = dirProced[currentScopeClass]['obj'][currentObjPath]['attr'][currentIdName]['mem']
+    elif currentScopeFunction != "" and currentIdName in dirProced[currentScopeClass]['func'][currentScopeFunction]['vars']:
+        limitArray = dirProced[currentScopeClass]['func'][currentScopeFunction]['vars'][currentIdName]['size']
+        dirBase = dirProced[currentScopeClass]['func'][currentScopeFunction]['vars'][currentIdName]['mem']
+    else:
+        limitArray = dirProced[currentScopeClass]['vars'][currentIdName]['size']
+        dirBase = dirProced[currentScopeClass]['vars'][currentIdName]['mem']
+
+    # genero cuadruplos del arreglo
+    typeVarCode = getTypeCode(dirBase)
+    newTemp = getMemSpace(toSymbol[typeVarCode], 'Temp', "-")                
+    createQuadruple(toCode['ver'], indexMem, 0, int(limitArray) - 1)
+    createQuadruple(toCode['+'], dirBase, indexMem, newTemp)
+    stackDirMem.append(newTemp * -1)    
     
     
 # creo cuadruplo go to main

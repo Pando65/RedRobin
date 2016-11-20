@@ -1,11 +1,11 @@
 class RedRobin {
     class Base {
         public number B;
+        public number arreglo[5];        
     }
     class Jugador {
         public number J;
         public Base Bhcomp;
-        public number arreglo[10];
     }
     
     class Equipo inherit Jugador {
@@ -14,7 +14,7 @@ class RedRobin {
         
         func public empty probando() {
             number i;
-            i = E + Bhcomp.B - arreglo[E + 3];
+            i = E + Bhcomp.B - Bcomposicion.arreglo[E + 3];
             i = i + Bcomposicion.B + 12;
             i = J + E;
         }
