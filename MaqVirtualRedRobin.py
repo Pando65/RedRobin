@@ -7,14 +7,23 @@
 import sys
 from Cuadruplo import *
 
-#Diccionario de valores donde la llave es la direccion y el valor es el 'valor' almacenado en la direccion
+#Diccionario de valores globales donde la llave es la direccion y el valor es el 'valor' almacenado en la direccion
 memEjecucion = {}
+
+#Pila de diccionarios con memoria local a las funciones
+pilaMemoriaLocal = [{}]
 
 #Lista de cuadruplos
 liCuadruplos = []
 
+#Pila de apuntadores de cuadruplos
+pilaApunCuadruplo = []
+
 #Apunta al cuadruplo al que se esta ejecutando
 apunCuadruplo = 0
+
+#Nivel alcance local
+nivelAlcance = 0
 
 # Diccionarios de rangos de direcciones para cada tipo de variable
 memStart = {
@@ -63,6 +72,11 @@ memLimit = {
 
 #Indica si una direccion almacena valor numerico entero
 def isNumber(numDireccion):
+    #Se verifica si es una direccion indirecta
+    if numDireccion < -1:
+        #Se obtiene la verdadera direccion invocando a findValueInMemory que identifica en que estructura esta segun el absoluto de la direccion
+        numDireccion = findValueInMemory(abs(numDireccion), nivelAlcance)
+
     if numDireccion >= memStart['numberClass'] and numDireccion <= memLimit['numberClass']:
         return True
     if numDireccion >= memStart['numberFunc'] and numDireccion <= memLimit['numberFunc']:
@@ -74,6 +88,43 @@ def isNumber(numDireccion):
     
     return False
 
+#Recibe una direccion y nivel de alcance para retornar el valor de la estructura pertinente segun la misma direccion: memoria global o local
+def findValueInMemory(numDireccion, alcanceFuncion):
+    #Se verifica si es una direccion indirecta
+    if numDireccion < -1:
+        #Se obtiene la verdadera direccion invocandose a si mismo
+        numDireccion = findValueInMemory(abs(numDireccion), alcanceFuncion)
+
+    if numDireccion < memStart['numberFunc'] or numDireccion > memLimit['boolTemp']:
+        #Se trata de una direccion global
+        return memEjecucion[numDireccion]
+    else:
+        #Se trata de una direccion local o temporal
+        return pilaMemoriaLocal[alcanceFuncion][numDireccion]
+
+#Recibe una direccion y determina si es de tipo global o local
+def isGlobal(numDireccion):
+    #Se verifica si es una direccion indirecta
+    if numDireccion < -1:
+        #Se obtiene la verdadera direccion invocando a findValueInMemory que identifica en que estructura esta segun el absoluto de la direccion
+        numDireccion = findValueInMemory(abs(numDireccion), nivelAlcance)
+
+    if numDireccion < memStart['numberFunc'] or numDireccion > memLimit['boolTemp']:
+        #Se trata de una direccion global
+        return True
+    else:
+        #Se trata de una direccion local o temporal
+        return False
+
+#Retorna la direccion correcta al que se le debe almacenar un valor
+def findAbsoluteAddress(numDireccion, alcanceFuncion):
+    #Se verifica si es una direccion indirecta
+    if numDireccion < -1:
+        #Se obtiene el valor de la verdadera direccion que almacena esta indirecta
+        return findValueInMemory(abs(numDireccion), alcanceFuncion)
+    else:
+        return numDireccion
+
 def terminate(message):
     print(message)
     sys.exit()
@@ -84,10 +135,18 @@ def suma():
     operando1 = liCuadruplos[apunCuadruplo].op1
     operando2 = liCuadruplos[apunCuadruplo].op2
 
-    valor1 = memEjecucion[operando1]
-    valor2 = memEjecucion[operando2]
+    valor1 = findValueInMemory(operando1, nivelAlcance)
+    valor2 = findValueInMemory(operando2, nivelAlcance)
 
-    memEjecucion[liCuadruplos[apunCuadruplo].r] = valor1 + valor2
+    #Se obtiene la direccion absoluta en caso de que sea una direccion indirecta
+    direccionAlmacenar = findAbsoluteAddress(liCuadruplos[apunCuadruplo].r, nivelAlcance)
+
+    if isGlobal(direccionAlmacenar):
+        #Se almacena valor global dentro de la estructura que maneja almacenamiento global
+        memEjecucion[direccionAlmacenar] = valor1 + valor2
+    else:
+        #Se almacena valor local dentro de la estructura que maneja almacenamiento local
+        pilaMemoriaLocal[nivelAlcance][direccionAlmacenar] = valor1 + valor2
 
 def resta():
     global apunCuadruplo
@@ -95,10 +154,18 @@ def resta():
     operando1 = liCuadruplos[apunCuadruplo].op1
     operando2 = liCuadruplos[apunCuadruplo].op2
 
-    valor1 = memEjecucion[operando1]
-    valor2 = memEjecucion[operando2]
+    valor1 = findValueInMemory(operando1, nivelAlcance)
+    valor2 = findValueInMemory(operando2, nivelAlcance)
 
-    memEjecucion[liCuadruplos[apunCuadruplo].r] = valor1 - valor2
+    #Se obtiene la direccion absoluta en caso de que sea una direccion indirecta
+    direccionAlmacenar = findAbsoluteAddress(liCuadruplos[apunCuadruplo].r, nivelAlcance)
+
+    if isGlobal(direccionAlmacenar):
+        #Se almacena valor global dentro de la estructura que maneja almacenamiento global
+        memEjecucion[direccionAlmacenar] = valor1 - valor2
+    else:
+        #Se almacena valor local dentro de la estructura que maneja almacenamiento local
+        pilaMemoriaLocal[nivelAlcance][direccionAlmacenar] = valor1 - valor2
 
 def multiplica():
     global apunCuadruplo
@@ -106,10 +173,18 @@ def multiplica():
     operando1 = liCuadruplos[apunCuadruplo].op1
     operando2 = liCuadruplos[apunCuadruplo].op2
 
-    valor1 = memEjecucion[operando1]
-    valor2 = memEjecucion[operando2]
+    valor1 = findValueInMemory(operando1, nivelAlcance)
+    valor2 = findValueInMemory(operando2, nivelAlcance)
 
-    memEjecucion[liCuadruplos[apunCuadruplo].r] = valor1 * valor2
+    #Se obtiene la direccion absoluta en caso de que sea una direccion indirecta
+    direccionAlmacenar = findAbsoluteAddress(liCuadruplos[apunCuadruplo].r, nivelAlcance)
+
+    if isGlobal(direccionAlmacenar):
+        #Se almacena valor global dentro de la estructura que maneja almacenamiento global
+        memEjecucion[direccionAlmacenar] = valor1 * valor2
+    else:
+        #Se almacena valor local dentro de la estructura que maneja almacenamiento local
+        pilaMemoriaLocal[nivelAlcance][direccionAlmacenar] = valor1 * valor2
 
 def divide():
     global apunCuadruplo
@@ -117,26 +192,44 @@ def divide():
     operando1 = liCuadruplos[apunCuadruplo].op1
     operando2 = liCuadruplos[apunCuadruplo].op2
 
-    valor1 = memEjecucion[operando1]
-    valor2 = memEjecucion[operando2]
+    valor1 = findValueInMemory(operando1, nivelAlcance)
+    valor2 = findValueInMemory(operando2, nivelAlcance)
 
     #Se valida que la division sea valida
     if valor2 == 0:
         terminate("Zero division error\n")
 
-    memEjecucion[liCuadruplos[apunCuadruplo].r] = valor1 / valor2
+    #Se obtiene la direccion absoluta en caso de que sea una direccion indirecta
+    direccionAlmacenar = findAbsoluteAddress(liCuadruplos[apunCuadruplo].r, nivelAlcance)
+
+    if isGlobal(direccionAlmacenar):
+        #Se almacena valor global dentro de la estructura que maneja almacenamiento global
+        memEjecucion[direccionAlmacenar] = valor1 / valor2
+    else:
+        #Se almacena valor local dentro de la estructura que maneja almacenamiento local
+        pilaMemoriaLocal[nivelAlcance][direccionAlmacenar] = valor1 / valor2
 
 def asigna():
     global apunCuadruplo
 
     operando1 = liCuadruplos[apunCuadruplo].op1
-    valor1 = memEjecucion[operando1]
+    valor1 = findValueInMemory(operando1, nivelAlcance)
 
-    #Se checa si la direccion a asignar valor es entera para almacenar solo la parte entera
-    if isNumber(liCuadruplos[apunCuadruplo].r):
-        memEjecucion[liCuadruplos[apunCuadruplo].r] = int(valor1)
+    #Se obtiene la direccion absoluta en caso de que sea una direccion indirecta
+    direccionAlmacenar = findAbsoluteAddress(liCuadruplos[apunCuadruplo].r, nivelAlcance)
+
+    if isGlobal(direccionAlmacenar):
+        #Se checa si la direccion a asignar valor es entera para almacenar solo la parte entera
+        if isNumber(direccionAlmacenar):
+            memEjecucion[direccionAlmacenar] = int(valor1)
+        else:
+            memEjecucion[direccionAlmacenar] = valor1
     else:
-        memEjecucion[liCuadruplos[apunCuadruplo].r] = valor1
+        #Se checa si la direccion a asignar valor es entera para almacenar solo la parte entera
+        if isNumber(direccionAlmacenar):
+            pilaMemoriaLocal[nivelAlcance][direccionAlmacenar] = int(valor1)
+        else:
+            pilaMemoriaLocal[nivelAlcance][direccionAlmacenar] = valor1
 
 def mayoroigual():
     global apunCuadruplo
@@ -144,13 +237,18 @@ def mayoroigual():
     operando1 = liCuadruplos[apunCuadruplo].op1
     operando2 = liCuadruplos[apunCuadruplo].op2
 
-    valor1 = memEjecucion[operando1]
-    valor2 = memEjecucion[operando2]
+    valor1 = findValueInMemory(operando1, nivelAlcance)
+    valor2 = findValueInMemory(operando2, nivelAlcance)
 
-    if valor1 >= valor2:
-        memEjecucion[liCuadruplos[apunCuadruplo].r] = True
+    #Se obtiene la direccion absoluta en caso de que sea una direccion indirecta
+    direccionAlmacenar = findAbsoluteAddress(liCuadruplos[apunCuadruplo].r, nivelAlcance)
+
+    if isGlobal(direccionAlmacenar):
+        #Se almacena valor global dentro de la estructura que maneja almacenamiento global
+        memEjecucion[direccionAlmacenar] = valor1 >= valor2
     else:
-        memEjecucion[liCuadruplos[apunCuadruplo].r] = False
+        #Se almacena valor local dentro de la estructura que maneja almacenamiento local
+        pilaMemoriaLocal[nivelAlcance][direccionAlmacenar] = valor1 >= valor2
 
 def menoroigual():
     global apunCuadruplo
@@ -158,13 +256,18 @@ def menoroigual():
     operando1 = liCuadruplos[apunCuadruplo].op1
     operando2 = liCuadruplos[apunCuadruplo].op2
 
-    valor1 = memEjecucion[operando1]
-    valor2 = memEjecucion[operando2]
+    valor1 = findValueInMemory(operando1, nivelAlcance)
+    valor2 = findValueInMemory(operando2, nivelAlcance)
 
-    if valor1 <= valor2:
-        memEjecucion[liCuadruplos[apunCuadruplo].r] = True
+    #Se obtiene la direccion absoluta en caso de que sea una direccion indirecta
+    direccionAlmacenar = findAbsoluteAddress(liCuadruplos[apunCuadruplo].r, nivelAlcance)
+
+    if isGlobal(direccionAlmacenar):
+        #Se almacena valor global dentro de la estructura que maneja almacenamiento global
+        memEjecucion[direccionAlmacenar] = valor1 <= valor2
     else:
-        memEjecucion[liCuadruplos[apunCuadruplo].r] = False
+        #Se almacena valor local dentro de la estructura que maneja almacenamiento local
+        pilaMemoriaLocal[nivelAlcance][direccionAlmacenar] = valor1 <= valor2
 
 def esigual():
     global apunCuadruplo
@@ -172,13 +275,18 @@ def esigual():
     operando1 = liCuadruplos[apunCuadruplo].op1
     operando2 = liCuadruplos[apunCuadruplo].op2
 
-    valor1 = memEjecucion[operando1]
-    valor2 = memEjecucion[operando2]
+    valor1 = findValueInMemory(operando1, nivelAlcance)
+    valor2 = findValueInMemory(operando2, nivelAlcance)
 
-    if valor1 == valor2:
-        memEjecucion[liCuadruplos[apunCuadruplo].r] = True
+    #Se obtiene la direccion absoluta en caso de que sea una direccion indirecta
+    direccionAlmacenar = findAbsoluteAddress(liCuadruplos[apunCuadruplo].r, nivelAlcance)
+
+    if isGlobal(direccionAlmacenar):
+        #Se almacena valor global dentro de la estructura que maneja almacenamiento global
+        memEjecucion[direccionAlmacenar] = valor1 == valor2
     else:
-        memEjecucion[liCuadruplos[apunCuadruplo].r] = False
+        #Se almacena valor local dentro de la estructura que maneja almacenamiento local
+        pilaMemoriaLocal[nivelAlcance][direccionAlmacenar] = valor1 == valor2
 
 def esdiferente():
     global apunCuadruplo
@@ -186,13 +294,18 @@ def esdiferente():
     operando1 = liCuadruplos[apunCuadruplo].op1
     operando2 = liCuadruplos[apunCuadruplo].op2
 
-    valor1 = memEjecucion[operando1]
-    valor2 = memEjecucion[operando2]
+    valor1 = findValueInMemory(operando1, nivelAlcance)
+    valor2 = findValueInMemory(operando2, nivelAlcance)
 
-    if valor1 != valor2:
-        memEjecucion[liCuadruplos[apunCuadruplo].r] = True
+    #Se obtiene la direccion absoluta en caso de que sea una direccion indirecta
+    direccionAlmacenar = findAbsoluteAddress(liCuadruplos[apunCuadruplo].r, nivelAlcance)
+
+    if isGlobal(direccionAlmacenar):
+        #Se almacena valor global dentro de la estructura que maneja almacenamiento global
+        memEjecucion[direccionAlmacenar] = valor1 != valor2
     else:
-        memEjecucion[liCuadruplos[apunCuadruplo].r] = False
+        #Se almacena valor local dentro de la estructura que maneja almacenamiento local
+        pilaMemoriaLocal[nivelAlcance][direccionAlmacenar] = valor1 != valor2
 
 def condicionalor():
     global apunCuadruplo
@@ -200,10 +313,18 @@ def condicionalor():
     operando1 = liCuadruplos[apunCuadruplo].op1
     operando2 = liCuadruplos[apunCuadruplo].op2
 
-    valor1 = memEjecucion[operando1]
-    valor2 = memEjecucion[operando2]
+    valor1 = findValueInMemory(operando1, nivelAlcance)
+    valor2 = findValueInMemory(operando2, nivelAlcance)
 
-    memEjecucion[liCuadruplos[apunCuadruplo].r] = valor1 or valor2
+    #Se obtiene la direccion absoluta en caso de que sea una direccion indirecta
+    direccionAlmacenar = findAbsoluteAddress(liCuadruplos[apunCuadruplo].r, nivelAlcance)
+
+    if isGlobal(direccionAlmacenar):
+        #Se almacena valor global dentro de la estructura que maneja almacenamiento global
+        memEjecucion[direccionAlmacenar] = valor1 or valor2
+    else:
+        #Se almacena valor local dentro de la estructura que maneja almacenamiento local
+        pilaMemoriaLocal[nivelAlcance][direccionAlmacenar] = valor1 or valor2
 
 def condicionaland():
     global apunCuadruplo
@@ -211,10 +332,18 @@ def condicionaland():
     operando1 = liCuadruplos[apunCuadruplo].op1
     operando2 = liCuadruplos[apunCuadruplo].op2
 
-    valor1 = memEjecucion[operando1]
-    valor2 = memEjecucion[operando2]
+    valor1 = findValueInMemory(operando1, nivelAlcance)
+    valor2 = findValueInMemory(operando2, nivelAlcance)
 
-    memEjecucion[liCuadruplos[apunCuadruplo].r] = valor1 and valor2
+    #Se obtiene la direccion absoluta en caso de que sea una direccion indirecta
+    direccionAlmacenar = findAbsoluteAddress(liCuadruplos[apunCuadruplo].r, nivelAlcance)
+
+    if isGlobal(direccionAlmacenar):
+        #Se almacena valor global dentro de la estructura que maneja almacenamiento global
+        memEjecucion[direccionAlmacenar] = valor1 and valor2
+    else:
+        #Se almacena valor local dentro de la estructura que maneja almacenamiento local
+        pilaMemoriaLocal[nivelAlcance][direccionAlmacenar] = valor1 and valor2
 
 def goTo():
     global apunCuadruplo
@@ -227,28 +356,38 @@ def goTof():
     
     operando1 = liCuadruplos[apunCuadruplo].op1
 
-    valor1 = memEjecucion[operando1]
+    valor1 = findValueInMemory(operando1, nivelAlcance)
 
     if not valor1:
         destino = liCuadruplos[apunCuadruplo].r
         apunCuadruplo = destino
         fromCode[ liCuadruplos[apunCuadruplo].ope ]()
 
-def negativo():
+def era():
     global apunCuadruplo
-
-
+    #PENDIENTE
 
 def imprimir():
     global apunCuadruplo
-    if isinstance(memEjecucion[liCuadruplos[apunCuadruplo].r], str):
-        print(memEjecucion[liCuadruplos[apunCuadruplo].r][1:-1])
+
+    #Se obtiene la direccion absoluta en caso de que sea una direccion indirecta
+    direccionAlmacenar = findAbsoluteAddress(liCuadruplos[apunCuadruplo].r, nivelAlcance)
+    valor = findValueInMemory(direccionAlmacenar, nivelAlcance)
+
+    #Si el valor es un string se imprime con este formato
+    if isinstance(valor, str):
+        print(valor[1:-1])
     else:
         # Se verifica si se trata de una variable entera segun la direccion
-        if isNumber(liCuadruplos[apunCuadruplo].r):
-            print(int(memEjecucion[liCuadruplos[apunCuadruplo].r]))
+        if isNumber(direccionAlmacenar):
+            print(int(valor))
         else:
-            print(memEjecucion[liCuadruplos[apunCuadruplo].r])
+            #No es una variable entera
+            print(valor)
+
+def terminaPrograma():
+    #Nothing toDo
+    terminate("")
 
 #Enumeracion de funciones
 fromCode = {
@@ -267,20 +406,24 @@ fromCode = {
 #    ')': 24,
     50 : goTo, #goto
     51 : goTof, #gotof
-    52 : negativo, #neg
-#    'era': 53,
+#    52 : negativo, #neg
+    53 : era, #era
 #    'gosub': 54,
 #    'param': 55,
-    56 : imprimir #print
+    56 : imprimir, #print
 #    'read' : 57,
 #    'toNumber' : 58,
 #    'toReal' : 59,
 #    'toString': 60,
-#    'null' : 61
+#    'null' : 61,
+#    62 : give #'give': 62,
+#    'endproc': 63,
+     64 : terminaPrograma #'endprogram': 64,
+#    'ref': 65
 }
 
 # Se pregunta por archivo ejecutable
-filename = "p5_bin.txt"
+filename = "probarMaquina_bin.txt"
 # filename = input("Ingresa nombre de archivo con condigo objeto de Red Robin: ") 
 f = open(filename, 'r')
 listaRenglones = f.readlines()
