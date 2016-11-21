@@ -1,7 +1,11 @@
 class RedRobin {
     class Base {
         public number B;
-        public number arreglo[5];        
+        public number arreglo[5];
+        func public number compuesta() {
+            B = B + 1;
+            give B;
+        }
     }
     class Jugador {
         public number J;
@@ -25,7 +29,7 @@ class RedRobin {
             i = E + Bhcomp.B - Bcomposicion.arreglo[E + 3];
             i = i + Bcomposicion.B + 12;
             i = J + E;
-            i = heredadaConReturn();
+            i = Bcomposicion.compuesta();
         }        
     }
 
