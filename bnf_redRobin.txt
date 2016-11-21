@@ -24,7 +24,7 @@ CICLOESTATICO ::= 'for' 'id' 'in' '(' VALOR '_' VALOR ')' 'step' VALOR '{' CUERP
 CICLODINAMICO ::= 'while' '(' EXPRESION ')'  '{' CUERPOFUNCION '}'
 CONDICIONAL ::= 'if' '(' EXPRESION ')' '{' CUERPOFUNCION '}' ('elif' '(' EXPRESION ')' '{' CUERPOFUNCION '}')* ('else' '{' CUERPOFUNCION '}')?
 ASIGNACION ::= IDENTIFICADOR '=' EXPRESION ';'
-DECLARACION ::= TIPOVARIABLE 'id' ('[' VALOR ']' | '=' EXPRESION)? (',' 'id' ('[' VALOR ']' | '=' EXPRESION)?)* ';'
+DECLARACION ::= TIPOVARIABLE 'id' ('[' 'const Integer' ']' | '=' EXPRESION)? (',' 'id' ('[' 'const Integer' ']' | '=' EXPRESION)?)* ';'
 
 EXPRESION ::= EXPRESIONII ('OR' EXPRESIONII)*
 EXPRESIONII ::= EXPRESIONIII ('AND' EXPRESIONIII)*

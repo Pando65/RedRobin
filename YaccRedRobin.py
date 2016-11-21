@@ -113,7 +113,7 @@ def p_mas_argumentos(p):
                       | empty'''
 
 def p_valorargumentos(p):
-    '''valorargumentos : AMPERSAND ID composicion_atributo smArgumentoRef
+    '''valorargumentos : AMPERSAND identificador smArgumentoRef
                        | expresion smArgumentoExpresion'''
     
 def p_composicion_atributo(p):
@@ -168,7 +168,8 @@ def p_declaracion(p):
     'declaracion : tipovariable ID smnewvariable declara_arreglo_o_iniciacion mas_declaraciones PUNTOYCOMA'    
 
 def p_declara_arreglo_o_iniciacion(p):
-    '''declara_arreglo_o_iniciacion : B_ABRE valor B_CIERRA
+    # TODO - smNewarray solo no va a jalar con objetos, checar como jalar la direccion de un atributo o de composicion
+    '''declara_arreglo_o_iniciacion : B_ABRE CONST_INTEGER smnewcteint B_CIERRA smNewArray
                                     | IGUAL smDeclaredToStack expresion smAsignacion
                                     | empty'''
 
@@ -265,19 +266,13 @@ def p_negativo(p):
                 | empty'''
              
 def p_identificador(p):
-    'identificador : ID atributo arreglo'
+    'identificador : ID composicion_atributo arreglo'
     validateIdSemantics(p[1], p[2], p[3])
-
-# TODO IMPORTANTE: SE DEBERIA PERMITIR UN PUNTO MAS PARA PERMITIR COMPOSICION EN RED ROBIN
-def p_atributo(p):
-    '''atributo : PUNTO ID
-                | empty'''
-    if p[1] == '.':
-        p[0] = p[2]
     
 def p_arreglo(p):
-    '''arreglo : B_ABRE valor B_CIERRA
+    '''arreglo : B_ABRE smaddParentesis expresion smRemoveParentesis B_CIERRA
                | empty'''
+    p[0] = p[1]
                                                 
 def p_empty(p):
     'empty :'
@@ -294,7 +289,7 @@ def p_error(p):
 # Build the parser
 parser = yacc.yacc()
 
-filename = "p4.txt"
+filename = "p5.txt"
 # filename = input("Ingresa nombre de archivo con lenguaje Red Robin: ") 
 f = open(filename, 'r')
 s = f.read()

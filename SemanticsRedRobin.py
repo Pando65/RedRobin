@@ -23,6 +23,7 @@ from MemoriasVirtuales import *
 #           ['privilages'] - Privilegio (public o private)
 #           ['mem'] - Direccion de memoria de su variable global asignada
 #           ['quad'] - Cuadruplo de inicio
+#           ['class'] - clase en donde esta su definicion
 #   ['vars']
 #       [variableName]
 #           ['tipo'] - Tipo de variable
@@ -233,19 +234,19 @@ def p_smnewfunction(p):
     contParam = 1
     newScopeFunction = p[-1]
     giveType = p[-2]
+    if giveType != 'number' and giveType != 'real' and giveType != 'string' and giveType != 'bool' and giveType != 'empty':
+        terminate("ONLY PRIMITIVE TYPES CAN BE RETURNED")
     privlages = p[-3]
     # TODO - checar que no haya una variable global con el mismo nombre
     if newScopeFunction in dirProced[currentScopeClass]['func']:
         terminate("REPEATED FUNCTION NAME")
     else:
+        memVar = -1
         if giveType != 'empty':
             memVar = getMemSpace(giveType, 'Class', newScopeFunction)
-            # añado la funcion a mi directorio de procedimientos
-            dirProced[currentScopeClass]['func'][newScopeFunction] = {'vars': {}, 'giveType': p[-2], 'params': {}, 'tam': {}, 'privilages': p[-3], 'mem': memVar, 'quad': len(cuadruplos) }
             # creo la variable que guardara el valor de retorno
             dirProced['RedRobin']['vars'][newScopeFunction] = {'tipo': giveType, 'size': 0, 'mem': memVar}
-        else:
-            dirProced[currentScopeClass]['func'][newScopeFunction] = {'vars': {}, 'giveType': p[-2], 'params': {}, 'tam': {}, 'privilages': p[-3], 'mem': -1, 'quad': len(cuadruplos) }
+        dirProced[currentScopeClass]['func'][newScopeFunction] = {'vars': {}, 'giveType': p[-2], 'params': {}, 'tam': {}, 'privilages': p[-3], 'mem': memVar, 'quad': len(cuadruplos), 'class': currentScopeClass }
         setScopeFunction(newScopeFunction)
 
         
@@ -272,7 +273,8 @@ def p_smnewclass(p):
     else:
         parent = ''
         parentObjects = {}
-        parentVariables = {}        
+        parentVariables = {}   
+        parentFunctions = {}
         # Pregunto si tengo un padre
         if p[-1] != None:
             parent = p[-1]
@@ -280,6 +282,9 @@ def p_smnewclass(p):
             
             # Jalo las variables de mi padre
             parentVariables = copy.deepcopy(dirProced[parent]['vars'])
+            
+            # Jalo las funciones de mi padre
+            parentFunctions = copy.deepcopy(dirProced[parent]['func'])
             
             # Obtengo los objetos de mi padre, tampoco pueden tener mas objetos para evitar composicion de mas de 1 nivel
             parentObjects = copy.deepcopy(dirProced[parent]['obj'])
@@ -302,7 +307,7 @@ def p_smnewclass(p):
             for varName in parentVariables:
                 parentVariables[varName]['mem'] = getMemSpace(parentVariables[varName]['tipo'], 'Class', varName)
                 
-        dirProced[newScopeClass] = {'func': {}, 'vars': parentVariables, 'obj': parentObjects, 'parent': parent}
+        dirProced[newScopeClass] = {'func': parentFunctions, 'vars': parentVariables, 'obj': parentObjects, 'parent': parent}
         setScopeClass(newScopeClass)
         
 def exists(newVarName):
@@ -354,18 +359,23 @@ def p_smnewvariable(p):
                 terminate("WRONG OBJECT TYPE")
             # Depende si estoy en la clase main red robin o en alguna otra clase el comportamiento cambia
             if currentScopeClass == 'RedRobin':
-                # TODO: copiar el hash de variables y asignarles una direccion real de memoria virtual (ya se hace abajo)
                 # Hay que crear una instancia de la clase
                 dicAttr = copy.deepcopy(dirProced[currentType]['vars']);
                 for varName in dicAttr:
                     dicAttr[varName]['mem'] = getMemSpace(dicAttr[varName]['tipo'], 'Class', varName)
-                    
+                    arraySize = dicAttr[varName]['size']
+                    # Pido todas las memorias que ocupo en caso de q sea un arreglo
+                    if int(arraySize) > 0:
+                        memConts[memCont[dicAttr[varName]['tipo'] + 'Class']] += (int(arraySize) - 1)
                     
                 dicObj = copy.deepcopy(dirProced[currentType]['obj']);
                 for objName in dicObj:
                     dicAttrObj = dicObj[objName]['attr']
                     for attrName in dicAttrObj:
                         dicObj[objName]['attr'][attrName]['mem'] = getMemSpace(dicObj[objName]['attr'][attrName]['tipo'], 'Class', attrName)
+                        arraySize = dicObj[objName]['attr'][attrName]['size']
+                        if int(arraySize) > 0:
+                            memConts[memCont[dicObj[objName]['attr'][attrName]['tipo']+ 'Class']] += (int(arraySize) - 1)
                 
                 dirProced['RedRobin']['obj'][newVarName] = {'class': currentType, 'attr': dicAttr, 'obj': dicObj}
             else:
@@ -379,11 +389,34 @@ def p_smnewvariable(p):
                 # Asigno direcciones nuevas para mantener unicidad 
                 for varName in variables:
                     variables[varName]['mem'] = getMemSpace(variables[varName]['tipo'], 'Class', varName)
+                    arraySize = variables[varName]['size']
+                    if int(arraySize) > 0:
+                        memConts[memCont[variables[varName]['tipo'] + 'Class']] += (int(arraySize) - 1)                    
                 
                 # Actualizo el directorio de variables de la clase "papa"
                 dirProced[currentScopeClass]['obj'][newVarName] = {'class': currentType, 'attr': variables}
 
 # Llamada desde p_expresion
+
+def p_smNewArray(p):
+    'smNewArray :'
+    # Descartamos la direccion, ocupamos el numero en si
+    stackDirMem.pop()
+    # Obtenemos el numero del lexico
+    arraySize = p[-3]
+    if int(arraySize) <= 0:
+        terminate("array size must be greater than 0");
+    # Obtenemos el nombre del arreglo, ya fue declarado, solo hay que aumentar el size
+    varName = p[-6]
+    # Obtenemos el tipo del arreglo para saber q tipo de memorias darle
+    typeArray = currentType
+    if currentScopeFunction != "":
+        dirProced[currentScopeClass]['func'][currentScopeFunction]['vars'][varName]['size'] = arraySize
+        memConts[memCont[typeArray + 'Func']] += (int(arraySize) - 1)
+    else:
+        dirProced[currentScopeClass]['vars'][varName]['size'] = arraySize
+        memConts[memCont[typeArray + 'Class']] += (int(arraySize) - 1)
+    
 def p_smcheckpendingors(p):
     'smcheckpendingors :'
     if len(stackOpe) > 0 and stackOpe[-1] == toCode['or']:
@@ -453,7 +486,7 @@ def p_smcheckpendingterms(p):
         opTypeCode2 = getTypeCode(opDir2)
         opTypeCode1 = getTypeCode(opDir1)
         opeCode = stackOpe.pop()
-        resultType = cubo.check(opTypeCode1, opTypeCode2, opeCode) 
+        resultType = cubo.check(abs(opTypeCode1), abs(opTypeCode2), opeCode) 
         if resultType != 'error':
             # ocupo crear la temporal que manejara el resultado
             resultType += "Temp"
@@ -517,7 +550,10 @@ def p_smAsignacion(p):
     'smAsignacion :'
     resultDir = stackDirMem.pop()
     varDir = stackDirMem.pop()
-    createQuadruple(toCode['='], resultDir, -1, varDir)
+    if cubo.check(getTypeCode(resultDir), getTypeCode(varDir), toCode['=']) != 'error':
+        createQuadruple(toCode['='], resultDir, -1, varDir)
+    else:
+        terminate("TYPE MISSMATCH")
             
 # Llamada desde p_valor
 def p_smnewcteint(p):
@@ -559,6 +595,7 @@ def p_smNewNegativo(p):
 currentFunction = ""
 # key: real, value: temp o fantasma
 hashRef = {}
+hashRefTam = {}
 
 # Llamada desde p_invocacion
 def p_smNewFuncNoReturn(p):
@@ -571,8 +608,25 @@ def p_smNewFuncNoReturn(p):
         # Funcion invocada debe ser 'void'
         if dirProced[currentScopeClass]['func'][funName]['giveType'] == 'empty':
             contParam = 1
+            hashRef.clear()
+            hashRefTam.clear()
             currentFunction = funName
             createQuadruple(toCode['era'], -1, -1, dirProced[currentScopeClass]['func'][funName]['quad'])
+            # si la funcion es heredada, de una vez pido por referencia todos los atributos de la clase donde originalmente esta la funcion
+            if dirProced[currentScopeClass]['func'][funName]['class'] != currentScopeClass:
+                for varName in dirProced[ dirProced[currentScopeClass]['func'][funName]['class'] ]['vars']:
+                    dirReal = dirProced[currentScopeClass]['vars'][varName]['mem']
+                    parentClass = dirProced[currentScopeClass]['func'][funName]['class']
+                    hashRef[dirReal] = dirProced[parentClass]['vars'][varName]['mem']
+                    hashRefTam[dirReal] = dirProced[currentScopeClass]['vars'][varName]['size']
+                    
+                for objName in dirProced[ dirProced[currentScopeClass]['func'][funName]['class'] ]['obj']:
+                    # recorro todas las variables atomicas del objeto actual
+                    objClass = dirProced[ dirProced[currentScopeClass]['func'][funName]['class'] ]['obj'][objName]['class']
+                    for attrName in dirProced[objClass]['vars']:
+                        dirReal = dirProced[currentScopeClass]['obj'][objName]['attr'][attrName]['mem']
+                        hashRef[dirReal] = dirProced[objClass]['vars'][attrName]['mem']
+                        hashRefTam[dirReal] = dirProced[currentScopeClass]['obj'][objName]['attr'][attrName]['size']
         else:
             terminate("No variable to catch returned value")
     else:
@@ -587,8 +641,24 @@ def p_smNewInvocacion(p):
     if funName in dirProced[currentScopeClass]['func']:
         contParam = 1
         hashRef.clear()
+        hashRefTam.clear()
         currentFunction = funName
         createQuadruple(toCode['era'], -1, -1, dirProced[currentScopeClass]['func'][funName]['quad'])
+        # si la funcion es heredada, de una vez pido por referencia todos los atributos de la clase donde originalmente esta la funcion
+        if dirProced[currentScopeClass]['func'][funName]['class'] != currentScopeClass:
+            for varName in dirProced[ dirProced[currentScopeClass]['func'][funName]['class'] ]['vars']:
+                dirReal = dirProced[currentScopeClass]['vars'][varName]['mem']
+                parentClass = dirProced[currentScopeClass]['func'][funName]['class']
+                hashRef[dirReal] = dirProced[parentClass]['vars'][varName]['mem']
+                hashRefTam[dirReal] = dirProced[currentScopeClass]['vars'][varName]['size']
+                    
+            for objName in dirProced[ dirProced[currentScopeClass]['func'][funName]['class'] ]['obj']:
+                # recorro todas las variables atomicas del objeto actual
+                objClass = dirProced[ dirProced[currentScopeClass]['func'][funName]['class'] ]['obj'][objName]['class']
+                for attrName in dirProced[objClass]['vars']:
+                    dirReal = dirProced[currentScopeClass]['obj'][objName]['attr'][attrName]['mem']
+                    hashRef[dirReal] = dirProced[objClass]['vars'][attrName]['mem']
+                    hashRefTam[dirReal] = dirProced[currentScopeClass]['obj'][objName]['attr'][attrName]['size']
     else:
         terminate("Function " + funName + " not declared")
         
@@ -598,8 +668,6 @@ def p_smArgumentoRef(p):
     global contParam
     # TODO - considerar composicion y arreglos
     if contParam in dirProced[currentScopeClass]['func'][currentFunction]['params']:
-        varName = p[-2]
-        validateIdSemantics(varName, None, None)
         # Obtenemos la direccion del argumento
         argDir = stackDirMem.pop()
         # Obtenemos el nombre declarado del parametro, segun su posicion
@@ -611,6 +679,7 @@ def p_smArgumentoRef(p):
         if cubo.check(getTypeCode(dirVarParam), getTypeCode(argDir), toCode['=']) != 'error':
             createQuadruple(toCode['param'], argDir, -1, dirVarParam)
             hashRef[argDir] = dirVarParam
+            hashRefTam[argDir] = dirProced[currentScopeClass]['func'][currentFunction]['vars'][nameVarParam]['size']
             contParam += 1
         else:
             terminate("Error in params of function " + currentFunction)
@@ -671,16 +740,17 @@ def p_smEndInvocacion(p):
     if len(dirProced[currentScopeClass]['func'][currentFunction]['params']) == contParam - 1:
         createQuadruple(toCode['gosub'], -1, -1, dirProced[currentScopeClass]['func'][currentFunction]['quad'])
         dirRetorno = dirProced[currentScopeClass]['func'][currentFunction]['mem']
+        # Actualizamos los valores por referncia
+        # TODO - atributos de objeto
+        for real in hashRef:
+            createQuadruple(toCode["ref"], hashRef[real], hashRefTam[real], real)
+        # creamos el cuadruplo que guarda el valor de retorno
         if dirRetorno != -1:
             returnType = toSymbol[getTypeCode(dirRetorno)]
             newtemp = memConts[memCont[returnType + 'Temp']]
             createQuadruple(toCode['='], dirRetorno, -1, newtemp)
             stackDirMem.append(newtemp)
             memConts[memCont[returnType + 'Temp']] += 1
-        # Actualizamos los valores por referncia
-        # TODO - atributos de objeto
-        for real in hashRef:
-            createQuadruple(toCode["ref"], hashRef[real], -1, real)
         
     else:
         terminate("wrong number of arguments")
@@ -791,11 +861,15 @@ def validateIdSemantics(currentIdName, currentObjPath, currentArray):
     else:
         if not exists(currentIdName):
             terminate("Variable " + currentIdName + " not declared")
-        # variable valida, insertar a pila
-        if currentIdName in dirProced[currentScopeClass]['vars']:
-            stackDirMem.append(dirProced[currentScopeClass]['vars'][currentIdName]['mem'])
-        elif currentScopeFunction == '' or currentIdName in dirProced[currentScopeClass]['func'][currentScopeFunction]['vars']:
-            stackDirMem.append(dirProced[currentScopeClass]['func'][currentScopeFunction]['vars'][currentIdName]['mem'])
+        # si es arreglo hacer validaciones
+        if currentArray == '[':
+            arrayRutine(currentIdName, None)
+        else:
+            # variable valida, insertar a pila
+            if currentIdName in dirProced[currentScopeClass]['vars']:
+                stackDirMem.append(dirProced[currentScopeClass]['vars'][currentIdName]['mem'])
+            elif currentScopeFunction == '' or currentIdName in dirProced[currentScopeClass]['func'][currentScopeFunction]['vars']:
+                stackDirMem.append(dirProced[currentScopeClass]['func'][currentScopeFunction]['vars'][currentIdName]['mem'])
         
 def validateObjSemantics(currentObjPath, currentIdName, currentArray):
     # TODO: implementar arreglos
@@ -808,8 +882,11 @@ def validateObjSemantics(currentObjPath, currentIdName, currentArray):
         if currentObjPath in dirProced[currentScopeClass]['obj']:
             # Valido que exista el nombre dentro del objeto
             if currentIdName in dirProced[currentScopeClass]['obj'][currentObjPath]['attr']:
-                # existe, lo meto a la pila
-                stackDirMem.append(dirProced[currentScopeClass]['obj'][currentObjPath]['attr'][currentIdName]['mem'])
+                if currentArray == '[':
+                    arrayRutine(currentIdName, currentObjPath)
+                else:
+                    # existe, lo meto a la pila
+                    stackDirMem.append(dirProced[currentScopeClass]['obj'][currentObjPath]['attr'][currentIdName]['mem'])
             else:
                 terminate("Attribute " + currentIdName + " not found")
         else:
@@ -820,6 +897,35 @@ def newCteBool(newBool):
         stackDirMem.append(memConts[memCont['boolCte']] + 1)
     else:
         stackDirMem.append(memConts[memCont['boolCte']])
+        
+def arrayRutine(currentIdName, currentObjPath):
+    # Obtengo la expresion de indexamiento
+    indexMem = stackDirMem.pop()
+    # Si no es numero, termino
+    if getTypeCode(indexMem) != toCode['number']:
+        terminate("bad index for array")
+    # Declaro variables auxiliares
+    limitArray = 0
+    typeVarCode = 0
+    newTemp = 0
+    dirBase = 0
+    # busco donde esta declarado el arreglo para obtener datos
+    if currentObjPath != None:
+        limitArray = dirProced[currentScopeClass]['obj'][currentObjPath]['attr'][currentIdName]['size']
+        dirBase = dirProced[currentScopeClass]['obj'][currentObjPath]['attr'][currentIdName]['mem']
+    elif currentScopeFunction != "" and currentIdName in dirProced[currentScopeClass]['func'][currentScopeFunction]['vars']:
+        limitArray = dirProced[currentScopeClass]['func'][currentScopeFunction]['vars'][currentIdName]['size']
+        dirBase = dirProced[currentScopeClass]['func'][currentScopeFunction]['vars'][currentIdName]['mem']
+    else:
+        limitArray = dirProced[currentScopeClass]['vars'][currentIdName]['size']
+        dirBase = dirProced[currentScopeClass]['vars'][currentIdName]['mem']
+
+    # genero cuadruplos del arreglo
+    typeVarCode = getTypeCode(dirBase)
+    newTemp = getMemSpace(toSymbol[typeVarCode], 'Temp', "-")                
+    createQuadruple(toCode['ver'], indexMem, 0, int(limitArray) - 1)
+    createQuadruple(toCode['+'], dirBase, indexMem, newTemp)
+    stackDirMem.append(newTemp * -1)    
     
     
 # creo cuadruplo go to main
