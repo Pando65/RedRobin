@@ -608,6 +608,29 @@ currentClass = ""
 hashRef = {}
 hashRefTam = {}
 
+def generalInvocationRutine(funName, currClass, objPath):
+    global currentFunction
+    global contParam
+    global currentClass
+    # Inicializo variables auxiliares que serviran durante la rutina
+    contParam = 1
+    hashRef.clear()
+    hashRefTam.clear()
+    currentFunction = funName
+    # Current class es en DONDE esta definida la funcion
+    # puede ser en el currentClassScope o en la class del objeto que invoco la funcion
+    currentClass = currClass
+    createQuadruple(toCode['era'], -1, -1, dirProced[currentClass]['func'][funName]['quad'])
+    if objPath != None:
+        # mando como referencia todos los atributos de MI instancia (por eso uso currentScopeClass)
+        # currentScopeClass es en donde SE INVOCO la funcion
+        for attrName in dirProced[currentScopeClass]['obj'][objPath]['attr']:
+            dirReal = dirProced[currentScopeClass]['obj'][objPath]['attr'][attrName]['mem']
+            # currClass es en DONDE se definio la funcion, por eso de ahi saco la fake mem
+            hashRef[dirReal] = dirProced[currClass]['vars'][attrName]['mem']
+            hashRefTam[dirReal] = dirProced[currClass]['vars'][attrName]['size']
+    
+
 def newInvocacionFuncDeObjNoReturn(objPath, funName):
     if currentScopeClass == 'RedRobin':
         print("desde redrobin invamos")
@@ -620,16 +643,7 @@ def newInvocacionFuncDeObjNoReturn(objPath, funName):
             currentClass = dirProced[currentScopeClass]['obj'][objPath]['class']
             if funName in dirProced[currentClass]['func']:
                 if dirProced[currentClass]['func'][funName]['giveType'] == 'empty':
-                    contParam = 1
-                    hashRef.clear()
-                    hashRefTam.clear()
-                    currentFunction = funName
-                    createQuadruple(toCode['era'], -1, -1, dirProced[currentClass]['func'][funName]['quad'])
-                    # mando como referencia todos los atributos de mi instancia
-                    for attrName in dirProced[currentScopeClass]['obj'][objPath]['attr']:
-                        dirReal = dirProced[currentScopeClass]['obj'][objPath]['attr'][attrName]['mem']
-                        hashRef[dirReal] = dirProced[currentClass]['vars'][attrName]['mem']
-                        hashRefTam[dirReal] = dirProced[currentClass]['vars'][attrName]['size']
+                    generalInvocationRutine(funName, currentClass, objPath)
                 else:
                     terminate("No variable to catch returned value")
             else:
@@ -652,12 +666,7 @@ def p_smNewFuncNoReturn(p):
         if funName in dirProced[currentScopeClass]['func']:
             # Funcion invocada debe ser 'void'
             if dirProced[currentScopeClass]['func'][funName]['giveType'] == 'empty':
-                contParam = 1
-                hashRef.clear()
-                hashRefTam.clear()
-                currentFunction = funName
-                currentClass = currentScopeClass
-                createQuadruple(toCode['era'], -1, -1, dirProced[currentScopeClass]['func'][funName]['quad'])
+                generalInvocationRutine(funName, currentScopeClass, None)
                 # si la funcion es heredada, de una vez pido por referencia todos los atributos de la clase donde originalmente esta la funcion
                 if dirProced[currentScopeClass]['func'][funName]['class'] != currentScopeClass:
                     for varName in dirProced[ dirProced[currentScopeClass]['func'][funName]['class'] ]['vars']:
@@ -691,16 +700,7 @@ def newInvocacionFuncDeObj(objPath, funName):
         if objPath in dirProced[currentScopeClass]['obj']:
             currentClass = dirProced[currentScopeClass]['obj'][objPath]['class']
             if funName in dirProced[currentClass]['func']:
-                contParam = 1
-                hashRef.clear()
-                hashRefTam.clear()
-                currentFunction = funName
-                createQuadruple(toCode['era'], -1, -1, dirProced[currentClass]['func'][funName]['quad'])
-                # mando como referencia todos los atributos de mi instancia
-                for attrName in dirProced[currentScopeClass]['obj'][objPath]['attr']:
-                    dirReal = dirProced[currentScopeClass]['obj'][objPath]['attr'][attrName]['mem']
-                    hashRef[dirReal] = dirProced[currentClass]['vars'][attrName]['mem']
-                    hashRefTam[dirReal] = dirProced[currentClass]['vars'][attrName]['size']
+                generalInvocationRutine(funName, currentClass, objPath)
             else:
                 terminate("Funcition " + funName + " doesn't exists in object " + objPath)
         else:
@@ -717,12 +717,7 @@ def p_smNewInvocacion(p):
         newInvocacionFuncDeObj(funName, objPath)
     else:
         if funName in dirProced[currentScopeClass]['func']:
-            contParam = 1
-            hashRef.clear()
-            hashRefTam.clear()
-            currentFunction = funName
-            currentClass = currentScopeClass
-            createQuadruple(toCode['era'], -1, -1, dirProced[currentScopeClass]['func'][funName]['quad'])
+            generalInvocationRutine(funName, currentScopeClass, None)
             # si la funcion es heredada, de una vez pido por referencia todos los atributos de la clase donde originalmente esta la funcion
             if dirProced[currentScopeClass]['func'][funName]['class'] != currentScopeClass:
                 for varName in dirProced[ dirProced[currentScopeClass]['func'][funName]['class'] ]['vars']:
