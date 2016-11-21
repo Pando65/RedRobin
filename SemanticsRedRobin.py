@@ -350,7 +350,7 @@ def p_smnewvariable(p):
     'smnewvariable : '
     newVarName = p[-1]
     # Si el nobre ya existe, está repetido
-    if existsVar(newVarName) or existsObj(newVarName):
+    if existsVar(newVarName) or existsObj(newVarName) or existsFunc(newVarName):
         terminate("REPETAED VARIABLE NAME: " + newVarName)
     
     # Si estamos dentro de una funcion
@@ -608,6 +608,35 @@ currentClass = ""
 hashRef = {}
 hashRefTam = {}
 
+def newInvocacionFuncDeObjNoReturn(objPath, funName):
+    if currentScopeClass == 'RedRobin':
+        print("desde redrobin invamos")
+    else:
+        global contParam
+        global currentFunction
+        global currentClass
+        # Valido que el objeto exista
+        if objPath in dirProced[currentScopeClass]['obj']:
+            currentClass = dirProced[currentScopeClass]['obj'][objPath]['class']
+            if funName in dirProced[currentClass]['func']:
+                if dirProced[currentClass]['func'][funName]['giveType'] == 'empty':
+                    contParam = 1
+                    hashRef.clear()
+                    hashRefTam.clear()
+                    currentFunction = funName
+                    createQuadruple(toCode['era'], -1, -1, dirProced[currentClass]['func'][funName]['quad'])
+                    # mando como referencia todos los atributos de mi instancia
+                    for attrName in dirProced[currentScopeClass]['obj'][objPath]['attr']:
+                        dirReal = dirProced[currentScopeClass]['obj'][objPath]['attr'][attrName]['mem']
+                        hashRef[dirReal] = dirProced[currentClass]['vars'][attrName]['mem']
+                        hashRefTam[dirReal] = dirProced[currentClass]['vars'][attrName]['size']
+                else:
+                    terminate("No variable to catch returned value")
+            else:
+                terminate("Funcition " + funName + " doesn't exists in object " + objPath)
+        else:
+            terminate("Object " + objPath + " doesn't exists")    
+
 # Llamada desde p_invocacion
 def p_smNewFuncNoReturn(p):
     'smNewFuncNoReturn :'
@@ -616,34 +645,38 @@ def p_smNewFuncNoReturn(p):
     global currentClass
     global giveValue
     funName = p[-2]
-    if funName in dirProced[currentScopeClass]['func']:
-        # Funcion invocada debe ser 'void'
-        if dirProced[currentScopeClass]['func'][funName]['giveType'] == 'empty':
-            contParam = 1
-            hashRef.clear()
-            hashRefTam.clear()
-            currentFunction = funName
-            currentClass = currentScopeClass
-            createQuadruple(toCode['era'], -1, -1, dirProced[currentScopeClass]['func'][funName]['quad'])
-            # si la funcion es heredada, de una vez pido por referencia todos los atributos de la clase donde originalmente esta la funcion
-            if dirProced[currentScopeClass]['func'][funName]['class'] != currentScopeClass:
-                for varName in dirProced[ dirProced[currentScopeClass]['func'][funName]['class'] ]['vars']:
-                    dirReal = dirProced[currentScopeClass]['vars'][varName]['mem']
-                    parentClass = dirProced[currentScopeClass]['func'][funName]['class']
-                    hashRef[dirReal] = dirProced[parentClass]['vars'][varName]['mem']
-                    hashRefTam[dirReal] = dirProced[currentScopeClass]['vars'][varName]['size']
-                    
-                for objName in dirProced[ dirProced[currentScopeClass]['func'][funName]['class'] ]['obj']:
-                    # recorro todas las variables atomicas del objeto actual
-                    objClass = dirProced[ dirProced[currentScopeClass]['func'][funName]['class'] ]['obj'][objName]['class']
-                    for attrName in dirProced[objClass]['vars']:
-                        dirReal = dirProced[currentScopeClass]['obj'][objName]['attr'][attrName]['mem']
-                        hashRef[dirReal] = dirProced[objClass]['vars'][attrName]['mem']
-                        hashRefTam[dirReal] = dirProced[currentScopeClass]['obj'][objName]['attr'][attrName]['size']
-        else:
-            terminate("No variable to catch returned value")
+    objPath = p[-1]
+    if objPath != None:
+        newInvocacionFuncDeObjNoReturn(funName, objPath)
     else:
-        terminate("Function " + funName + " not declared")
+        if funName in dirProced[currentScopeClass]['func']:
+            # Funcion invocada debe ser 'void'
+            if dirProced[currentScopeClass]['func'][funName]['giveType'] == 'empty':
+                contParam = 1
+                hashRef.clear()
+                hashRefTam.clear()
+                currentFunction = funName
+                currentClass = currentScopeClass
+                createQuadruple(toCode['era'], -1, -1, dirProced[currentScopeClass]['func'][funName]['quad'])
+                # si la funcion es heredada, de una vez pido por referencia todos los atributos de la clase donde originalmente esta la funcion
+                if dirProced[currentScopeClass]['func'][funName]['class'] != currentScopeClass:
+                    for varName in dirProced[ dirProced[currentScopeClass]['func'][funName]['class'] ]['vars']:
+                        dirReal = dirProced[currentScopeClass]['vars'][varName]['mem']
+                        parentClass = dirProced[currentScopeClass]['func'][funName]['class']
+                        hashRef[dirReal] = dirProced[parentClass]['vars'][varName]['mem']
+                        hashRefTam[dirReal] = dirProced[currentScopeClass]['vars'][varName]['size']
+
+                    for objName in dirProced[ dirProced[currentScopeClass]['func'][funName]['class'] ]['obj']:
+                        # recorro todas las variables atomicas del objeto actual
+                        objClass = dirProced[ dirProced[currentScopeClass]['func'][funName]['class'] ]['obj'][objName]['class']
+                        for attrName in dirProced[objClass]['vars']:
+                            dirReal = dirProced[currentScopeClass]['obj'][objName]['attr'][attrName]['mem']
+                            hashRef[dirReal] = dirProced[objClass]['vars'][attrName]['mem']
+                            hashRefTam[dirReal] = dirProced[currentScopeClass]['obj'][objName]['attr'][attrName]['size']
+            else:
+                terminate("No variable to catch returned value")
+        else:
+            terminate("Function " + funName + " not declared")
 
 # Llamada desde p_valor
 

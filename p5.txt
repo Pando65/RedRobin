@@ -6,6 +6,9 @@ class RedRobin {
             B = B + 1;
             give B;
         }
+        func public empty compuestaempty() {
+            B = B + 1;
+        }
     }
     class Jugador {
         public number J;
@@ -30,6 +33,7 @@ class RedRobin {
             i = i + Bcomposicion.B + 12;
             i = J + E;
             i = Bcomposicion.compuesta();
+            Bcomposicion.compuestaempty();
         }        
     }
     
