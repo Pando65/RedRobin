@@ -70,6 +70,53 @@ memLimit = {
     'boolCte': 16099 
 }
 
+#Diccionario de tipos de valores
+toCode = {
+    'number': 1,
+    'real': 2,
+    'bool': 3,
+    'string': 4
+}
+
+# getTypeCode: dada una direccion de memoria regresa el codigo del tipo de dato correspondiente
+def getTypeCode(memAddress):
+    memAddress = abs(memAddress)
+    if memAddress <= memLimit['numberClass']:
+        return toCode['number']
+    if memAddress <= memLimit['realClass']:
+        return toCode['real']
+    if memAddress <= memLimit['stringClass']:
+        return toCode['string']
+    if memAddress <= memLimit['boolClass']:
+        return toCode['bool']
+    
+    if memAddress <= memLimit['numberFunc']:
+        return toCode['number']
+    if memAddress <= memLimit['realFunc']:
+        return toCode['real']
+    if memAddress <= memLimit['stringFunc']:
+        return toCode['string']
+    if memAddress <= memLimit['boolFunc']:
+        return toCode['bool']
+    
+    if memAddress <= memLimit['numberTemp']:
+        return toCode['number']
+    if memAddress <= memLimit['realTemp']:
+        return toCode['real']
+    if memAddress <= memLimit['stringTemp']:
+        return toCode['string']
+    if memAddress <= memLimit['boolTemp']:
+        return toCode['bool']
+    
+    if memAddress <= memLimit['numberCte']:
+        return toCode['number']
+    if memAddress <= memLimit['realCte']:
+        return toCode['real']
+    if memAddress <= memLimit['stringCte']:
+        return toCode['string']
+    if memAddress <= memLimit['boolCte']:
+        return toCode['bool']
+
 #Indica si una direccion almacena valor numerico entero
 def isNumber(numDireccion):
     #Se verifica si es una direccion indirecta
@@ -97,10 +144,48 @@ def findValueInMemory(numDireccion, alcanceFuncion):
 
     if numDireccion < memStart['numberFunc'] or numDireccion > memLimit['boolTemp']:
         #Se trata de una direccion global
-        return memEjecucion[numDireccion]
+        if numDireccion in memEjecucion:
+            #Valor esta incializado
+            return memEjecucion[numDireccion]
+        elif liCuadruplos[apunCuadruplo].ope == 67:
+            #Si no existe valor en diccionario para operacion de asignar valor de retorno, significa que no hubo valor de retorno
+            terminate("Execution error. No returned value from method")
+        else:
+            #De ser cualquier otra operacion. Se verifica el tipo de direccion y se inicializa a su valor por default
+            if getTypeCode(numDireccion) == toCode['number']:
+                memEjecucion[numDireccion] = 0
+                return 0
+            elif getTypeCode(numDireccion) == toCode['real']:
+                memEjecucion[numDireccion] = 0.0
+                return 0.0
+            elif getTypeCode(numDireccion) == toCode['bool']:
+                memEjecucion[numDireccion] = False
+                return False
+            else:
+                memEjecucion[numDireccion] = ""
+                return ""
     else:
         #Se trata de una direccion local o temporal
-        return pilaMemoriaLocal[alcanceFuncion][numDireccion]
+        if numDireccion in pilaMemoriaLocal[alcanceFuncion]:
+            #Valor esta inicializado
+            return pilaMemoriaLocal[alcanceFuncion][numDireccion]
+        elif liCuadruplos[apunCuadruplo].ope == 67:
+            #Si no existe valor en diccionario para operacion de asignar valor de retorno, significa que no hubo valor de retorno
+            terminate("Execution error. No returned value from method")
+        else:
+            #De ser cualquier otra operacion. Se verifica el tipo de direccion y se inicializa a su valor por default
+            if getTypeCode(numDireccion) == toCode['number']:
+                pilaMemoriaLocal[alcanceFuncion][numDireccion] = 0
+                return 0
+            elif getTypeCode(numDireccion) == toCode['real']:
+                pilaMemoriaLocal[alcanceFuncion][numDireccion] = 0.0
+                return 0.0
+            elif getTypeCode(numDireccion) == toCode['bool']:
+                pilaMemoriaLocal[alcanceFuncion][numDireccion] = False
+                return False
+            else:
+                pilaMemoriaLocal[alcanceFuncion][numDireccion] = ""
+                return ""
 
 #Recibe una direccion y determina si es de tipo global o local
 def isGlobal(numDireccion):
