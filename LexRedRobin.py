@@ -96,6 +96,10 @@ def t_ID(t):
     r'[A-Z|a-z][A-Z|a-z|0-9]*'
     t.type = reserved.get(t.value,'ID')    # Check for reserved words
     return t
+
+def t_comment(t):
+    r'(/\*(.|\n)*?\*/)|(//.*)'
+    pass
   
 tokens = tokens + list(reserved.values())
 
