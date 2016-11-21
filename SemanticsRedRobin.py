@@ -233,12 +233,12 @@ def p_smnewfunction(p):
     contParam = 1
     newScopeFunction = p[-1]
     giveType = p[-2]
-    if giveType != 'number' and giveType != 'real' and giveType != 'string' and giveType != 'bool' and giveType != 'empty':
+    if not isAtomic(giveType) and giveType != 'empty':
         terminate("ONLY PRIMITIVE TYPES CAN BE RETURNED")
     privlages = p[-3]
     # TODO - checar que no haya una variable global con el mismo nombre
-    if newScopeFunction in dirProced[currentScopeClass]['func']:
-        terminate("REPEATED FUNCTION NAME")
+    if existsFunc(newScopeFunction):
+        terminate("NAME ALREADY IN USE")
     else:
         memVar = -1
         if giveType != 'empty':
@@ -275,6 +275,7 @@ def p_smnewclass(p):
         parentVariables = {}   
         parentFunctions = {}
         # Pregunto si tengo un padre
+        # TODO - invalidar mas 1 nivel en herencia
         if p[-1] != None:
             parent = p[-1]
             # Si tengo un padre debo copiar todas su variables y sus objetos. Estos objetos no pueden tener mas objetos
@@ -309,23 +310,35 @@ def p_smnewclass(p):
         dirProced[newScopeClass] = {'func': parentFunctions, 'vars': parentVariables, 'obj': parentObjects, 'parent': parent}
         setScopeClass(newScopeClass)
         
-def exists(newVarName):
+def existsVar(newVarName):
     # Si estamos dentro de una funcion
     if currentScopeFunction != '':
         # Si es una variable dentro de la funcion
         if newVarName in dirProced[currentScopeClass]['func'][currentScopeFunction]['vars']:
             return True
-
-    # Si es una variable de clase
+    # si es una variable de clase
     if newVarName in dirProced[currentScopeClass]['vars']:
         return True
-    # Si ya hay una funcion que se llama asi
+    # si ya hay una funcion que se llama asi (var global)
     if newVarName in dirProced[currentScopeClass]['func']:
         return True
-    # Si ya hay un objeto que se llama asi
-    if newVarName in dirProced[currentScopeClass]['obj']:
+    return False
+    
+def existsObj(newObjName):
+    # Si estamos dentro de una funcion
+    if currentScopeFunction != '':
+        # si es un objeto dentro de la funcion TODO
+        if newObjName in dirProced[currentScopeClass]['func'][currentScopeFunction]['vars']:
+            return True
+    # si es un objeto de clase
+    if newObjName in dirProced[currentScopeClass]['obj']:
         return True
     return False
+    
+def existsFunc(newFunName):
+    # Si ya hay una funcion que se llama asi
+    if newFunName in dirProced[currentScopeClass]['func']:
+        return True
 
 def isAtomic(mType):
     if mType == 'number' or mType == 'real' or mType == 'bool' or mType == 'string':
@@ -337,16 +350,18 @@ def p_smnewvariable(p):
     'smnewvariable : '
     newVarName = p[-1]
     # Si el nobre ya existe, está repetido
-    if exists(newVarName):
-        terminate("REPETAED VARIABLE NAME:" + newVarName)
+    if existsVar(newVarName) or existsObj(newVarName):
+        terminate("REPETAED VARIABLE NAME: " + newVarName)
     
     # Si estamos dentro de una funcion
     if currentScopeFunction != '': 
         # TODO- objetos dentro de funciones
+        # Instancio el primitivo de funcion
         dirProced[currentScopeClass]['func'][currentScopeFunction]['vars'][newVarName] = {'tipo': currentType, 'size': 0, 'mem': getMemSpace(currentType, 'Func', newVarName)}
     else:
         # else-  Si estamos fuera de una funcion
         if isAtomic(currentType):
+            # instancio el primitivo de clase
             dirProced[currentScopeClass]['vars'][newVarName] = {'tipo': currentType, 'size': 0, 'mem': getMemSpace(currentType, 'Class', newVarName)}
         else:
             # Es un objeto
@@ -632,11 +647,10 @@ def p_smNewFuncNoReturn(p):
 
 # Llamada desde p_valor
 
-def newInvocacionObj(objPath, funName):
+def newInvocacionFuncDeObj(objPath, funName):
     if currentScopeClass == 'RedRobin':
         print("desde redrobin invamos")
     else:
-        print("invocacion desde no red robin de un obj")
         global contParam
         global currentFunction
         global currentClass
@@ -667,7 +681,7 @@ def p_smNewInvocacion(p):
     funName = p[-2]
     objPath = p[-1]
     if objPath != None:
-        newInvocacionObj(funName, objPath)
+        newInvocacionFuncDeObj(funName, objPath)
     else:
         if funName in dirProced[currentScopeClass]['func']:
             contParam = 1
@@ -883,12 +897,15 @@ def validateIdSemantics(currentIdName, currentObjPath, currentArray):
     # TODO: que exista el nombre, no queire decir que sea una variable
             # puedo tener objeto perro y usar un numero perro, deberia ser error
             # tal vez con arreglar el primer to do sea suficiente
+    # answer todo: creo q esto ya esta, falta testear bien
     # Voy a delegar orientado a objetos a otra funcion
     if currentObjPath != None:
         validateObjSemantics(currentIdName, currentObjPath, currentArray)
     else:
-        if not exists(currentIdName):
+        if not existsVar(currentIdName):
             terminate("Variable " + currentIdName + " not declared")
+        if existsFunc(currentIdName):
+            terminate("Name variable " + currentIdName + " already used by a function")
         # si es arreglo hacer validaciones
         if currentArray == '[':
             arrayRutine(currentIdName, None)
