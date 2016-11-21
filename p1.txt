@@ -14,14 +14,9 @@ class RedRobin {
 
   RedRobin() {
     number a, b, c, e[10], d;
-    a = 3;
+
     print("HOla");
-    for b in (0 _ 9) step 1 {
-      print("pelao", b);
-      e[b] = 0;
-      print("que esta pasando dr garcia");
-    }
-    e[2] = 1;
+
     print("", "Checa b", b);
     b = 0;
     e[3 + a] = 4 + e[e[b + e[9]]] - e[2];
