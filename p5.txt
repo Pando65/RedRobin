@@ -43,7 +43,6 @@ class RedRobin {
 
     RedRobin() {
         Equipo e1, e2;
-        number a;
-        a = a - 16;
+        e1.Bcomposicion.B = 10;
     }
 }

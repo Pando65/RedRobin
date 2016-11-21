@@ -118,13 +118,16 @@ def p_valorargumentos(p):
     
 def p_composicion_atributo(p):
     '''composicion_atributo : PUNTO ID
+                            | PUNTO ID PUNTO ID
                             | empty'''
-    #TODO -- Aceptar arreglos como atributo de objetos
     if p[1] == '.': # es composicion
         p[0] = p[2]
+        if len(p) > 3:
+            p[0] = p[2] + '.' + p[4]
+            print(p[0])
+            terminate("composicion 2 niveles jala")
     else:
         p[0] = p[1]
-
 def p_io(p):
     '''io : PRINT P_ABRE argumentosPrint P_CIERRA
           | READ P_ABRE identificador smReadQuadruple P_CIERRA '''
