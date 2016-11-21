@@ -221,7 +221,6 @@ def p_negacion(p):
                 | OPERADOR_RESTA smNewNegativo
                 | empty'''
 
-# TODO - checar jerarquia de estos operadores, tambien tienen al parecer
 def p_operadorrelacional(p):
     '''operadorrelacional : MAYOR_IGUAL
                           | MENOR_IGUAL

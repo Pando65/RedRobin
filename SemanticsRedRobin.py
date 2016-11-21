@@ -202,7 +202,6 @@ def p_smforend(p):
         resultType = cubo.check(opType1, opType2, toCode['+'])
         if resultType != 'error':
             resultType += 'Temp'
-            # todo - agregar a tabla de direccion virtual el valor temporal
             stackDirMem.append(memConts[memCont[resultType]])
             createQuadruple(toCode['+'], iterador, variable, memConts[memCont[resultType]])
             memConts[memCont[resultType]] += 1
@@ -337,13 +336,11 @@ def isAtomic(mType):
 def p_smnewvariable(p):
     'smnewvariable : '
     newVarName = p[-1]
-    # TODO: ver que rollo con los arreglos y valores de la variable
     # Si el nobre ya existe, está repetido
     if exists(newVarName):
         terminate("REPETAED VARIABLE NAME:" + newVarName)
     
     # Si estamos dentro de una funcion
-    # TODO - objetos dentro de funciones
     if currentScopeFunction != '': 
         # TODO- objetos dentro de funciones
         dirProced[currentScopeClass]['func'][currentScopeFunction]['vars'][newVarName] = {'tipo': currentType, 'size': 0, 'mem': getMemSpace(currentType, 'Func', newVarName)}
@@ -352,7 +349,6 @@ def p_smnewvariable(p):
         if isAtomic(currentType):
             dirProced[currentScopeClass]['vars'][newVarName] = {'tipo': currentType, 'size': 0, 'mem': getMemSpace(currentType, 'Class', newVarName)}
         else:
-            # TODO: AL MANDAR A UNA RUTINA, MANDAR LAS DIRECCIONES DE LA INSTANCIA A SU CORRESPONDIENTE DIRECCION FANTASMA, COMO PARAMETROS POR REFERENCIA
             # Es un objeto
             # Valido que la clase del objeto exista
             if currentType not in dirProced or currentType == 'RedRobin':
@@ -590,7 +586,6 @@ def p_smNewNegativo(p):
 
     
 #### SEMANTICA DE FUNCIONEEES #####
-# TODO - manejar los returns
 
 currentFunction = ""
 currentClass = ""
@@ -778,7 +773,6 @@ def p_smEndInvocacion(p):
         createQuadruple(toCode['gosub'], -1, -1, dirProced[currentClass]['func'][currentFunction]['quad'])
         dirRetorno = dirProced[currentClass]['func'][currentFunction]['mem']
         # Actualizamos los valores por referncia
-        # TODO - atributos de objeto
         for real in hashRef:
             createQuadruple(toCode["ref"], hashRef[real], hashRefTam[real], real)
         # creamos el cuadruplo que guarda el valor de retorno
@@ -811,7 +805,6 @@ def p_smQuadToNumber(p):
     resultType = cubo.check(getTypeCode(operand), toCode['null'], toCode['toNumber'])
     if resultType != 'error':
         resultType += 'Temp'
-        # todo - agregar a tabla de direccion virtual el valor temporal  # Answer to todo: Esto es copiado de la de arriba tonses no se si aplica
         stackDirMem.append(memConts[memCont[resultType]])
         createQuadruple(toCode['toNumber'], operand, -1, memConts[memCont[resultType]])
         memConts[memCont[resultType]] += 1
@@ -825,7 +818,6 @@ def p_smQuadToReal(p):
     resultType = cubo.check(getTypeCode(operand), toCode['null'], toCode['toReal'])
     if resultType != 'error':
         resultType += 'Temp'
-        # todo - agregar a tabla de direccion virtual el valor temporal  # Answer to todo: Esto es copiado de la de arriba tonses no se si aplica
         stackDirMem.append(memConts[memCont[resultType]])
         createQuadruple(toCode['toReal'], operand, -1, memConts[memCont[resultType]])
         memConts[memCont[resultType]] += 1
@@ -839,7 +831,6 @@ def p_smQuadToString(p):
     resultType = cubo.check(getTypeCode(operand), toCode['null'], toCode['toString'])
     if resultType != 'error':
         resultType += 'Temp'
-        # TODO - agregar a tabla de direccion virtual el valor temporal  # Answer to todo: Esto es copiado de la de arriba tonses no se si aplica
         stackDirMem.append(memConts[memCont[resultType]])
         createQuadruple(toCode['toString'], operand, -1, memConts[memCont[resultType]])
         memConts[memCont[resultType]] += 1
@@ -909,7 +900,6 @@ def validateIdSemantics(currentIdName, currentObjPath, currentArray):
                 stackDirMem.append(dirProced[currentScopeClass]['func'][currentScopeFunction]['vars'][currentIdName]['mem'])
         
 def validateObjSemantics(currentObjPath, currentIdName, currentArray):
-    # TODO: implementar arreglos
     # TODO: considerar composicion en red robin
     if currentScopeClass == 'RedRobin':
         print("ok")
