@@ -944,25 +944,26 @@ def validateIdSemantics(currentIdName, currentObjPath, currentArray):
             elif currentScopeFunction == '' or currentIdName in dirProced[currentScopeClass]['func'][currentScopeFunction]['vars']:
                 stackDirMem.append(dirProced[currentScopeClass]['func'][currentScopeFunction]['vars'][currentIdName]['mem'])
         
-def validateObjSemantics(currentObjPath, currentIdName, currentArray):
+def validateObjSemantics(currentAttrPath, currentIdName, currentArray):
     # TODO: considerar composicion en red robin
-    if currentScopeClass == 'RedRobin':
+    if '.' in currentIdName:
         print("ok")
+        terminate("okkk")
     else:
         # Se que currentObjPath tendra solo un objeto "padre"
         # Valido que exista el objeto
-        if currentObjPath in dirProced[currentScopeClass]['obj']:
+        if currentAttrPath in dirProced[currentScopeClass]['obj']:
             # Valido que exista el nombre dentro del objeto
-            if currentIdName in dirProced[currentScopeClass]['obj'][currentObjPath]['attr']:
+            if currentIdName in dirProced[currentScopeClass]['obj'][currentAttrPath]['attr']:
                 if currentArray == '[':
-                    arrayRutine(currentIdName, currentObjPath)
+                    arrayRutine(currentIdName, currentAttrPath)
                 else:
                     # existe, lo meto a la pila
-                    stackDirMem.append(dirProced[currentScopeClass]['obj'][currentObjPath]['attr'][currentIdName]['mem'])
+                    stackDirMem.append(dirProced[currentScopeClass]['obj'][currentAttrPath]['attr'][currentIdName]['mem'])
             else:
                 terminate("Attribute " + currentIdName + " not found")
         else:
-            terminate("Object " + currentObjPath + " not found")
+            terminate("Object " + currentAttrPath + " not found")
             
 def newCteBool(newBool):
     if newBool == 'true':

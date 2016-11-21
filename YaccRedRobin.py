@@ -124,8 +124,6 @@ def p_composicion_atributo(p):
         p[0] = p[2]
         if len(p) > 3:
             p[0] = p[2] + '.' + p[4]
-            print(p[0])
-            terminate("composicion 2 niveles jala")
     else:
         p[0] = p[1]
 def p_io(p):
