@@ -13,6 +13,7 @@ class RedRobin {
     class Jugador {
         public number J;
         public Base Bhcomp;
+        public bool arrHeredado[10];
         
         func public empty heredada() {
             J = J + 1;
@@ -46,5 +47,7 @@ class RedRobin {
         Equipo e1, e2;
         e1.E = 10;
         e2.E = 20;
+        e1.arrHeredado[2] = true;
+        e1.probando();
     }
 }
