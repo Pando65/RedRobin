@@ -478,6 +478,17 @@ def referencia():
         #Se 'destruye' toda la memoria de entorno local de la funcion que recien acaba de terminar pues ya no se requiere
         pilaMemoriaLocal.pop()
 
+def verificarLimites():
+    operando1 = liCuadruplos[apunCuadruplo].op1
+    limiteInf = liCuadruplos[apunCuadruplo].op2
+    limiteSup = liCuadruplos[apunCuadruplo].r
+
+    offset = findValueInMemory(operando1, nivelAlcance)
+
+    #Se verifica si el valor de indexacion al arreglo esta dentro de los limites posibles
+    if offset < limiteInf or offset > limiteSup:
+        terminate("Out of index error")
+
 def asignaRetorno():
     operando1 = liCuadruplos[apunCuadruplo].op1
     valor1 = findValueInMemory(operando1, nivelAlcance)
@@ -529,7 +540,7 @@ fromCode = {
     63 : terminaProcedimiento, #endproc
     64 : terminaPrograma, #endprogram
     65 : referencia, #ref
-#    66 : verificarLimites, #ver
+    66 : verificarLimites, #ver
     67 : asignaRetorno #retu
 }
 
