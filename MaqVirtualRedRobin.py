@@ -659,6 +659,10 @@ for ite in range(1, 1 + cantConstantes):
 
     memEjecucion[direccion] = valor
 
+#Se agregan a memoria constantes predefinidas booleanas
+memEjecucion[15100] = False
+memEjecucion[15101] = True
+
 # Se obtiene la cantidad de cuadruplos
 cantCuadruplos = int(listaRenglones[cantConstantes + 1])
 for ite in range(cantConstantes + 2, cantConstantes + 2 + cantCuadruplos):
