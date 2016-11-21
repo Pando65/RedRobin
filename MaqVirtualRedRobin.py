@@ -364,8 +364,38 @@ def goTof():
         fromCode[ liCuadruplos[apunCuadruplo].ope ]()
 
 def era():
+    global pilaMemoriaLocal
+
+    # Se le agrega una nuevo entorno de variables locales para la funcion a ser invocada
+    pilaMemoriaLocal.append({})
+
+def irASubrutina():
     global apunCuadruplo
-    #PENDIENTE
+    global pilaApunCuadruplo
+    global nivelAlcance
+
+    # Se mete el a la pila de apuntadores a cuadruplos el numero del siguiente cuadruplo que se dormira
+    pilaApunCuadruplo.append(apunCuadruplo + 1)
+    # Se obtiene el numero de cuadruplo destino y se actualiza el mismo
+    destino = liCuadruplos[apunCuadruplo].r
+    apunCuadruplo = destino
+
+    # Se incrementa el nuevo nivel de entorno de valores locales a uno mayor
+    nivelAlcance = nivelAlcance + 1
+
+    fromCode[ liCuadruplos[apunCuadruplo].ope ]()
+
+def parametro():
+    global apunCuadruplo
+
+    operando1 = liCuadruplos[apunCuadruplo].op1
+    valor1 = findValueInMemory(operando1, nivelAlcance)
+
+    #Se obtiene la direccion absoluta en caso de que sea una direccion indirecta
+    direccionAlmacenar = findAbsoluteAddress(liCuadruplos[apunCuadruplo].r, nivelAlcance)
+
+    # Se inicializa valor de la variable local en la funcion a ejecutarse
+    pilaMemoriaLocal[nivelAlcance + 1][direccionAlmacenar] = valor1
 
 def imprimir():
     global apunCuadruplo
@@ -385,9 +415,88 @@ def imprimir():
             #No es una variable entera
             print(valor)
 
+def give():
+    operando1 = liCuadruplos[apunCuadruplo].op1
+    valor1 = findValueInMemory(operando1, nivelAlcance)
+
+    #Se obtiene la direccion absoluta en caso de que sea una direccion indirecta
+    direccionAlmacenar = findAbsoluteAddress(liCuadruplos[apunCuadruplo].r, nivelAlcance)
+
+    #Se checa si la direccion a asignar valor es entera para almacenar solo la parte entera
+    if isNumber(direccionAlmacenar):
+        memEjecucion[direccionAlmacenar] = int(valor1)
+    else:
+        memEjecucion[direccionAlmacenar] = valor1
+
+def terminaProcedimiento():
+    global apunCuadruplo
+    global pilaApunCuadruplo
+    global pilaMemoriaLocal
+    global nivelAlcance
+
+    #Se obtiene el apuntador a cuadruplo que se dejo dormido donde se invoco la rutina que acaba de terminar
+    apunCuadruplo = pilaApunCuadruplo.pop()
+    #Se decrementa el nivel de entorno de los valores locales pero sin destruir el de la funcion recien terminada
+    nivelAlcance = nivelAlcance - 1
+
+    # Si el cuadruplo al que se regresa no tiene operaciones de referencia
+    if liCuadruplos[apunCuadruplo].ope != 65:
+        #Se 'destruye' toda la memoria de entorno local de la funcion que recien acaba de terminar pues ya no se requiere
+        pilaMemoriaLocal.pop()
+    
+    fromCode[ liCuadruplos[apunCuadruplo].ope ]()
+
 def terminaPrograma():
-    #Nothing toDo
+    #Nothing to do
     terminate("")
+
+def referencia():
+    global pilaMemoriaLocal
+
+    operando1 = liCuadruplos[apunCuadruplo].op1
+    #Se busca valor en el entorno de memoria local que se acaba de dejar de la funcion que se termino de invocar
+    valor1 = findValueInMemory(operando1, nivelAlcance + 1)
+
+    #Se obtiene la direccion absoluta en caso de que sea una direccion indirecta en el entorno local actual
+    direccionAlmacenar = findAbsoluteAddress(liCuadruplos[apunCuadruplo].r, nivelAlcance)
+
+    if isGlobal(direccionAlmacenar):
+        #Se checa si la direccion a asignar valor es entera para almacenar solo la parte entera
+        if isNumber(direccionAlmacenar):
+            memEjecucion[direccionAlmacenar] = int(valor1)
+        else:
+            memEjecucion[direccionAlmacenar] = valor1
+    else:
+        #Se checa si la direccion a asignar valor es entera para almacenar solo la parte entera
+        if isNumber(direccionAlmacenar):
+            pilaMemoriaLocal[nivelAlcance][direccionAlmacenar] = int(valor1)
+        else:
+            pilaMemoriaLocal[nivelAlcance][direccionAlmacenar] = valor1
+
+    #Se verifica si el siguiente NO es un cuadruplo de referencia
+    if liCuadruplos[apunCuadruplo + 1].ope != 65:
+        #Se 'destruye' toda la memoria de entorno local de la funcion que recien acaba de terminar pues ya no se requiere
+        pilaMemoriaLocal.pop()
+
+def asignaRetorno():
+    operando1 = liCuadruplos[apunCuadruplo].op1
+    valor1 = findValueInMemory(operando1, nivelAlcance)
+
+    #Se obtiene la direccion absoluta en caso de que sea una direccion indirecta
+    direccionAlmacenar = findAbsoluteAddress(liCuadruplos[apunCuadruplo].r, nivelAlcance)
+
+    if isGlobal(direccionAlmacenar):
+        #Se checa si la direccion a asignar valor es entera para almacenar solo la parte entera
+        if isNumber(direccionAlmacenar):
+            memEjecucion[direccionAlmacenar] = int(valor1)
+        else:
+            memEjecucion[direccionAlmacenar] = valor1
+    else:
+        #Se checa si la direccion a asignar valor es entera para almacenar solo la parte entera
+        if isNumber(direccionAlmacenar):
+            pilaMemoriaLocal[nivelAlcance][direccionAlmacenar] = int(valor1)
+        else:
+            pilaMemoriaLocal[nivelAlcance][direccionAlmacenar] = valor1
 
 #Enumeracion de funciones
 fromCode = {
@@ -408,22 +517,24 @@ fromCode = {
     51 : goTof, #gotof
 #    52 : negativo, #neg
     53 : era, #era
-#    'gosub': 54,
-#    'param': 55,
+    54 : irASubrutina, #gosub
+    55 : parametro, #param
     56 : imprimir, #print
 #    'read' : 57,
 #    'toNumber' : 58,
 #    'toReal' : 59,
 #    'toString': 60,
 #    'null' : 61,
-#    62 : give #'give': 62,
-#    'endproc': 63,
-     64 : terminaPrograma #'endprogram': 64,
-#    'ref': 65
+    62 : give, #'give': 62,
+    63 : terminaProcedimiento, #endproc
+    64 : terminaPrograma, #endprogram
+    65 : referencia, #ref
+#    66 : verificarLimites, #ver
+    67 : asignaRetorno #retu
 }
 
 # Se pregunta por archivo ejecutable
-filename = "probarMaquina_bin.txt"
+filename = "p1_bin.txt"
 # filename = input("Ingresa nombre de archivo con condigo objeto de Red Robin: ") 
 f = open(filename, 'r')
 listaRenglones = f.readlines()

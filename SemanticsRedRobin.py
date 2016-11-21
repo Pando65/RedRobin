@@ -748,7 +748,7 @@ def p_smEndInvocacion(p):
         if dirRetorno != -1:
             returnType = toSymbol[getTypeCode(dirRetorno)]
             newtemp = memConts[memCont[returnType + 'Temp']]
-            createQuadruple(toCode['='], dirRetorno, -1, newtemp)
+            createQuadruple(toCode['retu'], dirRetorno, -1, newtemp)
             stackDirMem.append(newtemp)
             memConts[memCont[returnType + 'Temp']] += 1
         
