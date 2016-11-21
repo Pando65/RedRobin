@@ -593,6 +593,7 @@ def p_smNewNegativo(p):
 # TODO - manejar los returns
 
 currentFunction = ""
+currentClass = ""
 # key: real, value: temp o fantasma
 hashRef = {}
 hashRefTam = {}
@@ -602,6 +603,7 @@ def p_smNewFuncNoReturn(p):
     'smNewFuncNoReturn :'
     global contParam
     global currentFunction
+    global currentClass
     global giveValue
     funName = p[-2]
     if funName in dirProced[currentScopeClass]['func']:
@@ -611,6 +613,7 @@ def p_smNewFuncNoReturn(p):
             hashRef.clear()
             hashRefTam.clear()
             currentFunction = funName
+            currentClass = currentScopeClass
             createQuadruple(toCode['era'], -1, -1, dirProced[currentScopeClass]['func'][funName]['quad'])
             # si la funcion es heredada, de una vez pido por referencia todos los atributos de la clase donde originalmente esta la funcion
             if dirProced[currentScopeClass]['func'][funName]['class'] != currentScopeClass:
@@ -633,53 +636,87 @@ def p_smNewFuncNoReturn(p):
         terminate("Function " + funName + " not declared")
 
 # Llamada desde p_valor
+
+def newInvocacionObj(objPath, funName):
+    if currentScopeClass == 'RedRobin':
+        print("desde redrobin invamos")
+    else:
+        print("invocacion desde no red robin de un obj")
+        global contParam
+        global currentFunction
+        global currentClass
+        # Valido que el objeto exista
+        if objPath in dirProced[currentScopeClass]['obj']:
+            currentClass = dirProced[currentScopeClass]['obj'][objPath]['class']
+            if funName in dirProced[currentClass]['func']:
+                contParam = 1
+                hashRef.clear()
+                hashRefTam.clear()
+                currentFunction = funName
+                createQuadruple(toCode['era'], -1, -1, dirProced[currentClass]['func'][funName]['quad'])
+                # mando como referencia todos los atributos de mi instancia
+                for attrName in dirProced[currentScopeClass]['obj'][objPath]['attr']:
+                    dirReal = dirProced[currentScopeClass]['obj'][objPath]['attr'][attrName]['mem']
+                    hashRef[dirReal] = dirProced[currentClass]['vars'][attrName]['mem']
+                    hashRefTam[dirReal] = dirProced[currentClass]['vars'][attrName]['size']
+            else:
+                terminate("Funcition " + funName + " doesn't exists in object " + objPath)
+        else:
+            terminate("Object " + objPath + " doesn't exists")
+        
 def p_smNewInvocacion(p):
     'smNewInvocacion :'
     global contParam
     global currentFunction
+    global currentClass
     funName = p[-2]
-    if funName in dirProced[currentScopeClass]['func']:
-        contParam = 1
-        hashRef.clear()
-        hashRefTam.clear()
-        currentFunction = funName
-        createQuadruple(toCode['era'], -1, -1, dirProced[currentScopeClass]['func'][funName]['quad'])
-        # si la funcion es heredada, de una vez pido por referencia todos los atributos de la clase donde originalmente esta la funcion
-        if dirProced[currentScopeClass]['func'][funName]['class'] != currentScopeClass:
-            for varName in dirProced[ dirProced[currentScopeClass]['func'][funName]['class'] ]['vars']:
-                dirReal = dirProced[currentScopeClass]['vars'][varName]['mem']
-                parentClass = dirProced[currentScopeClass]['func'][funName]['class']
-                hashRef[dirReal] = dirProced[parentClass]['vars'][varName]['mem']
-                hashRefTam[dirReal] = dirProced[currentScopeClass]['vars'][varName]['size']
-                    
-            for objName in dirProced[ dirProced[currentScopeClass]['func'][funName]['class'] ]['obj']:
-                # recorro todas las variables atomicas del objeto actual
-                objClass = dirProced[ dirProced[currentScopeClass]['func'][funName]['class'] ]['obj'][objName]['class']
-                for attrName in dirProced[objClass]['vars']:
-                    dirReal = dirProced[currentScopeClass]['obj'][objName]['attr'][attrName]['mem']
-                    hashRef[dirReal] = dirProced[objClass]['vars'][attrName]['mem']
-                    hashRefTam[dirReal] = dirProced[currentScopeClass]['obj'][objName]['attr'][attrName]['size']
+    objPath = p[-1]
+    if objPath != None:
+        newInvocacionObj(funName, objPath)
     else:
-        terminate("Function " + funName + " not declared")
+        if funName in dirProced[currentScopeClass]['func']:
+            contParam = 1
+            hashRef.clear()
+            hashRefTam.clear()
+            currentFunction = funName
+            currentClass = currentScopeClass
+            createQuadruple(toCode['era'], -1, -1, dirProced[currentScopeClass]['func'][funName]['quad'])
+            # si la funcion es heredada, de una vez pido por referencia todos los atributos de la clase donde originalmente esta la funcion
+            if dirProced[currentScopeClass]['func'][funName]['class'] != currentScopeClass:
+                for varName in dirProced[ dirProced[currentScopeClass]['func'][funName]['class'] ]['vars']:
+                    dirReal = dirProced[currentScopeClass]['vars'][varName]['mem']
+                    parentClass = dirProced[currentScopeClass]['func'][funName]['class']
+                    hashRef[dirReal] = dirProced[parentClass]['vars'][varName]['mem']
+                    hashRefTam[dirReal] = dirProced[currentScopeClass]['vars'][varName]['size']
+
+                for objName in dirProced[ dirProced[currentScopeClass]['func'][funName]['class'] ]['obj']:
+                    # recorro todas las variables atomicas del objeto actual
+                    objClass = dirProced[ dirProced[currentScopeClass]['func'][funName]['class'] ]['obj'][objName]['class']
+                    for attrName in dirProced[objClass]['vars']:
+                        dirReal = dirProced[currentScopeClass]['obj'][objName]['attr'][attrName]['mem']
+                        hashRef[dirReal] = dirProced[objClass]['vars'][attrName]['mem']
+                        hashRefTam[dirReal] = dirProced[currentScopeClass]['obj'][objName]['attr'][attrName]['size']
+        else:
+            terminate("Function " + funName + " not declared")
         
 # Llamada desde p_valorargumentos
 def p_smArgumentoRef(p):
     'smArgumentoRef :'
     global contParam
-    # TODO - considerar composicion y arreglos
-    if contParam in dirProced[currentScopeClass]['func'][currentFunction]['params']:
+    global currentClass
+    if contParam in dirProced[currentClass]['func'][currentFunction]['params']:
         # Obtenemos la direccion del argumento
         argDir = stackDirMem.pop()
         # Obtenemos el nombre declarado del parametro, segun su posicion
-        nameVarParam = dirProced[currentScopeClass]['func'][currentFunction]['params'][contParam]['name']
+        nameVarParam = dirProced[currentClass]['func'][currentFunction]['params'][contParam]['name']
         # Obtenemos la direccion asignada a ese parametro para la generacion de cuadruplos
         # TODO - ver si esto de jalar la direccion de vars se va a quedar así, dado que en teoria se va a eliminar el hash de vars del dir de procedimientos despues de q acabe la funcion
-        dirVarParam = dirProced[currentScopeClass]['func'][currentFunction]['vars'][nameVarParam]['mem']
+        dirVarParam = dirProced[currentClass]['func'][currentFunction]['vars'][nameVarParam]['mem']
         # Verificamos que el argumento sea del mismo tipo que el parametro
         if cubo.check(getTypeCode(dirVarParam), getTypeCode(argDir), toCode['=']) != 'error':
             createQuadruple(toCode['param'], argDir, -1, dirVarParam)
             hashRef[argDir] = dirVarParam
-            hashRefTam[argDir] = dirProced[currentScopeClass]['func'][currentFunction]['vars'][nameVarParam]['size']
+            hashRefTam[argDir] = dirProced[currentClass]['func'][currentFunction]['vars'][nameVarParam]['size']
             contParam += 1
         else:
             terminate("Error in params of function " + currentFunction)
@@ -691,14 +728,14 @@ def p_smArgumentoExpresion(p):
     'smArgumentoExpresion :'
     global contParam
     # Verificamos que el numero de argumentos siga dentro del rango
-    if contParam in dirProced[currentScopeClass]['func'][currentFunction]['params']: 
+    if contParam in dirProced[currentClass]['func'][currentFunction]['params']:
         # Obtenemos la direccion del argumento
         argDir = stackDirMem.pop()
         # Obtenemos el nombre declarado del parametro, segun su posicion
-        nameVarParam = dirProced[currentScopeClass]['func'][currentFunction]['params'][contParam]['name']
+        nameVarParam = dirProced[currentClass]['func'][currentFunction]['params'][contParam]['name']
         # Obtenemos la direccion asignada a ese parametro para la generacion de cuadruplos
         # TODO - ver si esto de jalar la direccion de vars se va a quedar así, dado que en teoria se va a eliminar el hash de vars del dir de procedimientos despues de q acabe la funcion
-        dirVarParam = dirProced[currentScopeClass]['func'][currentFunction]['vars'][nameVarParam]['mem']
+        dirVarParam = dirProced[currentClass]['func'][currentFunction]['vars'][nameVarParam]['mem']
         # Verificamos que el argumento sea del mismo tipo que el parametro
         if cubo.check(getTypeCode(dirVarParam), getTypeCode(argDir), toCode['=']) != 'error':
             createQuadruple(toCode['param'], argDir, -1, dirVarParam)
@@ -737,9 +774,9 @@ def p_smNewGive(p):
 def p_smEndInvocacion(p):
     'smEndInvocacion :'
     global contParam
-    if len(dirProced[currentScopeClass]['func'][currentFunction]['params']) == contParam - 1:
-        createQuadruple(toCode['gosub'], -1, -1, dirProced[currentScopeClass]['func'][currentFunction]['quad'])
-        dirRetorno = dirProced[currentScopeClass]['func'][currentFunction]['mem']
+    if len(dirProced[currentClass]['func'][currentFunction]['params']) == contParam - 1:
+        createQuadruple(toCode['gosub'], -1, -1, dirProced[currentClass]['func'][currentFunction]['quad'])
+        dirRetorno = dirProced[currentClass]['func'][currentFunction]['mem']
         # Actualizamos los valores por referncia
         # TODO - atributos de objeto
         for real in hashRef:
