@@ -1,25 +1,49 @@
 class RedRobin {
 
+  func public number funcion(number: r, x) {
+    number a;
+    a = 2 + 3 * x;
+    r = a;
+    give a;
+  }
+
+  func public string checa(string: ula, bestia; bool: condicion) {
+    ula = "Ombeeeee ya no se que hacer";
+    string resultado;
+    condicion = 1 == 1;
+    if (bestia == "esto") {
+      give ula;
+    }
+    elif (bestia == "") {
+      bestia = "faaaaa";
+      give "Il riturno del capo";
+    } 
+    else {
+      give "";
+    }
+  }
+
   RedRobin() {
     number a, b, c, d;
-    if (a >= b) {
-      if (b <= a) {
-        a = b + c;
-      }
-      else {
-        c = d + a;
-      }
-      d = d + 1;
-    }
-    else {
-        c = b * a;
-    }
-    a = b + c;
+    a = 3;
+    b  = 10;
+    c = -2;
 
-    for c in (2 _ 5) step 1 {
-      a = a + 10;
-    }
-    
+    c = funcion(&a, b - c + 3);
+    print("");
+    print("a", a, "");
+    d = funcion(&a, b - c + 3);
+    print("a", a, "");
+    print("c", c, "");
+    print("d", d, "");
+
+    string probando = "";
+    bool probandoBoleano = 5 == 10;
+    print("probandoBoleano", probandoBoleano);
+    string variado = checa("esto", probando, &probandoBoleano);
+    print("probandoBoleano", probandoBoleano);
+    print("variado", variado);
+    print("probando", probando);
   }
 
 }
