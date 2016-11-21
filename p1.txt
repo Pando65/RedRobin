@@ -2,48 +2,61 @@ class RedRobin {
 
   func public number funcion(number: r, x) {
     number a;
-    a = 2 + 3 * x;
-    r = a;
+    a = r + 3;
+
     give a;
   }
 
-  func public string checa(string: ula, bestia; bool: condicion) {
-    ula = "Ombeeeee ya no se que hacer";
-    string resultado;
-    condicion = 1 == 1;
-    if (bestia == "esto") {
-      give ula;
-    }
-    elif (bestia == "") {
-      bestia = "faaaaa";
-      give "Il riturno del capo";
-    } 
-    else {
-      give "";
-    }
+  func public empty sinRetorno() {
+    real dPrueba = 5.5;
+    print(dPrueba);
   }
 
   RedRobin() {
-    number a, b, c, d;
+    number a, b, c, e[10], d;
     a = 3;
-    b  = 10;
-    c = -2;
-
-    c = funcion(&a, b - c + 3);
-    print("");
-    print("a", a, "");
-    d = funcion(&a, b - c + 3);
-    print("a", a, "");
-    print("c", c, "");
-    print("d", d, "");
-
-    string probando = "";
-    bool probandoBoleano = 5 == 10;
-    print("probandoBoleano", probandoBoleano);
-    string variado = checa("esto", probando, &probandoBoleano);
-    print("probandoBoleano", probandoBoleano);
-    print("variado", variado);
-    print("probando", probando);
+    print("HOla");
+    for b in (0 _ 9) step 1 {
+      print("pelao", b);
+      e[b] = 0;
+      print("que esta pasando dr garcia");
+    }
+    e[2] = 1;
+    print("", "Checa b", b);
+    b = 0;
+    e[3 + a] = 4 + e[e[b + e[9]]] - e[2];
+    for b in (0 _ 9) step 1 {
+      print(e[b]);
+    }
+    sinRetorno();
+    print("inicia invocar funciones con celda de arreglo de parametro");
+    d = 25;
+    c = funcion(e[3 + a], d);
+    print("C: ", c);
+    if (a >= b) {
+        b = c * d / 3;
+    } elif (b <= c) {
+        b = c + d;
+    } elif(b == d) {
+        d = c * a;
+    }
+    else {
+        b = c - d;
+    }
+    a = c / d;
+    
+    print("llego aca 2");
+    if (a <= b) {
+        d = d + 1;
+    }
+    else {
+        c = d + -1 * -(5 -7);
+    }
+    d = d + 1;
+    print("por aca 3");
+    while(a <= b or d <= b) {
+        b = b - 1;
+    }
   }
 
 }
