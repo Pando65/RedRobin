@@ -12,7 +12,7 @@ class RedRobin {
     variableBooleana = "ah" >= "h";
     variableBooleana2 = "ah" <= "h";
     
-    for a in (2 _ 123) step -21 {
+    for a in (2 _ 123) step -2 {
       d = a * 1;
       print("a");
       print(a);
@@ -20,7 +20,5 @@ class RedRobin {
       print("d");
       print(d);
     }
-
-    print("Pos ya");
   }
 }
