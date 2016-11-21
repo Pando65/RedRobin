@@ -33,7 +33,8 @@ toCode = {
     'endproc': 63,
     'endprogram': 64,
     'ref': 65,
-    'ver': 66
+    'ver': 66,
+    'savegive': 67
 }
 
 toSymbol = {
@@ -71,7 +72,8 @@ toSymbol = {
     63: 'endproc',
     64: 'endprogram',
     65: 'ref',
-    66: 'ver'
+    66: 'ver',
+    67: 'savegive'
 }
 
 memStart = {
