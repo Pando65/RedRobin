@@ -996,6 +996,7 @@ def arrayRutine(currentIdName, currentObjPath):
     typeVarCode = getTypeCode(dirBase)
     newTemp = getMemSpace(toSymbol[typeVarCode], 'Temp', "-")                
     createQuadruple(toCode['ver'], indexMem, 0, int(limitArray) - 1)
+    dirBase = int(dirBase)
     if not dirBase in mapCteToDir:
         mapCteToDir[dirBase] = memConts[memCont['numberCte']]
         memConts[memCont['numberCte']] += 1
