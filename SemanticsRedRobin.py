@@ -302,10 +302,19 @@ def p_smnewclass(p):
                 dicAttr = parentObjects[objName]['attr']
                 for nameVar in dicAttr: 
                     parentObjects[objName]['attr'][nameVar]['mem'] = getMemSpace(dicAttr[nameVar]['tipo'], 'Class', nameVar)
+                    typeArray = parentObjects[objName]['attr'][nameVar]['tipo'] 
+                    arraySize = parentObjects[objName]['attr'][nameVar]['size'] 
+                    if int(arraySize) > 0:
+                        memConts[memCont[typeArray + 'Class']] += (int(arraySize) - 1)
+                    
                     
             # Hago lo mismo de arriba con las variables
             for varName in parentVariables:
                 parentVariables[varName]['mem'] = getMemSpace(parentVariables[varName]['tipo'], 'Class', varName)
+                typeArray = parentVariables[varName]['tipo']
+                arraySize = parentVariables[varName]['size']
+                if int(arraySize) > 0:
+                    memConts[memCont[typeArray + 'Class']] += (int(arraySize) - 1)                
                 
         dirProced[newScopeClass] = {'func': parentFunctions, 'vars': parentVariables, 'obj': parentObjects, 'parent': parent}
         setScopeClass(newScopeClass)
@@ -632,7 +641,7 @@ def generalInvocationRutine(funName, currClass, objPath):
     
 
 def newInvocacionFuncDeObjNoReturn(objPath, funName):
-    if currentScopeClass == 'RedRobin':
+    if '.' in funName:
         print("desde redrobin invamos")
     else:
         global contParam
