@@ -12,7 +12,7 @@ CUERPOCLASE ::= (PRIVILAGES DECLARACION | FUNCIONES)+
 
 CUERPOFUNCION ::= (DECLARACION | ASIGNACION | CONDICIONAL | CICLO | FUNCIONSINRETORNO ';' | IO ';' | RETORNO )*
 RETORNO ::= 'give' EXPRESION ';'
-FUNCIONSINRETORNO ::= 'id' ('.' 'id')? '(' ARGUMENTOS ')'
+FUNCIONSINRETORNO ::= 'id' ('.' 'id' | '.' 'id' '.' 'id')? '(' ARGUMENTOS ')'
 IO ::= 'print' '(' ARGUMENTOSPRINT ')' | 'read' '(' IDENTIFICADOR ')'
 ARGUMENTOS ::= (VALORARGUMENTOS (',' VALORARGUMENTOS)*)?
 VALORARGUMENTOS ::= '&'? IDENTIFICADOR | EXPRESION
@@ -34,6 +34,6 @@ EXPRESIONV ::= EXPRESIONVI (('*'|'/') EXPRESIONVI)*
 EXPRESIONVI ::= VALOR | ('!'|'-')? '(' EXPRESION ')'
 
 VALOR ::= IDENTIFICADOR | INVOCACION | 'cnst String' | VALORBOOLEANO | '-'? 'const Integer' | '-'? 'const Double'
-INVOCACION ::= ( 'id' ('.' 'id')? '(' ARGUMENTOS | ('toNumber' | 'toReal' | 'toString') '(' ARGUMENTOPOSIBLE ) ')'
+INVOCACION ::= ( 'id' ('.' 'id' | '.' 'id' '.' 'id')? '(' ARGUMENTOS | ('toNumber' | 'toReal' | 'toString') '(' ARGUMENTOPOSIBLE ) ')'
 VALORBOOLEANO ::= 'true' | 'false'
-IDENTIFICADOR ::= 'id' ('.' 'id' )? ( '[' VALOR ']' )?
+IDENTIFICADOR ::= 'id' ('.' 'id' | '.' 'id' '.' 'id')? ( '[' VALOR ']' )?
