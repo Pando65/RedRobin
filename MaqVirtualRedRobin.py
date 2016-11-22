@@ -489,16 +489,12 @@ def imprimir():
     direccionAlmacenar = findAbsoluteAddress(liCuadruplos[apunCuadruplo].r, nivelAlcance)
     valor = findValueInMemory(direccionAlmacenar, nivelAlcance)
 
-    #Si el valor es un string se imprime con este formato
-    if isinstance(valor, str):
-        print(valor[1:-1])
+    # Se verifica si se trata de una variable entera segun la direccion
+    if isNumber(direccionAlmacenar):
+        print(int(valor))
     else:
-        # Se verifica si se trata de una variable entera segun la direccion
-        if isNumber(direccionAlmacenar):
-            print(int(valor))
-        else:
-            #No es una variable entera
-            print(valor)
+        #No es una variable entera
+        print(valor)
 
 def lecturaTeclado():
     #Se obtiene la direccion absoluta en caso de que sea una direccion indirecta
@@ -526,8 +522,8 @@ def lecturaTeclado():
                 terminate("Execution error. Cannot convert value to bool.")
         else:
             tipoID = 3
-            #Se almacena un string directo y se le añaden dobles comillas al inicio y al final para que tenga concordancia con los demas
-            valor = "\"" + respuestaUsuario + "\""
+            #Se almacena un string directo
+            valor = respuestaUsuario
     except:
         #Se lanzo una excepcion al tratar de castear el valor
         if tipoID == 0:
@@ -555,13 +551,66 @@ def convierteANumero():
     #Se obtiene la direccion absoluta en caso de que sea una direccion indirecta
     direccionAlmacenar = findAbsoluteAddress(liCuadruplos[apunCuadruplo].r, nivelAlcance)
 
+    try:
+        #Se ejecuta escuchando posibles excepciones
+        valorCasteado = int(valor1)
+    except:
+        #No se puede castear a entero
+        terminate("Execution error. Cannot convert value to Number.")
+
     #Se almacena valor en estructura correcta
     if isGlobal(direccionAlmacenar):
         #Se almacena valor global dentro de la estructura que maneja almacenamiento global
-        memEjecucion[direccionAlmacenar] = int(valor1)
+        memEjecucion[direccionAlmacenar] = valorCasteado
     else:
         #Se almacena valor local dentro de la estructura que maneja almacenamiento local
-        pilaMemoriaLocal[nivelAlcance][direccionAlmacenar] = int(valor1)
+        pilaMemoriaLocal[nivelAlcance][direccionAlmacenar] = valorCasteado
+
+def convierteAReal():
+    # Cuadruplo para el casteo a numero real
+    operando1 = liCuadruplos[apunCuadruplo].op1
+    valor1 = findValueInMemory(operando1, nivelAlcance)
+
+    #Se obtiene la direccion absoluta en caso de que sea una direccion indirecta
+    direccionAlmacenar = findAbsoluteAddress(liCuadruplos[apunCuadruplo].r, nivelAlcance)
+
+    try:
+        #Se ejecuta escuchando posibles excepciones
+        valorCasteado = float(valor1)
+    except:
+        #No se puede castear a decimal
+        terminate("Execution error. Cannot convert value to Real.")
+
+    #Se almacena valor en estructura correcta
+    if isGlobal(direccionAlmacenar):
+        #Se almacena valor global dentro de la estructura que maneja almacenamiento global
+        memEjecucion[direccionAlmacenar] = valorCasteado
+    else:
+        #Se almacena valor local dentro de la estructura que maneja almacenamiento local
+        pilaMemoriaLocal[nivelAlcance][direccionAlmacenar] = valorCasteado
+
+def convierteAString():
+    # Cuadruplo para el casteo a string
+    operando1 = liCuadruplos[apunCuadruplo].op1
+    valor1 = findValueInMemory(operando1, nivelAlcance)
+
+    #Se obtiene la direccion absoluta en caso de que sea una direccion indirecta
+    direccionAlmacenar = findAbsoluteAddress(liCuadruplos[apunCuadruplo].r, nivelAlcance)
+
+    try:
+        #Se ejecuta escuchando posibles excepciones
+        valorCasteado = str(valor1)
+    except:
+        #No se puede castear a decimal
+        terminate("Execution error. Cannot convert value to String.")
+
+    #Se almacena valor en estructura correcta
+    if isGlobal(direccionAlmacenar):
+        #Se almacena valor global dentro de la estructura que maneja almacenamiento global
+        memEjecucion[direccionAlmacenar] = valorCasteado
+    else:
+        #Se almacena valor local dentro de la estructura que maneja almacenamiento local
+        pilaMemoriaLocal[nivelAlcance][direccionAlmacenar] = valorCasteado
 
 def give():
     operando1 = liCuadruplos[apunCuadruplo].op1
@@ -602,24 +651,34 @@ def referencia():
     global pilaMemoriaLocal
 
     operando1 = liCuadruplos[apunCuadruplo].op1
-    #Se busca valor en el entorno de memoria local que se acaba de dejar de la funcion que se termino de invocar
-    valor1 = findValueInMemory(operando1, nivelAlcance + 1)
+    operando2 = liCuadruplos[apunCuadruplo].op2
 
     #Se obtiene la direccion absoluta en caso de que sea una direccion indirecta en el entorno local actual
     direccionAlmacenar = findAbsoluteAddress(liCuadruplos[apunCuadruplo].r, nivelAlcance)
 
-    if isGlobal(direccionAlmacenar):
-        #Se checa si la direccion a asignar valor es entera para almacenar solo la parte entera
-        if isNumber(direccionAlmacenar):
-            memEjecucion[direccionAlmacenar] = int(valor1)
+    #Se itera sobre el operando2 que indica si se trata de un arreglo en caso de ser mayor a 0
+    if operando2 == 0:
+        #El valor a pasarse como referencia NO es una estructura pero igual debe ejecutar una vez el ciclo
+        operando2 = 1
+    
+    #Se tranfieren los valores de referencia sobre todos los elementos en caso de ser un arreglo o solo una vez
+    for ite in range(0, operando2):
+        #Se busca valor en el entorno de memoria local que se acaba de dejar de la funcion que se termino de invocar
+        valor1 = findValueInMemory(operando1 + ite, nivelAlcance + 1)
+        direccionActual = direccionAlmacenar + ite
+
+        if isGlobal(direccionActual):
+            #Se checa si la direccion a asignar valor es entera para almacenar solo la parte entera
+            if isNumber(direccionActual):
+                memEjecucion[direccionActual] = int(valor1)
+            else:
+                memEjecucion[direccionActual] = valor1
         else:
-            memEjecucion[direccionAlmacenar] = valor1
-    else:
-        #Se checa si la direccion a asignar valor es entera para almacenar solo la parte entera
-        if isNumber(direccionAlmacenar):
-            pilaMemoriaLocal[nivelAlcance][direccionAlmacenar] = int(valor1)
-        else:
-            pilaMemoriaLocal[nivelAlcance][direccionAlmacenar] = valor1
+            #Se checa si la direccion a asignar valor es entera para almacenar solo la parte entera
+            if isNumber(direccionActual):
+                pilaMemoriaLocal[nivelAlcance][direccionActual] = int(valor1)
+            else:
+                pilaMemoriaLocal[nivelAlcance][direccionActual] = valor1
 
     #Se verifica si el siguiente NO es un cuadruplo de referencia
     if liCuadruplos[apunCuadruplo + 1].ope != 65:
@@ -695,8 +754,8 @@ fromCode = {
     56 : imprimir, #print
     57 : lecturaTeclado, #read
     58 : convierteANumero, #toNumber
-#    'toReal' : 59,
-#    'toString': 60,
+    59 : convierteAReal, #toReal
+    60 : convierteAString, #toString
 #    'null' : 61,
     62 : give, #'give': 62,
     63 : terminaProcedimiento, #endproc
@@ -727,7 +786,7 @@ for ite in range(1, 1 + cantConstantes):
         valor = float(separacionConstantes[0])
     elif direccion <= 15099:
         #Es constante string
-        valor = separacionConstantes[0]
+        valor = separacionConstantes[0][1:-1]
     elif direccion <= 16099:
         #Es constante boolean
         if separacionConstantes[0] == 'true':

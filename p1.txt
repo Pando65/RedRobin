@@ -15,9 +15,13 @@ class RedRobin {
     number a, b, c, e[10], d;
 
     print("HOla");
-    real decimal = 32.12305;
-    a = 10 + toNumber(decimal);
-    print(a);
+    string resp;
+    
+    real decimal = -02.34021;
+    string porMientras = "boludinez no : ";
+    resp = porMientras + toString(decimal) + toString(" bofo?");
+    print("cadena", resp);
+    print(decimal);
     d = funcion(2, 3);
     print(d);
 /*
