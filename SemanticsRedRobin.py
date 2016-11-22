@@ -965,12 +965,28 @@ def validateIdSemantics(currentIdName, currentObjPath, currentArray):
                 stackDirMem.append(dirProced[currentScopeClass]['func'][currentScopeFunction]['vars'][currentIdName]['mem'])
         
 def validateObjSemantics(currentAttrPath, currentIdName, currentArray):
-    # TODO: considerar composicion en red robin
+    # TODO: OBJETOS LOCALES DE FUNCIONES 
     if '.' in currentIdName:
-        print("ok")
-        terminate("okkk")
+        listobj = currentIdName.split('.')
+        obj1 = currentAttrPath
+        obj2 = listobj[0]
+        attr = listobj[1]
+        # valido que exista el primer objeto
+        if existsObj(obj1):
+            # valido que exista el segundo objeto
+            if obj2 in dirProced[currentScopeClass]['obj'][obj1]['obj']:
+                if attr in dirProced[currentScopeClass]['obj'][obj1]['obj'][obj2]['attr']:
+                    # TODO: ARREGLOS
+                    # existe, lo meto a la pila
+                    stackDirMem.append(dirProced[currentScopeClass]['obj'][obj1]['obj'][obj2]['attr'][attr]['mem'])
+                else:
+                    terminate("Attribute " + attr + " doesn't exists")
+            else:
+                terminate("object " + obj2 + " doesn't exists")    
+        else:
+            terminate("object " + obj1 + " doesn't exists")
     else:
-        # Se que currentObjPath tendra solo un objeto "padre"
+        # Se que currentObjPath tendra solo un objeto "padre" de composicion
         # Valido que exista el objeto
         if currentAttrPath in dirProced[currentScopeClass]['obj']:
             # Valido que exista el nombre dentro del objeto

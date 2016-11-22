@@ -45,9 +45,11 @@ class RedRobin {
     RedRobin() {
         // esto es un comentario
         Equipo e1, e2;
-        /*e1.E = 10;
+        e1.E = 10;
         e2.E = 20;
-        e1.arrHeredado[2] = true;*/
+        e2.J = e1.J * e2.E;
+        e1.arrHeredado[2] = true;
         e1.probando();
+        e1.Bcomposicion.B = -3;
     }
 }
