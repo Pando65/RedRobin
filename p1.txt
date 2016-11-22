@@ -16,9 +16,10 @@ class RedRobin {
 
     print("HOla");
     string resp;
-    read(resp);
-    real decimal = toReal(resp);
-
+    
+    real decimal = -02.34021;
+    resp = toString(decimal) + toString(" bofo?");
+    print("cadena", resp);
     print(decimal);
     d = funcion(2, 3);
     print(d);

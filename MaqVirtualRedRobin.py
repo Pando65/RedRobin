@@ -567,7 +567,7 @@ def convierteANumero():
         pilaMemoriaLocal[nivelAlcance][direccionAlmacenar] = valorCasteado
 
 def convierteAReal():
-    # Cuadruplo para el casteo a numero entero
+    # Cuadruplo para el casteo a numero real
     operando1 = liCuadruplos[apunCuadruplo].op1
     valor1 = findValueInMemory(operando1, nivelAlcance)
 
@@ -580,6 +580,29 @@ def convierteAReal():
     except:
         #No se puede castear a decimal
         terminate("Execution error. Cannot convert value to Real.")
+
+    #Se almacena valor en estructura correcta
+    if isGlobal(direccionAlmacenar):
+        #Se almacena valor global dentro de la estructura que maneja almacenamiento global
+        memEjecucion[direccionAlmacenar] = valorCasteado
+    else:
+        #Se almacena valor local dentro de la estructura que maneja almacenamiento local
+        pilaMemoriaLocal[nivelAlcance][direccionAlmacenar] = valorCasteado
+
+def convierteAString():
+    # Cuadruplo para el casteo a string
+    operando1 = liCuadruplos[apunCuadruplo].op1
+    valor1 = findValueInMemory(operando1, nivelAlcance)
+
+    #Se obtiene la direccion absoluta en caso de que sea una direccion indirecta
+    direccionAlmacenar = findAbsoluteAddress(liCuadruplos[apunCuadruplo].r, nivelAlcance)
+
+    try:
+        #Se ejecuta escuchando posibles excepciones
+        valorCasteado = str(valor1)
+    except:
+        #No se puede castear a decimal
+        terminate("Execution error. Cannot convert value to String.")
 
     #Se almacena valor en estructura correcta
     if isGlobal(direccionAlmacenar):
@@ -722,7 +745,7 @@ fromCode = {
     57 : lecturaTeclado, #read
     58 : convierteANumero, #toNumber
     59 : convierteAReal, #toReal
-#    'toString': 60,
+    60 : convierteAString, #toString
 #    'null' : 61,
     62 : give, #'give': 62,
     63 : terminaProcedimiento, #endproc
