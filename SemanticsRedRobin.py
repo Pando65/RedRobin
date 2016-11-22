@@ -273,18 +273,17 @@ def p_smnewclass(p):
         parent = ''
         parentObjects = {}
         parentVariables = {}   
-        parentFunctions = {}
         # Pregunto si tengo un padre
-        # TODO - invalidar mas 1 nivel en herencia
         if p[-1] != None:
             parent = p[-1]
             # Si tengo un padre debo copiar todas su variables y sus objetos. Estos objetos no pueden tener mas objetos
             
+            # si mi padre ya tiene padre sería invalido
+            if dirProced[parent]['parent'] != "":
+                terminate("MORE THAN 1 LEVEL IN INHERITANCE")
+            
             # Jalo las variables de mi padre
             parentVariables = copy.deepcopy(dirProced[parent]['vars'])
-            
-            # Jalo las funciones de mi padre
-            parentFunctions = copy.deepcopy(dirProced[parent]['func'])
             
             # Obtengo los objetos de mi padre, tampoco pueden tener mas objetos para evitar composicion de mas de 1 nivel
             parentObjects = copy.deepcopy(dirProced[parent]['obj'])
@@ -316,7 +315,7 @@ def p_smnewclass(p):
                 if int(arraySize) > 0:
                     memConts[memCont[typeArray + 'Class']] += (int(arraySize) - 1)                
                 
-        dirProced[newScopeClass] = {'func': parentFunctions, 'vars': parentVariables, 'obj': parentObjects, 'parent': parent}
+        dirProced[newScopeClass] = {'func': {}, 'vars': parentVariables, 'obj': parentObjects, 'parent': parent}
         setScopeClass(newScopeClass)
         
 def existsVar(newVarName):
@@ -348,6 +347,13 @@ def existsFunc(newFunName):
     # Si ya hay una funcion que se llama asi
     if newFunName in dirProced[currentScopeClass]['func']:
         return True
+    # si ya hay una variable que se llama asi
+    if newFunName in dirProced[currentScopeClass]['vars']:
+        return True
+    if currentScopeFunction != '':
+        if newFunName in dirProced[currentScopeClass]['func'][currentScopeFunction]['vars']:
+            return True;
+    return False
 
 def isAtomic(mType):
     if mType == 'number' or mType == 'real' or mType == 'bool' or mType == 'string':
@@ -430,6 +436,8 @@ def p_smNewArray(p):
     varName = p[-6]
     # Obtenemos el tipo del arreglo para saber q tipo de memorias darle
     typeArray = currentType
+    if not isAtomic(typeArray):
+        terminate("array can only be of atomic types");
     if currentScopeFunction != "":
         dirProced[currentScopeClass]['func'][currentScopeFunction]['vars'][varName]['size'] = arraySize
         memConts[memCont[typeArray + 'Func']] += (int(arraySize) - 1)
@@ -652,23 +660,31 @@ def generalInvocationRutine(funName, currClass, objPath):
     currentClass = currClass
     createQuadruple(toCode['era'], -1, -1, dirProced[currentClass]['func'][funName]['quad'])
     if objPath != None:
-        print(objPath)
-        # mando como referencia todos los atributos de MI instancia (por eso uso currentScopeClass)
-        # currentScopeClass es en donde SE INVOCO la funcion
-        for attrName in dirProced[currentScopeClass]['obj'][objPath]['attr']:
-            dirReal = dirProced[currentScopeClass]['obj'][objPath]['attr'][attrName]['mem']
-            # currClass es en DONDE se definio la funcion, por eso de ahi saco la fake mem
-            hashRef[dirReal] = dirProced[currClass]['vars'][attrName]['mem']
-            hashRefTam[dirReal] = dirProced[currClass]['vars'][attrName]['size']
-        # mando tambien los atributos de mis objetos
-        if currentScopeClass == 'RedRobin':
-            for objName in dirProced[currentScopeClass]['obj'][objPath]['obj']:
-                for attrName in dirProced[currentScopeClass]['obj'][objPath]['obj'][objName]['attr']:
-                    dirReal = dirProced[currentScopeClass]['obj'][objPath]['obj'][objName]['attr'][attrName]['mem'];
-                    dirFake = dirProced[currClass]['obj'][objName]['attr'][attrName]['mem']
-                    tamFake = dirProced[currClass]['obj'][objName]['attr'][attrName]['size']
-                    hashRef[dirReal] = dirFake
-                    hashRefTam[dirReal] = tamFake
+        # si es una composicion de 2 niveles
+        if '.' in objPath:
+            print("invocando composicion de 2 niveles")
+        else:
+            # mando como referencia todos los atributos de MI instancia (por eso uso currentScopeClass)
+            # currentScopeClass es en donde SE INVOCO la funcion
+            for attrName in dirProced[currentScopeClass]['obj'][objPath]['attr']:
+                dirReal = dirProced[currentScopeClass]['obj'][objPath]['attr'][attrName]['mem']
+                # currClass es en DONDE se definio la funcion, por eso de ahi saco la fake mem     
+                if attrName in dirProced[currClass]['vars']:
+                    # verifico que exista el atributo en la clase donde la funcion se heredo
+                    # en herencia, la funcion no heredada no pudo haber modificado las variables de MI instancia
+                    hashRef[dirReal] = dirProced[currClass]['vars'][attrName]['mem']
+                    hashRefTam[dirReal] = dirProced[currClass]['vars'][attrName]['size']
+            # mando tambien los atributos de mis objetos
+            if currentScopeClass == 'RedRobin':
+                for objName in dirProced[currentScopeClass]['obj'][objPath]['obj']:
+                    for attrName in dirProced[currentScopeClass]['obj'][objPath]['obj'][objName]['attr']:
+                        dirReal = dirProced[currentScopeClass]['obj'][objPath]['obj'][objName]['attr'][attrName]['mem'];
+                        if objName in dirProced[currClass]['obj']:
+                            # verifico debido a herencia, explicado arriba
+                            dirFake = dirProced[currClass]['obj'][objName]['attr'][attrName]['mem']
+                            tamFake = dirProced[currClass]['obj'][objName]['attr'][attrName]['size']
+                            hashRef[dirReal] = dirFake
+                            hashRefTam[dirReal] = tamFake
         
     
 
@@ -687,6 +703,9 @@ def newInvocacionFuncDeObjNoReturn(objPath, funName):
                     generalInvocationRutine(funName, currentClass, objPath)
                 else:
                     terminate("No variable to catch returned value")
+            elif dirProced[currentClass]['parent'] != "" and dirProced[ dirProced[currentClass]['parent'] ]['func']:
+                # es una funcion hereadada
+                generalInvocationRutine(funName, dirProced[currentClass]['parent'], objPath)
             else:
                 terminate("Funcition " + funName + " doesn't exists in object " + objPath)
         else:
@@ -731,8 +750,24 @@ def p_smNewFuncNoReturn(p):
 # Llamada desde p_valor
 
 def newInvocacionFuncDeObj(objPath, funName):
-    if currentScopeClass == 'RedRobin':
-        print("desde redrobin invamos")
+    if '.' in funName:
+        obj1 = objPath
+        listObj = funName.split('.')
+        obj2 = listObj[0]
+        fun = listObj[1]
+        # valido que el primer objeto exista
+        if existsObj(obj1):
+            # valido que el segundo objeto exista
+            if obj2 in dirProced[currentScopeClass]['obj'][obj1]['obj']:
+                # valido que la funcion exista
+                if fun in dirProced[dirProced[currentScopeClass]['obj'][obj1]['obj'][obj2]['class']]['func']:
+                    generalInvocationRutine(fun, currentScopeClass, obj1 + '.' + obj2)
+                else:
+                    terminate("Funciont " + fun + " doesn't exists");
+            else:
+                terminate("Object " + obj1 + " doesn't exists");    
+        else:
+            terminate("Object " + obj1 + " doesn't exists");
     else:
         global contParam
         global currentFunction
@@ -742,8 +777,11 @@ def newInvocacionFuncDeObj(objPath, funName):
             currentClass = dirProced[currentScopeClass]['obj'][objPath]['class']
             if funName in dirProced[currentClass]['func']:
                 generalInvocationRutine(funName, currentClass, objPath)
+            elif dirProced[currentClass]['parent'] != "" and dirProced[ dirProced[currentClass]['parent'] ]['func']:
+                # es una funcion hereadada
+                generalInvocationRutine(funName, dirProced[currentClass]['parent'], objPath)
             else:
-                terminate("Funcition " + funName + " doesn't exists in object " + objPath)
+                terminate("Function " + funName + " doesn't exists in object " + objPath)
         else:
             terminate("Object " + objPath + " doesn't exists")
         
@@ -759,21 +797,21 @@ def p_smNewInvocacion(p):
     else:
         if funName in dirProced[currentScopeClass]['func']:
             generalInvocationRutine(funName, currentScopeClass, None)
-            # si la funcion es heredada, de una vez pido por referencia todos los atributos de la clase donde originalmente esta la funcion
-            if dirProced[currentScopeClass]['func'][funName]['class'] != currentScopeClass:
-                for varName in dirProced[ dirProced[currentScopeClass]['func'][funName]['class'] ]['vars']:
-                    dirReal = dirProced[currentScopeClass]['vars'][varName]['mem']
-                    parentClass = dirProced[currentScopeClass]['func'][funName]['class']
-                    hashRef[dirReal] = dirProced[parentClass]['vars'][varName]['mem']
-                    hashRefTam[dirReal] = dirProced[currentScopeClass]['vars'][varName]['size']
+        elif dirProced[currentScopeClass]['parent'] != "" and funName in dirProced[ dirProced[currentScopeClass]['parent'] ]['func']:
+            generalInvocationRutine(funName, dirProced[currentScopeClass]['parent'], None)
+            # Pido por referencia todos los atributos de la clase donde originalmente esta la funcion
+            for varName in dirProced[currentClass]['vars']:
+                dirReal = dirProced[currentScopeClass]['vars'][varName]['mem']
+                hashRef[dirReal] = dirProced[currentClass]['vars'][varName]['mem']
+                hashRefTam[dirReal] = dirProced[currentScopeClass]['vars'][varName]['size']
 
-                for objName in dirProced[ dirProced[currentScopeClass]['func'][funName]['class'] ]['obj']:
-                    # recorro todas las variables atomicas del objeto actual
-                    objClass = dirProced[ dirProced[currentScopeClass]['func'][funName]['class'] ]['obj'][objName]['class']
-                    for attrName in dirProced[objClass]['vars']:
-                        dirReal = dirProced[currentScopeClass]['obj'][objName]['attr'][attrName]['mem']
-                        hashRef[dirReal] = dirProced[objClass]['vars'][attrName]['mem']
-                        hashRefTam[dirReal] = dirProced[currentScopeClass]['obj'][objName]['attr'][attrName]['size']
+            for objName in dirProced[currentClass]['obj']:
+                # recorro todas las variables atomicas del objeto actual
+                objClass = dirProced[currentClass]['obj'][objName]['class']
+                for attrName in dirProced[objClass]['vars']:
+                    dirReal = dirProced[currentScopeClass]['obj'][objName]['attr'][attrName]['mem']
+                    hashRef[dirReal] = dirProced[objClass]['vars'][attrName]['mem']
+                    hashRefTam[dirReal] = dirProced[currentScopeClass]['obj'][objName]['attr'][attrName]['size']
         else:
             terminate("Function " + funName + " not declared")
         
@@ -870,6 +908,7 @@ def p_smEndInvocacion(p):
         terminate("wrong number of arguments")
         
 # Llamada desde p_argumentosPrint o p_mas_prints
+
 def p_smPrintQuadruple(p):
     'smPrintQuadruple :'
     operandToPrint = stackDirMem.pop()
@@ -973,8 +1012,6 @@ def validateIdSemantics(currentIdName, currentObjPath, currentArray):
     else:
         if not existsVar(currentIdName):
             terminate("Variable " + currentIdName + " not declared")
-        if existsFunc(currentIdName):
-            terminate("Name variable " + currentIdName + " already used by a function")
         # si es arreglo hacer validaciones
         if currentArray == '[':
             arrayRutine(currentIdName, None, None)
