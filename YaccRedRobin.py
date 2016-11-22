@@ -215,10 +215,10 @@ def p_mas_expresionv(p):
 
 def p_expresionvi(p):
     '''expresionvi : valor smCheckPendingNegatives
-                   | negacion P_ABRE smaddSingleOpe expresion smRemoveParentesis P_CIERRA smCheckPendingNegatives'''
+                   | negacion P_ABRE smaddSingleOpe expresion smRemoveParentesis P_CIERRA smCheckPendingNegatives smCheckPendingNots'''
 
 def p_negacion(p):
-    '''negacion : NEGAR
+    '''negacion : NEGAR smNewNot
                 | OPERADOR_RESTA smNewNegativo
                 | empty'''
 

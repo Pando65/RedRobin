@@ -550,6 +550,22 @@ def p_smCheckPendingNegatives(p):
         else:
             terminate("TYPE MISSMATCH")
 
+def p_smCheckPendingNots(p):
+    'smCheckPendingNots :'
+    if len(stackOpe) > 0 and stackOpe[-1] == toCode['not']:
+        opDir1 = stackDirMem.pop()
+
+        opTypeCode = getTypeCode(opDir1)
+        stackOpe.pop()
+        resultType = cubo.check(opTypeCode, toCode['null'], toCode['not'])
+        if resultType != 'error':
+            resultType += 'Temp'
+            stackDirMem.append(memConts[memCont[resultType]])
+            createQuadruple(toCode['not'], opDir1, -1, memConts[memCont[resultType]])
+            memConts[memCont[resultType]] += 1
+        else:
+            terminate("TYPE MISSMATCH")
+
 def p_smaddSingleOpe(p):
     'smaddSingleOpe :'
     pushToStackOpe(p[-1])
@@ -608,7 +624,12 @@ def p_smNewNegativo(p):
     # Genera cuadruplo de resta a 0 para convertir una constante numerica u expresion a su negativo
     stackOpe.append(toCode['neg'])
 
-    
+# Llama desde p_negacion
+def p_smNewNot(p):
+    'smNewNot :'
+    #Meter operando not a pila para generar cuadruplo de negacion booleana
+    stackOpe.append(toCode['not'])
+
 #### SEMANTICA DE FUNCIONEEES #####
 
 currentFunction = ""
