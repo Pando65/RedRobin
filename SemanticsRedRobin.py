@@ -274,10 +274,13 @@ def p_smnewclass(p):
         parentObjects = {}
         parentVariables = {}   
         # Pregunto si tengo un padre
-        # TODO - invalidar mas 1 nivel en herencia
         if p[-1] != None:
             parent = p[-1]
             # Si tengo un padre debo copiar todas su variables y sus objetos. Estos objetos no pueden tener mas objetos
+            
+            # si mi padre ya tiene padre sería invalido
+            if dirProced[parent]['parent'] != "":
+                terminate("MORE THAN 1 LEVEL IN INHERITANCE")
             
             # Jalo las variables de mi padre
             parentVariables = copy.deepcopy(dirProced[parent]['vars'])

@@ -1,5 +1,10 @@
 class RedRobin {
-    class Base {
+    class superBase {
+        public number x;
+        // TODO - meterle funciones a esta
+    }
+    
+    class Base inherit superBase {
         public number B;
         public number arreglo[5];
         func public number compuesta() {
@@ -37,7 +42,7 @@ class RedRobin {
             i = heredadaConReturn();
             Bcomposicion.compuestaempty();
         }
-    }
+    }    
     
     func public number b() {
         give 1+2;
@@ -62,9 +67,11 @@ class RedRobin {
         e1.heredada();
         
         // composicion
-        e1.Bcomposicion.B = -3;
+        e2.Bcomposicion.x = -3;
         e1.Bcomposicion.arreglo[1] = 2;
         // TODO - invocar funciones de composicion
         //a = e1.Bcomposicion.compuesta();
+        //e1.Bcomposicion.compuestaempty();
+        // TODO - invocar funciones heredadas de composicion
     }
 }
