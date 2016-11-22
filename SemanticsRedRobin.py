@@ -631,6 +631,7 @@ def generalInvocationRutine(funName, currClass, objPath):
     currentClass = currClass
     createQuadruple(toCode['era'], -1, -1, dirProced[currentClass]['func'][funName]['quad'])
     if objPath != None:
+        print(objPath)
         # mando como referencia todos los atributos de MI instancia (por eso uso currentScopeClass)
         # currentScopeClass es en donde SE INVOCO la funcion
         for attrName in dirProced[currentScopeClass]['obj'][objPath]['attr']:
@@ -638,6 +639,16 @@ def generalInvocationRutine(funName, currClass, objPath):
             # currClass es en DONDE se definio la funcion, por eso de ahi saco la fake mem
             hashRef[dirReal] = dirProced[currClass]['vars'][attrName]['mem']
             hashRefTam[dirReal] = dirProced[currClass]['vars'][attrName]['size']
+        # mando tambien los atributos de mis objetos
+        if currentScopeClass == 'RedRobin':
+            for objName in dirProced[currentScopeClass]['obj'][objPath]['obj']:
+                for attrName in dirProced[currentScopeClass]['obj'][objPath]['obj'][objName]['attr']:
+                    dirReal = dirProced[currentScopeClass]['obj'][objPath]['obj'][objName]['attr'][attrName]['mem'];
+                    dirFake = dirProced[currClass]['obj'][objName]['attr'][attrName]['mem']
+                    tamFake = dirProced[currClass]['obj'][objName]['attr'][attrName]['size']
+                    hashRef[dirReal] = dirFake
+                    hashRefTam[dirReal] = tamFake
+        
     
 
 def newInvocacionFuncDeObjNoReturn(objPath, funName):
