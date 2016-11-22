@@ -767,8 +767,11 @@ fromCode = {
 }
 
 # Se pregunta por archivo ejecutable
-filename = "p1_bin.txt"
-# filename = input("Ingresa nombre de archivo con condigo objeto de Red Robin: ") 
+filename = "p1.rr"
+# filename = input("Ingresa nombre de archivo con condigo objeto de Red Robin: ")
+separandoFormato = filename.split('.')
+if  separandoFormato[-1] != "rr":
+    terminate("Formato de archivo incorrecto. No es codigo objeto de RedRobin")
 f = open(filename, 'r')
 listaRenglones = f.readlines()
 
