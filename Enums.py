@@ -35,7 +35,8 @@ toCode = {
     'ref': 65,
     'ver': 66,
     'retu': 67,
-    'not': 68
+    'not': 68,
+    'setref': 69
 }
 
 toSymbol = {
@@ -75,7 +76,8 @@ toSymbol = {
     65: 'ref',
     66: 'ver',
     67: 'retu',
-    68: 'not'
+    68: 'not',
+    69: 'setref'
 }
 
 memStart = {
