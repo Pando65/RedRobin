@@ -232,6 +232,7 @@ def p_smnewprogram(p):
 def p_smnewfunction(p):
     'smnewfunction : '
     global contParam
+    global lastPrivilage
     contParam = 1
     newScopeFunction = p[-1]
     giveType = p[-2]
@@ -246,9 +247,11 @@ def p_smnewfunction(p):
         if giveType != 'empty':
             memVar = getMemSpace(giveType, 'Class', newScopeFunction)
             # creo la variable que guardara el valor de retorno
-            dirProced['RedRobin']['vars'][newScopeFunction] = {'tipo': giveType, 'size': 0, 'mem': memVar}
-        dirProced[currentScopeClass]['func'][newScopeFunction] = {'vars': {}, 'giveType': p[-2], 'params': {}, 'tam': {}, 'privilages': p[-3], 'mem': memVar, 'quad': len(cuadruplos), 'class': currentScopeClass }
+            dirProced['RedRobin']['vars'][newScopeFunction] = {'tipo': giveType, 'size': 0, 'mem': memVar, 'privilage': 'public'}
+        # agrego la funcion al directorio
+        dirProced[currentScopeClass]['func'][newScopeFunction] = {'vars': {}, 'giveType': p[-2], 'params': {}, 'tam': {}, 'mem': memVar, 'quad': len(cuadruplos), 'class': currentScopeClass, 'privilage': lastPrivilage }
         setScopeFunction(newScopeFunction)
+    lastPrivilage = ''
 
         
 # Llamada desde p_parametros
@@ -259,7 +262,7 @@ def p_smnewparam(p):
     # agrego a hash de params
     dirProced[currentScopeClass]['func'][currentScopeFunction]['params'][contParam] = {'name': newParamName, 'type': currentType}
     # agrego a hash de vars
-    dirProced[currentScopeClass]['func'][currentScopeFunction]['vars'][newParamName] = {'tipo': currentType, 'size': 0, 'mem': getMemSpace(currentType, 'Func', newParamName)}
+    dirProced[currentScopeClass]['func'][currentScopeFunction]['vars'][newParamName] = {'tipo': currentType, 'size': 0, 'mem': getMemSpace(currentType, 'Func', newParamName), 'privilage': ''}
     contParam += 1
 
 # Llamada desde p_clases
@@ -366,7 +369,6 @@ def isAtomic(mType):
 def p_smnewvariable(p):
     'smnewvariable : '
     global lastPrivilage
-    print("last privilage " + lastPrivilage)
     newVarName = p[-1]
     # Si el nobre ya existe, está repetido
     if existsVar(newVarName) or existsObj(newVarName) or existsFunc(newVarName):
@@ -428,7 +430,7 @@ def p_smnewvariable(p):
                 
                 # Actualizo el directorio de variables de la clase "papa"
                 dirProced[currentScopeClass]['obj'][newVarName] = {'class': currentType, 'attr': variables, 'privilage': lastPrivilage}
-    lastPrivilage = ''
+    setLastPrivilage('')
 
 # Llamada desde p_expresion
 
@@ -1027,15 +1029,24 @@ def validateIdSemantics(currentIdName, currentObjPath, currentArray):
     else:
         if not existsVar(currentIdName):
             terminate("Variable " + currentIdName + " not declared")
+        # validar que no sea una varible de retorno de funcino
+        if currentIdName in dirProced[currentScopeClass]['func']:
+            terminate("Variable " + currentIdName + " is a function")
         # si es arreglo hacer validaciones
         if currentArray == '[':
+            # siempre sera accesible
             arrayRutine(currentIdName, None, None)
         else:
             # variable valida, insertar a pila
+            success = False
             if currentIdName in dirProced[currentScopeClass]['vars']:
+                # Estan siendo utilizadas dentro de su contexto, no ocupo privilegios
                 stackDirMem.append(dirProced[currentScopeClass]['vars'][currentIdName]['mem'])
             elif currentScopeFunction == '' or currentIdName in dirProced[currentScopeClass]['func'][currentScopeFunction]['vars']:
+                # las variables locales no tienen privilegios
                 stackDirMem.append(dirProced[currentScopeClass]['func'][currentScopeFunction]['vars'][currentIdName]['mem'])
+            else:
+                terminate("variable " + currentIdName + " not found")
         
 def validateObjSemantics(currentAttrPath, currentIdName, currentArray):
     # TODO: OBJETOS LOCALES DE FUNCIONES 
@@ -1048,7 +1059,11 @@ def validateObjSemantics(currentAttrPath, currentIdName, currentArray):
         if existsObj(obj1):
             # valido que exista el segundo objeto
             if obj2 in dirProced[currentScopeClass]['obj'][obj1]['obj']:
+                if dirProced[currentScopeClass]['obj'][obj1]['obj'][obj2]['privilage'] == 'secret':
+                    terminate("Object " + obj2 + " can't be modified from this scope")
                 if attr in dirProced[currentScopeClass]['obj'][obj1]['obj'][obj2]['attr']:
+                    if dirProced[currentScopeClass]['obj'][obj1]['obj'][obj2]['attr'][attr]['privilage'] == 'secret':
+                        terminate("Attribute " + attr + " can't be modified from this scope")
                     if currentArray == '[':
                         arrayRutine(attr, obj2, obj1)
                     else:
@@ -1066,6 +1081,9 @@ def validateObjSemantics(currentAttrPath, currentIdName, currentArray):
         if currentAttrPath in dirProced[currentScopeClass]['obj']:
             # Valido que exista el nombre dentro del objeto
             if currentIdName in dirProced[currentScopeClass]['obj'][currentAttrPath]['attr']:
+                priv = dirProced[currentScopeClass]['obj'][currentAttrPath]['attr'][currentIdName]['privilage']
+                if priv == 'secret':
+                    terminate("Attribute " + currentIdName + " can't be modified from this scope")
                 if currentArray == '[':
                     arrayRutine(currentIdName, currentAttrPath, None)
                 else:
@@ -1103,6 +1121,7 @@ def arrayRutine(currentIdName, currentObjPath, currentObj1):
             limitArray = dirProced[currentScopeClass]['obj'][currentObjPath]['attr'][currentIdName]['size']
             dirBase = dirProced[currentScopeClass]['obj'][currentObjPath]['attr'][currentIdName]['mem']
     elif currentScopeFunction != "" and currentIdName in dirProced[currentScopeClass]['func'][currentScopeFunction]['vars']:
+        # arreglo local a una funcion
         limitArray = dirProced[currentScopeClass]['func'][currentScopeFunction]['vars'][currentIdName]['size']
         dirBase = dirProced[currentScopeClass]['func'][currentScopeFunction]['vars'][currentIdName]['mem']
     else:
@@ -1118,7 +1137,7 @@ def arrayRutine(currentIdName, currentObjPath, currentObj1):
         mapCteToDir[dirBase] = memConts[memCont['numberCte']]
         memConts[memCont['numberCte']] += 1
     createQuadruple(toCode['+'], mapCteToDir[dirBase], indexMem, newTemp)
-    stackDirMem.append(newTemp * -1)    
+    stackDirMem.append(newTemp * -1)
     
     
 # creo cuadruplo go to main
