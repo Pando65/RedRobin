@@ -26,6 +26,7 @@ class RedRobin {
         
         func public number heredadaConReturn() {
             give 3 + 3;
+            heredada();
         }
     }
     

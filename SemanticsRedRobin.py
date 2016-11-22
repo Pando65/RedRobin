@@ -223,7 +223,7 @@ def p_smforend(p):
 def p_smnewprogram(p):
     'smnewprogram : '
     global dirProced
-    dirProced['RedRobin'] = {'func': {}, 'vars': {}, 'obj': {}}
+    dirProced['RedRobin'] = {'func': {}, 'vars': {}, 'obj': {}, 'parent': ''}
     # Declaracion predefinida de la constante -1 para la generacion de caudruplos que maneje la transformacion de negativos
     mapCteToDir[-1] = memConts[memCont['numberCte']]
     memConts[memCont['numberCte']] += 1
@@ -238,7 +238,6 @@ def p_smnewfunction(p):
     giveType = p[-2]
     if not isAtomic(giveType) and giveType != 'empty':
         terminate("ONLY PRIMITIVE TYPES CAN BE RETURNED")
-    privlages = p[-3]
     # TODO - checar que no haya una variable global con el mismo nombre
     if existsFunc(newScopeFunction):
         terminate("NAME ALREADY IN USE")
@@ -672,8 +671,15 @@ def generalInvocationRutine(funName, currClass, objPath):
     if objPath != None:
         # si es una composicion de 2 niveles
         if '.' in objPath:
+            # TODO
             print("invocando composicion de 2 niveles")
         else:
+            # valido el privilegio
+            if dirProced[currentClass]['func'][funName]['privilage'] == 'secret':
+                if funName not in dirProced[currentScopeClass]['func']:
+                    if dirProced[currentScopeClass]['parent'] != '' and funName not in dirProced[dirProced[currentScopeClass]['parent']]['func']:
+                        terminate("Function " + funName + " can't be inovked in this scope")
+            
             # mando como referencia todos los atributos de MI instancia (por eso uso currentScopeClass)
             # currentScopeClass es en donde SE INVOCO la funcion
             for attrName in dirProced[currentScopeClass]['obj'][objPath]['attr']:
@@ -803,18 +809,22 @@ def p_smNewInvocacion(p):
     funName = p[-2]
     objPath = p[-1]
     if objPath != None:
+        # delego invocaciones de objeto a otra funcino
         newInvocacionFuncDeObj(funName, objPath)
     else:
         if funName in dirProced[currentScopeClass]['func']:
+            # Funcion simple en el scope actual
             generalInvocationRutine(funName, currentScopeClass, None)
         elif dirProced[currentScopeClass]['parent'] != "" and funName in dirProced[ dirProced[currentScopeClass]['parent'] ]['func']:
+            # funcion heredada
             generalInvocationRutine(funName, dirProced[currentScopeClass]['parent'], None)
             # Pido por referencia todos los atributos de la clase donde originalmente esta la funcion
             for varName in dirProced[currentClass]['vars']:
                 dirReal = dirProced[currentScopeClass]['vars'][varName]['mem']
                 hashRef[dirReal] = dirProced[currentClass]['vars'][varName]['mem']
                 hashRefTam[dirReal] = dirProced[currentScopeClass]['vars'][varName]['size']
-
+            
+            # tambien pido los objetos que pueda tener la calse donde se definio la funcion
             for objName in dirProced[currentClass]['obj']:
                 # recorro todas las variables atomicas del objeto actual
                 objClass = dirProced[currentClass]['obj'][objName]['class']
