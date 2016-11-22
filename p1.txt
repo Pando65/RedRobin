@@ -3,8 +3,10 @@ class RedRobin {
   func public number funcion(number: r, x) {
     number a;
     a = r + 3;
-    print("Ingrese valor numerico");
-    read(a);
+    print("Ingrese valor ");
+    string palabra;
+    read(palabra);
+    print(palabra);
     give a;
   }
 

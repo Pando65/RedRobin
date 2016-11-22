@@ -526,8 +526,8 @@ def lecturaTeclado():
                 terminate("Execution error. Cannot convert value to bool.")
         else:
             tipoID = 3
-            #Se almacena un string directo
-            valor = respuestaUsuario
+            #Se almacena un string directo y se le añaden dobles comillas al inicio y al final para que tenga concordancia con los demas
+            valor = "\"" + respuestaUsuario + "\""
     except:
         #Se lanzo una excepcion al tratar de castear el valor
         if tipoID == 0:
