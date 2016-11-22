@@ -436,6 +436,8 @@ def p_smNewArray(p):
     varName = p[-6]
     # Obtenemos el tipo del arreglo para saber q tipo de memorias darle
     typeArray = currentType
+    if not isAtomic(typeArray):
+        terminate("array can only be of atomic types");
     if currentScopeFunction != "":
         dirProced[currentScopeClass]['func'][currentScopeFunction]['vars'][varName]['size'] = arraySize
         memConts[memCont[typeArray + 'Func']] += (int(arraySize) - 1)
