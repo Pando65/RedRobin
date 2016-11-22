@@ -594,6 +594,20 @@ def asignaRetorno():
         else:
             pilaMemoriaLocal[nivelAlcance][direccionAlmacenar] = valor1
 
+def negarBoleano():
+    operando1 = liCuadruplos[apunCuadruplo].op1
+    valor1 = findValueInMemory(operando1, nivelAlcance)
+
+    #Se obtiene la direccion absoluta en caso de que sea una direccion indirecta
+    direccionAlmacenar = findAbsoluteAddress(liCuadruplos[apunCuadruplo].r, nivelAlcance)
+
+    if isGlobal(direccionAlmacenar):
+        #Se almacena valor global dentro de la estructura que maneja almacenamiento global
+        memEjecucion[direccionAlmacenar] = not valor1
+    else:
+        #Se almacena valor local dentro de la estructura que maneja almacenamiento local
+        pilaMemoriaLocal[nivelAlcance][direccionAlmacenar] = not valor1
+
 #Enumeracion de funciones
 fromCode = {
     12 : suma, #+
@@ -626,7 +640,8 @@ fromCode = {
     64 : terminaPrograma, #endprogram
     65 : referencia, #ref
     66 : verificarLimites, #ver
-    67 : asignaRetorno #retu
+    67 : asignaRetorno, #retu
+    68 : negarBoleano #not
 }
 
 # Se pregunta por archivo ejecutable
