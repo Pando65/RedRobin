@@ -3,8 +3,6 @@ class RedRobin {
   func public number funcion(number: r, x) {
     number a;
     a = r + 3;
-    print("Ingrese valor numerico");
-    read(a);
     give a;
   }
 
@@ -17,11 +15,9 @@ class RedRobin {
     number a, b, c, e[10], d;
 
     print("HOla");
-    a = 5;
-    b = 1;
-    print("llego aca 2. A=", a);
-    print("b=", b);
-    
+    real decimal = 32.12305;
+    a = 10 + toNumber(decimal);
+    print(a);
     d = funcion(2, 3);
     print(d);
 /*

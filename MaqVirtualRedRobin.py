@@ -526,8 +526,8 @@ def lecturaTeclado():
                 terminate("Execution error. Cannot convert value to bool.")
         else:
             tipoID = 3
-            #Se almacena un string directo
-            valor = respuestaUsuario
+            #Se almacena un string directo y se le añaden dobles comillas al inicio y al final para que tenga concordancia con los demas
+            valor = "\"" + respuestaUsuario + "\""
     except:
         #Se lanzo una excepcion al tratar de castear el valor
         if tipoID == 0:
@@ -546,6 +546,22 @@ def lecturaTeclado():
     else:
         #Se almacena valor local dentro de la estructura que maneja almacenamiento local
         pilaMemoriaLocal[nivelAlcance][direccionAlmacenar] = valor
+
+def convierteANumero():
+    # Cuadruplo para el casteo a numero entero
+    operando1 = liCuadruplos[apunCuadruplo].op1
+    valor1 = findValueInMemory(operando1, nivelAlcance)
+
+    #Se obtiene la direccion absoluta en caso de que sea una direccion indirecta
+    direccionAlmacenar = findAbsoluteAddress(liCuadruplos[apunCuadruplo].r, nivelAlcance)
+
+    #Se almacena valor en estructura correcta
+    if isGlobal(direccionAlmacenar):
+        #Se almacena valor global dentro de la estructura que maneja almacenamiento global
+        memEjecucion[direccionAlmacenar] = int(valor1)
+    else:
+        #Se almacena valor local dentro de la estructura que maneja almacenamiento local
+        pilaMemoriaLocal[nivelAlcance][direccionAlmacenar] = int(valor1)
 
 def give():
     operando1 = liCuadruplos[apunCuadruplo].op1
@@ -678,7 +694,7 @@ fromCode = {
     55 : parametro, #param
     56 : imprimir, #print
     57 : lecturaTeclado, #read
-#    'toNumber' : 58,
+    58 : convierteANumero, #toNumber
 #    'toReal' : 59,
 #    'toString': 60,
 #    'null' : 61,
