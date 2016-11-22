@@ -51,5 +51,6 @@ class RedRobin {
         e1.arrHeredado[2] = true;
         e1.probando();
         e1.Bcomposicion.B = -3;
+        e1.Bcomposicion.arreglo[1] = 2;
     }
 }

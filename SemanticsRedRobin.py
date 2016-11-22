@@ -977,7 +977,7 @@ def validateIdSemantics(currentIdName, currentObjPath, currentArray):
             terminate("Name variable " + currentIdName + " already used by a function")
         # si es arreglo hacer validaciones
         if currentArray == '[':
-            arrayRutine(currentIdName, None)
+            arrayRutine(currentIdName, None, None)
         else:
             # variable valida, insertar a pila
             if currentIdName in dirProced[currentScopeClass]['vars']:
@@ -997,9 +997,11 @@ def validateObjSemantics(currentAttrPath, currentIdName, currentArray):
             # valido que exista el segundo objeto
             if obj2 in dirProced[currentScopeClass]['obj'][obj1]['obj']:
                 if attr in dirProced[currentScopeClass]['obj'][obj1]['obj'][obj2]['attr']:
-                    # TODO: ARREGLOS
-                    # existe, lo meto a la pila
-                    stackDirMem.append(dirProced[currentScopeClass]['obj'][obj1]['obj'][obj2]['attr'][attr]['mem'])
+                    if currentArray == '[':
+                        arrayRutine(attr, obj2, obj1)
+                    else:
+                        # existe, lo meto a la pila
+                        stackDirMem.append(dirProced[currentScopeClass]['obj'][obj1]['obj'][obj2]['attr'][attr]['mem'])
                 else:
                     terminate("Attribute " + attr + " doesn't exists")
             else:
@@ -1013,7 +1015,7 @@ def validateObjSemantics(currentAttrPath, currentIdName, currentArray):
             # Valido que exista el nombre dentro del objeto
             if currentIdName in dirProced[currentScopeClass]['obj'][currentAttrPath]['attr']:
                 if currentArray == '[':
-                    arrayRutine(currentIdName, currentAttrPath)
+                    arrayRutine(currentIdName, currentAttrPath, None)
                 else:
                     # existe, lo meto a la pila
                     stackDirMem.append(dirProced[currentScopeClass]['obj'][currentAttrPath]['attr'][currentIdName]['mem'])
@@ -1028,7 +1030,7 @@ def newCteBool(newBool):
     else:
         stackDirMem.append(memConts[memCont['boolCte']])
         
-def arrayRutine(currentIdName, currentObjPath):
+def arrayRutine(currentIdName, currentObjPath, currentObj1):
     # Obtengo la expresion de indexamiento
     indexMem = stackDirMem.pop()
     # Si no es numero, termino
@@ -1039,10 +1041,15 @@ def arrayRutine(currentIdName, currentObjPath):
     typeVarCode = 0
     newTemp = 0
     dirBase = 0
+    
     # busco donde esta declarado el arreglo para obtener datos
     if currentObjPath != None:
-        limitArray = dirProced[currentScopeClass]['obj'][currentObjPath]['attr'][currentIdName]['size']
-        dirBase = dirProced[currentScopeClass]['obj'][currentObjPath]['attr'][currentIdName]['mem']
+        if currentObj1 != None:
+            limitArray = dirProced[currentScopeClass]['obj'][currentObj1]['obj'][currentObjPath]['attr'][currentIdName]['size']
+            dirBase = dirProced[currentScopeClass]['obj'][currentObj1]['obj'][currentObjPath]['attr'][currentIdName]['mem']
+        else:
+            limitArray = dirProced[currentScopeClass]['obj'][currentObjPath]['attr'][currentIdName]['size']
+            dirBase = dirProced[currentScopeClass]['obj'][currentObjPath]['attr'][currentIdName]['mem']
     elif currentScopeFunction != "" and currentIdName in dirProced[currentScopeClass]['func'][currentScopeFunction]['vars']:
         limitArray = dirProced[currentScopeClass]['func'][currentScopeFunction]['vars'][currentIdName]['size']
         dirBase = dirProced[currentScopeClass]['func'][currentScopeFunction]['vars'][currentIdName]['mem']
