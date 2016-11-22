@@ -3,7 +3,8 @@ class RedRobin {
   func public number funcion(number: r, x) {
     number a;
     a = r + 3;
-
+    print("Ingrese valor numerico");
+    read(a);
     give a;
   }
 
@@ -20,14 +21,9 @@ class RedRobin {
     b = 1;
     print("llego aca 2. A=", a);
     print("b=", b);
-    if (!(a <= b)) {
-      print("Fue verdadero");
-        d = d + 1;
-    }
-    else {
-      print("Fue falso");
-        c = d + -1 * -(5 -7);
-    }
+    
+    d = funcion(2, 3);
+    print(d);
 /*
     print("", "Checa b", b);
     b = 0;
