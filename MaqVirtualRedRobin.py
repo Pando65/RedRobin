@@ -651,24 +651,34 @@ def referencia():
     global pilaMemoriaLocal
 
     operando1 = liCuadruplos[apunCuadruplo].op1
-    #Se busca valor en el entorno de memoria local que se acaba de dejar de la funcion que se termino de invocar
-    valor1 = findValueInMemory(operando1, nivelAlcance + 1)
+    operando2 = liCuadruplos[apunCuadruplo].op2
 
     #Se obtiene la direccion absoluta en caso de que sea una direccion indirecta en el entorno local actual
     direccionAlmacenar = findAbsoluteAddress(liCuadruplos[apunCuadruplo].r, nivelAlcance)
 
-    if isGlobal(direccionAlmacenar):
-        #Se checa si la direccion a asignar valor es entera para almacenar solo la parte entera
-        if isNumber(direccionAlmacenar):
-            memEjecucion[direccionAlmacenar] = int(valor1)
+    #Se itera sobre el operando2 que indica si se trata de un arreglo en caso de ser mayor a 0
+    if operando2 == 0:
+        #El valor a pasarse como referencia NO es una estructura pero igual debe ejecutar una vez el ciclo
+        operando2 = 1
+    
+    #Se tranfieren los valores de referencia sobre todos los elementos en caso de ser un arreglo o solo una vez
+    for ite in range(0, operando2):
+        #Se busca valor en el entorno de memoria local que se acaba de dejar de la funcion que se termino de invocar
+        valor1 = findValueInMemory(operando1 + ite, nivelAlcance + 1)
+        direccionActual = direccionAlmacenar + ite
+
+        if isGlobal(direccionActual):
+            #Se checa si la direccion a asignar valor es entera para almacenar solo la parte entera
+            if isNumber(direccionActual):
+                memEjecucion[direccionActual] = int(valor1)
+            else:
+                memEjecucion[direccionActual] = valor1
         else:
-            memEjecucion[direccionAlmacenar] = valor1
-    else:
-        #Se checa si la direccion a asignar valor es entera para almacenar solo la parte entera
-        if isNumber(direccionAlmacenar):
-            pilaMemoriaLocal[nivelAlcance][direccionAlmacenar] = int(valor1)
-        else:
-            pilaMemoriaLocal[nivelAlcance][direccionAlmacenar] = valor1
+            #Se checa si la direccion a asignar valor es entera para almacenar solo la parte entera
+            if isNumber(direccionActual):
+                pilaMemoriaLocal[nivelAlcance][direccionActual] = int(valor1)
+            else:
+                pilaMemoriaLocal[nivelAlcance][direccionActual] = valor1
 
     #Se verifica si el siguiente NO es un cuadruplo de referencia
     if liCuadruplos[apunCuadruplo + 1].ope != 65:

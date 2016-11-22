@@ -18,7 +18,8 @@ class RedRobin {
     string resp;
     
     real decimal = -02.34021;
-    resp = toString(decimal) + toString(" bofo?");
+    string porMientras = "boludinez no : ";
+    resp = porMientras + toString(decimal) + toString(" bofo?");
     print("cadena", resp);
     print(decimal);
     d = funcion(2, 3);
