@@ -1,0 +1,12 @@
+class RedRobin {
+
+    RedRobin() {
+        number n, acum = 1;
+        read(n);
+        while(n >= 1) {
+            acum = acum * n;
+            n = n - 1;
+        }
+        print(acum);
+    }
+}

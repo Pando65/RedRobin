@@ -767,7 +767,7 @@ fromCode = {
 }
 
 # Se pregunta por archivo ejecutable
-filename = "p1.rr"
+filename = "factorialCiclico.rr"
 # filename = input("Ingresa nombre de archivo con condigo objeto de Red Robin: ")
 separandoFormato = filename.split('.')
 if  separandoFormato[-1] != "rr":
