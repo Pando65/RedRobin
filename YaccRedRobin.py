@@ -139,7 +139,7 @@ def p_mas_prints(p):
                   | empty'''
 
 def p_argumentoPosible(p):
-    '''argumentoPosible : expresion'''
+    '''argumentoPosible : smaddParentesis expresion smRemoveParentesis'''
 
 def p_ciclo(p):
     '''ciclo : cicloestatico
