@@ -652,6 +652,7 @@ def generalInvocationRutine(funName, currClass, objPath):
     currentClass = currClass
     createQuadruple(toCode['era'], -1, -1, dirProced[currentClass]['func'][funName]['quad'])
     if objPath != None:
+        print(objPath)
         # mando como referencia todos los atributos de MI instancia (por eso uso currentScopeClass)
         # currentScopeClass es en donde SE INVOCO la funcion
         for attrName in dirProced[currentScopeClass]['obj'][objPath]['attr']:
@@ -659,6 +660,16 @@ def generalInvocationRutine(funName, currClass, objPath):
             # currClass es en DONDE se definio la funcion, por eso de ahi saco la fake mem
             hashRef[dirReal] = dirProced[currClass]['vars'][attrName]['mem']
             hashRefTam[dirReal] = dirProced[currClass]['vars'][attrName]['size']
+        # mando tambien los atributos de mis objetos
+        if currentScopeClass == 'RedRobin':
+            for objName in dirProced[currentScopeClass]['obj'][objPath]['obj']:
+                for attrName in dirProced[currentScopeClass]['obj'][objPath]['obj'][objName]['attr']:
+                    dirReal = dirProced[currentScopeClass]['obj'][objPath]['obj'][objName]['attr'][attrName]['mem'];
+                    dirFake = dirProced[currClass]['obj'][objName]['attr'][attrName]['mem']
+                    tamFake = dirProced[currClass]['obj'][objName]['attr'][attrName]['size']
+                    hashRef[dirReal] = dirFake
+                    hashRefTam[dirReal] = tamFake
+        
     
 
 def newInvocacionFuncDeObjNoReturn(objPath, funName):
@@ -975,12 +986,28 @@ def validateIdSemantics(currentIdName, currentObjPath, currentArray):
                 stackDirMem.append(dirProced[currentScopeClass]['func'][currentScopeFunction]['vars'][currentIdName]['mem'])
         
 def validateObjSemantics(currentAttrPath, currentIdName, currentArray):
-    # TODO: considerar composicion en red robin
+    # TODO: OBJETOS LOCALES DE FUNCIONES 
     if '.' in currentIdName:
-        print("ok")
-        terminate("okkk")
+        listobj = currentIdName.split('.')
+        obj1 = currentAttrPath
+        obj2 = listobj[0]
+        attr = listobj[1]
+        # valido que exista el primer objeto
+        if existsObj(obj1):
+            # valido que exista el segundo objeto
+            if obj2 in dirProced[currentScopeClass]['obj'][obj1]['obj']:
+                if attr in dirProced[currentScopeClass]['obj'][obj1]['obj'][obj2]['attr']:
+                    # TODO: ARREGLOS
+                    # existe, lo meto a la pila
+                    stackDirMem.append(dirProced[currentScopeClass]['obj'][obj1]['obj'][obj2]['attr'][attr]['mem'])
+                else:
+                    terminate("Attribute " + attr + " doesn't exists")
+            else:
+                terminate("object " + obj2 + " doesn't exists")    
+        else:
+            terminate("object " + obj1 + " doesn't exists")
     else:
-        # Se que currentObjPath tendra solo un objeto "padre"
+        # Se que currentObjPath tendra solo un objeto "padre" de composicion
         # Valido que exista el objeto
         if currentAttrPath in dirProced[currentScopeClass]['obj']:
             # Valido que exista el nombre dentro del objeto
