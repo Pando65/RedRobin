@@ -59,6 +59,7 @@ class RedRobin {
         
         // invocaciones heredadas
         a = e1.heredadaConReturn();
+        e1.heredada();
         
         // composicion
         e1.Bcomposicion.B = -3;

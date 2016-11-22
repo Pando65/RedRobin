@@ -344,6 +344,13 @@ def existsFunc(newFunName):
     # Si ya hay una funcion que se llama asi
     if newFunName in dirProced[currentScopeClass]['func']:
         return True
+    # si ya hay una variable que se llama asi
+    if newFunName in dirProced[currentScopeClass]['vars']:
+        return True
+    if currentScopeFunction != '':
+        if newFunName in dirProced[currentScopeClass]['func'][currentScopeFunction]['vars']:
+            return True;
+    return False
 
 def isAtomic(mType):
     if mType == 'number' or mType == 'real' or mType == 'bool' or mType == 'string':
@@ -691,6 +698,9 @@ def newInvocacionFuncDeObjNoReturn(objPath, funName):
                     generalInvocationRutine(funName, currentClass, objPath)
                 else:
                     terminate("No variable to catch returned value")
+            elif dirProced[currentClass]['parent'] != "" and dirProced[ dirProced[currentClass]['parent'] ]['func']:
+                # es una funcion hereadada
+                generalInvocationRutine(funName, dirProced[currentClass]['parent'], objPath)
             else:
                 terminate("Funcition " + funName + " doesn't exists in object " + objPath)
         else:
@@ -766,7 +776,7 @@ def newInvocacionFuncDeObj(objPath, funName):
                 # es una funcion hereadada
                 generalInvocationRutine(funName, dirProced[currentClass]['parent'], objPath)
             else:
-                terminate("Funcition " + funName + " doesn't exists in object " + objPath)
+                terminate("Function " + funName + " doesn't exists in object " + objPath)
         else:
             terminate("Object " + objPath + " doesn't exists")
         
@@ -997,8 +1007,6 @@ def validateIdSemantics(currentIdName, currentObjPath, currentArray):
     else:
         if not existsVar(currentIdName):
             terminate("Variable " + currentIdName + " not declared")
-        if existsFunc(currentIdName):
-            terminate("Name variable " + currentIdName + " already used by a function")
         # si es arreglo hacer validaciones
         if currentArray == '[':
             arrayRutine(currentIdName, None, None)
