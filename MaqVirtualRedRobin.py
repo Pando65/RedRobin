@@ -500,6 +500,53 @@ def imprimir():
             #No es una variable entera
             print(valor)
 
+def lecturaTeclado():
+    #Se obtiene la direccion absoluta en caso de que sea una direccion indirecta
+    direccionAlmacenar = findAbsoluteAddress(liCuadruplos[apunCuadruplo].r, nivelAlcance)
+
+    respuestaUsuario = input()
+    #En caso de excepcion arrojada esta variable indica a que se trato de castear el valor de usuario
+    tipoID = 0
+    try: 
+        #Se identifica el tipo de direccion para saber al tipo de valor que se debe castear el valor ingresado por el usuario
+        if getTypeCode(direccionAlmacenar) == toCode['number']:
+            tipoID = 0
+            valor = int(respuestaUsuario)
+        elif getTypeCode(direccionAlmacenar) == toCode['real']:
+            tipoID = 1
+            valor = float(respuestaUsuario)
+        elif getTypeCode(direccionAlmacenar) == toCode['bool']:
+            tipoID = 2
+            if respuestaUsuario == 'true':
+                valor = True
+            elif respuestaUsuario == 'false':
+                valor = False
+            else:
+                #No se puede castear a booleano
+                terminate("Execution error. Cannot convert value to bool.")
+        else:
+            tipoID = 3
+            #Se almacena un string directo
+            valor = respuestaUsuario
+    except:
+        #Se lanzo una excepcion al tratar de castear el valor
+        if tipoID == 0:
+            terminate("Execution error. Cannot convert value to number.")
+        elif tipoID == 1:
+            terminate("Execution error. Cannot convert value to real.")
+        elif tipoID == 2:
+            terminate("Execution error. Cannot convert value to bool.")
+        else:
+            terminate("Execution error. Cannot convert value to string.")
+    
+    #Se almacena valor en estructura correcta
+    if isGlobal(direccionAlmacenar):
+        #Se almacena valor global dentro de la estructura que maneja almacenamiento global
+        memEjecucion[direccionAlmacenar] = valor
+    else:
+        #Se almacena valor local dentro de la estructura que maneja almacenamiento local
+        pilaMemoriaLocal[nivelAlcance][direccionAlmacenar] = valor
+
 def give():
     operando1 = liCuadruplos[apunCuadruplo].op1
     valor1 = findValueInMemory(operando1, nivelAlcance)
@@ -594,6 +641,20 @@ def asignaRetorno():
         else:
             pilaMemoriaLocal[nivelAlcance][direccionAlmacenar] = valor1
 
+def negarBoleano():
+    operando1 = liCuadruplos[apunCuadruplo].op1
+    valor1 = findValueInMemory(operando1, nivelAlcance)
+
+    #Se obtiene la direccion absoluta en caso de que sea una direccion indirecta
+    direccionAlmacenar = findAbsoluteAddress(liCuadruplos[apunCuadruplo].r, nivelAlcance)
+
+    if isGlobal(direccionAlmacenar):
+        #Se almacena valor global dentro de la estructura que maneja almacenamiento global
+        memEjecucion[direccionAlmacenar] = not valor1
+    else:
+        #Se almacena valor local dentro de la estructura que maneja almacenamiento local
+        pilaMemoriaLocal[nivelAlcance][direccionAlmacenar] = not valor1
+
 #Enumeracion de funciones
 fromCode = {
     12 : suma, #+
@@ -616,7 +677,7 @@ fromCode = {
     54 : irASubrutina, #gosub
     55 : parametro, #param
     56 : imprimir, #print
-#    'read' : 57,
+    57 : lecturaTeclado, #read
 #    'toNumber' : 58,
 #    'toReal' : 59,
 #    'toString': 60,
@@ -626,7 +687,8 @@ fromCode = {
     64 : terminaPrograma, #endprogram
     65 : referencia, #ref
     66 : verificarLimites, #ver
-    67 : asignaRetorno #retu
+    67 : asignaRetorno, #retu
+    68 : negarBoleano #not
 }
 
 # Se pregunta por archivo ejecutable

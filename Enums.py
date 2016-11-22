@@ -34,7 +34,8 @@ toCode = {
     'endprogram': 64,
     'ref': 65,
     'ver': 66,
-    'retu': 67
+    'retu': 67,
+    'not': 68
 }
 
 toSymbol = {
@@ -73,7 +74,8 @@ toSymbol = {
     64: 'endprogram',
     65: 'ref',
     66: 'ver',
-    67: 'retu'
+    67: 'retu',
+    68: 'not'
 }
 
 memStart = {

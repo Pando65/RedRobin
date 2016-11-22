@@ -61,6 +61,7 @@ class Cubo:
         self.semantica[toCode['number']][toCode['null']]  [toCode['toNumber']] = toCode['number']
         self.semantica[toCode['number']][toCode['null']]  [toCode['toReal']] = toCode['real']
         self.semantica[toCode['number']][toCode['null']]  [toCode['toString']] = toCode['string']
+        self.semantica[toCode['number']][toCode['null']]  [toCode['not']] = toCode['error']
         
         self.semantica[toCode['real']][toCode['number']][toCode['+']] = toCode['real']
         self.semantica[toCode['real']][toCode['real']]  [toCode['+']] = toCode['real']
@@ -109,6 +110,7 @@ class Cubo:
         self.semantica[toCode['real']][toCode['null']]  [toCode['toNumber']] = toCode['number']
         self.semantica[toCode['real']][toCode['null']]  [toCode['toReal']] = toCode['real']
         self.semantica[toCode['real']][toCode['null']]  [toCode['toString']] = toCode['string']
+        self.semantica[toCode['real']][toCode['null']]  [toCode['not']] = toCode['error']
 
         self.semantica[toCode['string']][toCode['number']][toCode['+']] = toCode['error']
         self.semantica[toCode['string']][toCode['real']]  [toCode['+']] = toCode['error']
@@ -157,6 +159,7 @@ class Cubo:
         self.semantica[toCode['string']][toCode['null']]  [toCode['toNumber']] = toCode['number']
         self.semantica[toCode['string']][toCode['null']]  [toCode['toReal']] = toCode['real']
         self.semantica[toCode['string']][toCode['null']]  [toCode['toString']] = toCode['string']
+        self.semantica[toCode['string']][toCode['null']]  [toCode['not']] = toCode['error']
         
         self.semantica[toCode['bool']][toCode['number']][toCode['+']] = toCode['error']
         self.semantica[toCode['bool']][toCode['real']]  [toCode['+']] = toCode['error']
@@ -205,6 +208,7 @@ class Cubo:
         self.semantica[toCode['bool']][toCode['null']]  [toCode['toNumber']] = toCode['error']
         self.semantica[toCode['bool']][toCode['null']]  [toCode['toReal']] = toCode['error']
         self.semantica[toCode['bool']][toCode['null']]  [toCode['toString']] = toCode['error']
+        self.semantica[toCode['bool']][toCode['null']]  [toCode['not']] = toCode['bool']
         
     def check(self, op1, op2, ope):
         return toSymbol[self.semantica[abs(op1)][abs(op2)][ope]]
