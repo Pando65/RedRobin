@@ -34,6 +34,7 @@ class RedRobin {
             i = i + Bcomposicion.B + 12;
             i = J + E;
             i = Bcomposicion.compuesta();
+            i = heredadaConReturn();
             Bcomposicion.compuestaempty();
         }
     }
@@ -43,14 +44,26 @@ class RedRobin {
     }
 
     RedRobin() {
-        // esto es un comentario
         Equipo e1, e2;
+        number a;
+        // atributos simple
         e1.E = 10;
         e2.E = 20;
+        
+        // atributos heredados
         e2.J = e1.J * e2.E;
         e1.arrHeredado[2] = true;
+        
+        //invocaciones simples
         e1.probando();
+        
+        // invocaciones heredadas
+        a = e1.heredadaConReturn();
+        
+        // composicion
         e1.Bcomposicion.B = -3;
         e1.Bcomposicion.arreglo[1] = 2;
+        // TODO - invocar funciones de composicion
+        //a = e1.Bcomposicion.compuesta();
     }
 }
