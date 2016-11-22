@@ -17,6 +17,9 @@ class RedRobin {
 
     print("HOla");
 
+    bool hola = true;
+    print(hola);
+/*
     print("", "Checa b", b);
     b = 0;
     e[3 + a] = 4 + e[e[b + e[9]]] - e[2];
@@ -52,6 +55,7 @@ class RedRobin {
     while(a <= b or d <= b) {
         b = b - 1;
     }
+*/
   }
 
 }
