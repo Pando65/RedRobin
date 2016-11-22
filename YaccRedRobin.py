@@ -305,7 +305,7 @@ if aprobado == True:
     print(dirProced)
 
     # Se genera el codigo objeto
-    codigoObjeto = open(filename[:-4] + "_bin.txt", 'w')
+    codigoObjeto = open(filename[:-4] + ".rr", 'w')
     # Se inserta la cantidad de valores constantes
     codigoObjeto.write(str(len(mapCteToDir)) + '\n')
     for keyConstante, valorDireccion  in mapCteToDir.items():
