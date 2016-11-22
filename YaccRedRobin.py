@@ -38,7 +38,7 @@ def p_valor_retorno(p):
 def p_privilages(p):
     '''privilages : SECRET
                   | PUBLIC'''
-    p[0] = p[1]
+    setLastPrivilage(p[1])
 
 def p_tipovariable(p):
     '''tipovariable : NUMBER
@@ -74,14 +74,12 @@ def p_herencia(p):
                 | empty'''
     if p[1] == 'inherit':
         p[0] = p[2]
-#        print("herencia")
     else:
         p[0] = p[1]
 
 def p_cuerpoclase(p):
     '''cuerpoclase : privilages declaracion mas_cuerpoclase
                    | funciones mas_cuerpoclase'''
-
 
 def p_mas_cuerpoclase(p):
     '''mas_cuerpoclase : cuerpoclase
@@ -166,7 +164,7 @@ def p_asignacion(p):
     'asignacion : identificador IGUAL expresion smAsignacion PUNTOYCOMA'
 
 def p_declaracion(p):
-    'declaracion : tipovariable ID smnewvariable declara_arreglo_o_iniciacion mas_declaraciones PUNTOYCOMA'    
+    'declaracion : tipovariable ID smnewvariable declara_arreglo_o_iniciacion mas_declaraciones PUNTOYCOMA'
 
 def p_declara_arreglo_o_iniciacion(p):
     # TODO - smNewarray solo no va a jalar con objetos, checar como jalar la direccion de un atributo o de composicion

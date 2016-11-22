@@ -39,6 +39,8 @@ from MemoriasVirtuales import *
 #                   ['mem'] - Direccion de memoria virtual
 dirProced = {}
 
+lastPrivilage = ''
+
 # currentType: Guarda el ultimo tipo de dato parseado. Su valor es el ultimo tipo de dato declarado
 currentType = ''
 
@@ -360,24 +362,26 @@ def isAtomic(mType):
         return True
     return False
     
-# Llamada desde p_declaracion y p_masdeclaraciones
+# Llamada desde p_declaracion y p_masdeclaraciones    
 def p_smnewvariable(p):
     'smnewvariable : '
+    global lastPrivilage
+    print("last privilage " + lastPrivilage)
     newVarName = p[-1]
     # Si el nobre ya existe, está repetido
     if existsVar(newVarName) or existsObj(newVarName) or existsFunc(newVarName):
         terminate("REPETAED VARIABLE NAME: " + newVarName)
     
-    # Si estamos dentro de una funcion
+    # Si estamos dentro de una funcion, variable local
     if currentScopeFunction != '': 
         # TODO- objetos dentro de funciones
         # Instancio el primitivo de funcion
-        dirProced[currentScopeClass]['func'][currentScopeFunction]['vars'][newVarName] = {'tipo': currentType, 'size': 0, 'mem': getMemSpace(currentType, 'Func', newVarName)}
+        dirProced[currentScopeClass]['func'][currentScopeFunction]['vars'][newVarName] = {'tipo': currentType, 'size': 0, 'mem': getMemSpace(currentType, 'Func', newVarName), 'privilage': lastPrivilage}
     else:
         # else-  Si estamos fuera de una funcion
         if isAtomic(currentType):
             # instancio el primitivo de clase
-            dirProced[currentScopeClass]['vars'][newVarName] = {'tipo': currentType, 'size': 0, 'mem': getMemSpace(currentType, 'Class', newVarName)}
+            dirProced[currentScopeClass]['vars'][newVarName] = {'tipo': currentType, 'size': 0, 'mem': getMemSpace(currentType, 'Class', newVarName), 'privilage': lastPrivilage}
         else:
             # Es un objeto
             # Valido que la clase del objeto exista
@@ -385,15 +389,18 @@ def p_smnewvariable(p):
                 terminate("WRONG OBJECT TYPE")
             # Depende si estoy en la clase main red robin o en alguna otra clase el comportamiento cambia
             if currentScopeClass == 'RedRobin':
+                # Es un objeto instanciado en main
                 # Hay que crear una instancia de la clase
                 dicAttr = copy.deepcopy(dirProced[currentType]['vars']);
+                # Instancio todos los atributos de mi objeto
                 for varName in dicAttr:
                     dicAttr[varName]['mem'] = getMemSpace(dicAttr[varName]['tipo'], 'Class', varName)
                     arraySize = dicAttr[varName]['size']
                     # Pido todas las memorias que ocupo en caso de q sea un arreglo
                     if int(arraySize) > 0:
                         memConts[memCont[dicAttr[varName]['tipo'] + 'Class']] += (int(arraySize) - 1)
-                    
+                
+                # Instancio todos los objetos de mi objeto
                 dicObj = copy.deepcopy(dirProced[currentType]['obj']);
                 for objName in dicObj:
                     dicAttrObj = dicObj[objName]['attr']
@@ -403,7 +410,7 @@ def p_smnewvariable(p):
                         if int(arraySize) > 0:
                             memConts[memCont[dicObj[objName]['attr'][attrName]['tipo']+ 'Class']] += (int(arraySize) - 1)
                 
-                dirProced['RedRobin']['obj'][newVarName] = {'class': currentType, 'attr': dicAttr, 'obj': dicObj}
+                dirProced['RedRobin']['obj'][newVarName] = {'class': currentType, 'attr': dicAttr, 'obj': dicObj, 'privilage': lastPrivilage}
             else:
                 # Si tiene mas objetos mi composicion, seria error
                 if len(dirProced[currentType]['obj']) > 0:
@@ -420,7 +427,8 @@ def p_smnewvariable(p):
                         memConts[memCont[variables[varName]['tipo'] + 'Class']] += (int(arraySize) - 1)                    
                 
                 # Actualizo el directorio de variables de la clase "papa"
-                dirProced[currentScopeClass]['obj'][newVarName] = {'class': currentType, 'attr': variables}
+                dirProced[currentScopeClass]['obj'][newVarName] = {'class': currentType, 'attr': variables, 'privilage': lastPrivilage}
+    lastPrivilage = ''
 
 # Llamada desde p_expresion
 
@@ -975,7 +983,11 @@ def setScopeFunction(newScopeFunc):
     
 def setCurrentType(newType):
     global currentType
-    currentType = newType    
+    currentType = newType
+    
+def setLastPrivilage(newPrivilage):
+    global lastPrivilage
+    lastPrivilage = newPrivilage
     
 def setScopeClass(newScopeClass):
     global currentScopeClass
