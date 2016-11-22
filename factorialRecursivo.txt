@@ -1,0 +1,23 @@
+class RedRobin {
+
+    func public number factorial(number: n) {
+        if (n == 0) {
+            give 1;
+        }
+        give n * factorial(n - 1);
+    }
+
+    func public number factorialTerminal(number: n, acum) {
+        if (n == 0) {
+            give acum;
+        }
+        give factorialTerminal(n - 1, acum * n);
+    }
+    
+    RedRobin() {
+        number n;
+        read(n);
+        print(factorial(n));
+        print(factorialTerminal(n, 1));
+    }
+}

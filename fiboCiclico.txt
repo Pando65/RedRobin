@@ -1,0 +1,14 @@
+class RedRobin {
+
+    RedRobin() {
+        number n, aux, i;
+        number p = 0, q = 1;
+        read(n);
+        for i in (0 _ n - 1) step 1 {
+            aux = p + q;
+            p = q;
+            q = aux;
+        }
+        print(p);
+    }
+}
