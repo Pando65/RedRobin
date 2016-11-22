@@ -893,7 +893,7 @@ def p_smEndInvocacion(p):
     if len(dirProced[currentClass]['func'][currentFunction]['params']) == contParam - 1:
         # enviamos los valores por referencia
         for real in hashRef:
-            createQuadruple(toCode["ref"], hashRef[real], hashRefTam[real], real)        
+            createQuadruple(toCode["setref"], hashRef[real], hashRefTam[real], real)        
         createQuadruple(toCode['gosub'], -1, -1, dirProced[currentClass]['func'][currentFunction]['quad'])
         dirRetorno = dirProced[currentClass]['func'][currentFunction]['mem']
         # Actualizamos los valores por referncia
