@@ -801,7 +801,7 @@ fromCode = {
 }
 
 # Se pregunta por archivo ejecutable
-filename = "p5.rr"
+filename = "p6.rr"
 # filename = sys.argv[1]
 separandoFormato = filename.split('.')
 if  separandoFormato[-1] != "rr":

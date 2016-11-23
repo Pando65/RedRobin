@@ -1,0 +1,80 @@
+class RedRobin {
+
+    class Students {
+        public string name;
+        secret number edad;
+
+        func public empty showInfo() {
+           print("He's name is " + name + "and he's " + toString(edad));
+        }
+        func public number getEdad() {
+            give edad;
+        }
+        func public empty setEdad(number: newEdad) {
+            edad = newEdad;
+        }
+    }
+    
+    class Interns inherit Students {
+        public number numberOfInternships;
+        secret string companias[5];
+
+        func public empty listarCompanias() {
+            number id;
+            print("Companias en las que ha realizado internships: " + name);
+            for id in (0 _ 4) step 1 {
+                print(companias[id]);
+            }
+        }
+
+        func public empty poblarCompanias() {
+            companias[1] = "Microsoft";
+            companias[2] = "Facebook";
+            companias[4] = "Microsoft";
+        }
+    }
+
+    class Empresa {
+        public number ID;
+        secret string name;
+        secret Interns practicante;
+        
+        func public empty datosIntern() {
+            print("Empresa: " + name);
+            print("Nombre de practicante: " + practicante.name);
+            print("Edad de practicante: " + toString(practicante.getEdad()));
+            print("Asignando nueva edad a practicante valida que tenga 23");
+            practicante.setEdad(23);
+            print("Nuevamente edad de practicante: " + toString(practicante.getEdad()));
+            practicante.showInfo();
+            practicante.listarCompanias();
+        }
+        
+        func public bool inicializaIntern() {
+            practicante.name = "Omar Manjarrez";
+            practicante.numberOfInternships = 3;
+            practicante.poblarCompanias();
+
+            give true;
+        }
+
+        func public empty setName(string: nombre) {
+            name = nombre;
+        }
+    } 
+    
+    func public empty auxiliar() {
+        Students novato;
+        novato.name = "David";
+        novato.setEdad(21);
+        novato.showInfo();
+    }
+
+    RedRobin() {
+        Empresa internacional;
+        if (internacional.inicializaIntern()) {
+            internacional.datosIntern();
+            auxiliar();
+        }
+    }
+}

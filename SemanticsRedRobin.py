@@ -758,25 +758,37 @@ def generalInvocationRutine(funName, currClass, objPath):
             
             # mando como referencia todos los atributos de MI instancia (por eso uso currentScopeClass)
             # currentScopeClass es en donde SE INVOCO la funcion
-            for attrName in dirProced[currentScopeClass]['obj'][objPath]['attr']:
-                dirReal = dirProced[currentScopeClass]['obj'][objPath]['attr'][attrName]['mem']
-                # currClass es en DONDE se definio la funcion, por eso de ahi saco la fake mem     
-                if attrName in dirProced[currClass]['vars']:
-                    # verifico que exista el atributo en la clase donde la funcion se heredo
-                    # en herencia, la funcion no heredada no pudo haber modificado las variables de MI instancia
-                    hashRef[dirReal] = dirProced[currClass]['vars'][attrName]['mem']
-                    hashRefTam[dirReal] = dirProced[currClass]['vars'][attrName]['size']
-            # mando tambien los atributos de mis objetos
-            if currentScopeClass == 'RedRobin':
-                for objName in dirProced[currentScopeClass]['obj'][objPath]['obj']:
-                    for attrName in dirProced[currentScopeClass]['obj'][objPath]['obj'][objName]['attr']:
-                        dirReal = dirProced[currentScopeClass]['obj'][objPath]['obj'][objName]['attr'][attrName]['mem'];
-                        if objName in dirProced[currClass]['obj']:
-                            # verifico debido a herencia, explicado arriba
-                            dirFake = dirProced[currClass]['obj'][objName]['attr'][attrName]['mem']
-                            tamFake = dirProced[currClass]['obj'][objName]['attr'][attrName]['size']
-                            hashRef[dirReal] = dirFake
-                            hashRefTam[dirReal] = tamFake
+            if objPath in dirProced[currentScopeClass]['obj']:
+                for attrName in dirProced[currentScopeClass]['obj'][objPath]['attr']:
+                    dirReal = dirProced[currentScopeClass]['obj'][objPath]['attr'][attrName]['mem']
+                    # currClass es en DONDE se definio la funcion, por eso de ahi saco la fake mem     
+                    if attrName in dirProced[currClass]['vars']:
+                        # verifico que exista el atributo en la clase donde la funcion se heredo
+                        # en herencia, la funcion no heredada no pudo haber modificado las variables de MI instancia
+                        hashRef[dirReal] = dirProced[currClass]['vars'][attrName]['mem']
+                        hashRefTam[dirReal] = dirProced[currClass]['vars'][attrName]['size']
+                # mando tambien los atributos de mis objetos
+                if currentScopeClass == 'RedRobin':
+                    for objName in dirProced[currentScopeClass]['obj'][objPath]['obj']:
+                        for attrName in dirProced[currentScopeClass]['obj'][objPath]['obj'][objName]['attr']:
+                            dirReal = dirProced[currentScopeClass]['obj'][objPath]['obj'][objName]['attr'][attrName]['mem'];
+                            if objName in dirProced[currClass]['obj']:
+                                # verifico debido a herencia, explicado arriba
+                                dirFake = dirProced[currClass]['obj'][objName]['attr'][attrName]['mem']
+                                tamFake = dirProced[currClass]['obj'][objName]['attr'][attrName]['size']
+                                hashRef[dirReal] = dirFake
+                                hashRefTam[dirReal] = tamFake
+            else:
+                # es un objeto dentro de una funcion
+                for attrName in dirProced[currentScopeClass]['func'][currentScopeFunction]['obj'][objPath]['attr']:
+                    dirReal = dirProced[currentScopeClass]['func'][currentScopeFunction]['obj'][objPath]['attr'][attrName]['mem']
+                    # currClass es en DONDE se definio la funcion, por eso de ahi saco la fake mem     
+                    if attrName in dirProced[currClass]['vars']:
+                        # verifico que exista el atributo en la clase donde la funcion se heredo
+                        # en herencia, la funcion no heredada no pudo haber modificado las variables de MI instancia
+                        hashRef[dirReal] = dirProced[currClass]['vars'][attrName]['mem']
+                        hashRefTam[dirReal] = dirProced[currClass]['vars'][attrName]['size']
+                
         
     
 
@@ -808,9 +820,9 @@ def newInvocacionFuncDeObjNoReturn(objPath, funName):
                 else:
                     terminate("Funcition " + funName + " was not found")
             else:
-                terminate("Object " + obj1 + " doesn't exists")      
+                terminate("Object " + obj2 + " doesn't exists")      
         else:
-            terminate("Object " + obj1 + " doesn't exists")  
+            terminate("Object " + obj1 + " doesn't exist")  
     else:
         # Valido que el objeto exista
         if objPath in dirProced[currentScopeClass]['obj']:
@@ -825,6 +837,15 @@ def newInvocacionFuncDeObjNoReturn(objPath, funName):
                 generalInvocationRutine(funName, dirProced[currentClass]['parent'], objPath)
             else:
                 terminate("Funcition " + funName + " doesn't exists in object " + objPath)
+        elif currentScopeFunction != '' and objPath in dirProced[currentScopeClass]['func'][currentScopeFunction]['obj']:
+            currentClass = dirProced[currentScopeClass]['func'][currentScopeFunction]['obj'][objPath]['class']
+            if funName in dirProced[currentClass]['func']:
+                if dirProced[currentClass]['func'][funName]['giveType'] == 'empty':
+                    generalInvocationRutine(funName, currentClass, objPath)
+                else:
+                    terminate("No variable to catch returned value")
+            else:
+                terminate("Function " + funName + " doesn't exists")
         else:
             terminate("Object " + objPath + " doesn't exists")    
 
