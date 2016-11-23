@@ -14,6 +14,7 @@ class RedRobin {
         }
         func public empty compuestaempty() {
             B = B + 1;
+            print("imprimiendo B en funcion compuestaempty", B); // Aaaa quitar a la versh
         }
     }
     class Jugador {
@@ -23,11 +24,12 @@ class RedRobin {
         
         func public empty heredada() {
             J = J + 1;
+            print("imprimiendo J en funcion heredada", J); // Aaaa quitar a la versh
         }
         
         func public number heredadaConReturn() {
-            give 3 + 3;
             heredada();
+            give 3 + 3;
         }
     }
     
@@ -36,12 +38,21 @@ class RedRobin {
         public Base Bcomposicion;
         
         func public empty probando() {
+            print("antes que nada", E);
             number i;
+            E = 1;
+            print("i =", "", E, "", "+", "", Bhcomp.B, "", "-" , "", Bcomposicion.arreglo[E + 3]);
             i = E + Bhcomp.B - Bcomposicion.arreglo[E + 3];
+            print("imprimiendo i1 en funcion probando", i); // Aaaa quitar a la versh
+            print("i =", i, "", "+", "",  Bcomposicion.B, "", "+", 12);
             i = i + Bcomposicion.B + 12;
+            print("imprimiendo i2 en funcion probando", i); // Aaaa quitar a la versh
             i = J + E;
+            print("imprimiendo i3 en funcion probando", i); // Aaaa quitar a la versh
             i = Bcomposicion.compuesta();
+            print("imprimiendo i4 en funcion probando", i); // Aaaa quitar a la versh
             i = heredadaConReturn();
+            print("imprimiendo i5 en funcion probando", i); // Aaaa quitar a la versh
             Bcomposicion.compuestaempty();
         }
     }    
@@ -57,23 +68,29 @@ class RedRobin {
         // atributos simple
         e1.E = 10;
         e2.E = 20;
-        
+        print("imprimiendo e1.E en funcion RedRaaaaaabin", e1.E); // Aaaa quitar a la versh
+        print("imprimiendo e2.E en funcion RedRaaaaaabin", e2.E); // Aaaa quitar a la versh
         // atributos heredados
         e2.J = e1.J * e2.E;
+        print("imprimiendo e2.J en funcion RedRaaaaaabin", e2.J); // Aaaa quitar a la versh
         e1.arrHeredado[2] = true;
-        
+        print("imprimiendo e1.arrHeredado[2] en funcion RedRaaaaaabin", e1.arrHeredado[2]); // Aaaa quitar a la versh
         //invocaciones simples
+        print("ssssssssssss", e1.E);
         e1.probando();
-        
+        print("2do ssssss", e1.E);
         // invocaciones heredadas
         a = e1.heredadaConReturn();
+        print("imprimiendo a en funcion RedRaaaaaabin", a); // Aaaa quitar a la versh
         e1.heredada();
         
         // composicion
         e2.Bcomposicion.x = -3;
+        print("imprimiendo e2.Bcomposicion.x en funcion RedRaaaaaabin", e2.Bcomposicion.x); // Aaaa quitar a la versh
         e1.Bcomposicion.arreglo[1] = 2;
+        print("imprimiendo e1.Bcomposicion.arreglo[1] en funcion RedRaaaaaabin", e1.Bcomposicion.arreglo[1]); // Aaaa quitar a la versh
         e1.Bhcomp.arreglo[1] = 3;
-        
+        print("imprimiendo e1.Bhcomp.arreglo[1] en funcion RedRaaaaaabin", e1.Bhcomp.arreglo[1]); // Aaaa quitar a la versh
         // TODO - invocar funciones de composicion
         // a = e1.Bcomposicion.compuesta();
         //e1.Bcomposicion.compuestaempty();
