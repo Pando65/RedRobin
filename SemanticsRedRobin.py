@@ -26,7 +26,6 @@ from MemoriasVirtuales import *
 #               [contParam]
 #                  ['name'] - nombre del parametro
 #                  ['type'] - tipo del parametro
-#           ['tam'] - diccionario de tamaños requeridos, not defined yet TODO
 #           ['giveType'] - Tipo de retorno de la funcion
 #           ['privilages'] - Privilegio (public o private)
 #           ['mem'] - Direccion de memoria de su variable global asignada
@@ -724,13 +723,27 @@ def generalInvocationRutine(funName, currClass, objPath):
     # Current class es en DONDE esta definida la funcion
     # puede ser en el currentClassScope o en la class del objeto que invoco la funcion
     currentClass = currClass
-    createQuadruple(toCode['era'], -1, -1, dirProced[currentClass]['func'][funName]['quad'])
     if objPath != None:
         # si es una composicion de 2 niveles
         if '.' in objPath:
-            # TODO
-            print("invocando composicion de 2 niveles")
+            paths = objPath.split('.')
+            obj1 = paths[0]
+            obj2 = paths[1]
+            currentClass = dirProced['RedRobin']['obj'][obj1]['obj'][obj2]['class']
+            createQuadruple(toCode['era'], -1, -1, dirProced[currentClass]['func'][funName]['quad'])
+            # valido el privilegio
+            if dirProced['RedRobin']['obj'][obj1]['privilage'] == 'secret' or dirProced['RedRobin']['obj'][obj1]['obj'][obj2]['privilage'] == 'secreto':
+                terminate("Function " + funName + " can't be inovked in this scope")
+                
+            # mando como referencia todos los atributos de mi instancia
+            for attrName in dirProced['RedRobin']['obj'][obj1]['obj'][obj2]['attr']:
+                dirReal = dirProced['RedRobin']['obj'][obj1]['obj'][obj2]['attr'][attrName]['mem']
+                if attrName in dirProced[currentClass]['vars']:
+                    hashRef[dirReal] = dirProced[currentClass]['vars'][attrName]['mem']
+                    hashRefTam[dirReal] = dirProced[currentClass]['vars'][attrName]['size']
+                
         else:
+            createQuadruple(toCode['era'], -1, -1, dirProced[currentClass]['func'][funName]['quad'])            
             # valido el privilegio
             if dirProced[currentClass]['func'][funName]['privilage'] == 'secret':
                 if funName not in dirProced[currentScopeClass]['func']:
@@ -762,12 +775,33 @@ def generalInvocationRutine(funName, currClass, objPath):
     
 
 def newInvocacionFuncDeObjNoReturn(objPath, funName):
+    global contParam
+    global currentFunction
+    global currentClass
     if '.' in funName:
-        print("desde redrobin invamos")
+        svFunName = funName
+        paths = funName.split('.')
+        obj2 = paths[0]
+        obj1 = objPath
+        funName = paths[1]
+        # valido que el objeto exista
+        if obj1 in dirProced['RedRobin']['obj']:
+            if obj2 in dirProced['RedRobin']['obj'][obj1]['obj']:
+                currentClass = dirProced['RedRobin']['obj'][obj1]['obj'][obj2]['class']
+                if funName in dirProced[currentClass]['func']:
+                    if dirProced[currentClass]['func'][funName]['giveType'] == 'empty':
+                        generalInvocationRutine(funName, currentScopeClass, obj1 + '.' + obj2)
+                    elif False:
+                        print("lel")
+                    else:
+                        terminate("No variable to catch returned value")
+                else:
+                    terminate("Funcition " + funName + " was not found")
+            else:
+                terminate("Object " + obj1 + " doesn't exists")      
+        else:
+            terminate("Object " + obj1 + " doesn't exists")  
     else:
-        global contParam
-        global currentFunction
-        global currentClass
         # Valido que el objeto exista
         if objPath in dirProced[currentScopeClass]['obj']:
             currentClass = dirProced[currentScopeClass]['obj'][objPath]['class']
