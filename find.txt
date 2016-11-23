@@ -1,0 +1,26 @@
+class RedRobin {
+
+    RedRobin() {
+        number v[100], i, n;
+        // Llenamos con informacion el arreglo
+        for i in (0 _ 99) step 1 {
+            v[i] = i * 2;
+        }
+        read(n);
+        number pos = -1;
+        // busqueda del valor dado
+        for i in (0 _ 99) step 1 {
+            if (v[i] == n) {
+                pos = i;
+                i = 100;
+            }
+        }
+        // imprimimos resultado
+        if (pos == -1) {
+            print("No encontrado");
+        }
+        else {
+            print("Valor encontrado en posicion " + toString(pos));
+        }
+    }
+}

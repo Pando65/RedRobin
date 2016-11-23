@@ -802,7 +802,7 @@ fromCode = {
 
 # Se pregunta por archivo ejecutable
 filename = "p5.rr"
-# filename = input("Ingresa nombre de archivo con condigo objeto de Red Robin: ")
+# filename = sys.argv[1]
 separandoFormato = filename.split('.')
 if  separandoFormato[-1] != "rr":
     terminate("Formato de archivo incorrecto. No es codigo objeto de RedRobin")

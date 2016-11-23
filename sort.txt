@@ -1,0 +1,55 @@
+class RedRobin {
+
+    class MergeSort {
+        public number v[100];
+        public number aux[100];
+        
+        func public empty merge(number: ini, m, fin) {
+            number u = ini, i = ini, j = m + 1;
+            while(i <= m and j <= fin) {
+                if (v[i] <= v[j]) {
+                    aux[u] = v[i];
+                    i = i + 1;
+                }
+                else {
+                    aux[u] = v[j];
+                    j = j + 1;
+                }
+                u = u + 1;
+            }
+            for i in (i _ m) step 1 {
+                aux[u] = v[i];
+                u = u + 1;
+            }
+            for j in (j _ fin) step 1 {
+                aux[u] = v[j];
+                u = u + 1;
+            }
+            for i in (ini _ fin) step 1 {
+                v[i] = aux[i];
+            }
+        }
+        
+        func public empty divide(number: ini, fin) {
+            if (ini+1 <= fin) {
+                divide(ini, (ini+fin)/2);
+                divide((ini+fin)/2 + 1, fin);
+                merge(ini,(ini+fin)/2, fin);
+            }
+        }
+    }
+
+    RedRobin() {
+        MergeSort sort;
+        sort.v[0] = 4;
+        sort.v[1] = 10;
+        sort.v[2] = -2;
+        sort.v[3] = 1;
+        sort.v[4] = 0;
+        sort.divide(0, 4);
+        number i;
+        for i in (0 _ 4) step 1 {
+            print(sort.v[i]);
+        }
+    }
+}

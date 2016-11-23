@@ -288,7 +288,7 @@ def p_error(p):
 parser = yacc.yacc()
 
 filename = "p5.txt"
-# filename = input("Ingresa nombre de archivo con lenguaje Red Robin: ") 
+# filename = sys.argv[1]
 f = open(filename, 'r')
 s = f.read()
 parser.parse(s)
