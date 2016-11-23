@@ -1,4 +1,5 @@
 class RedRobin {
+
     class superBase {
         public number x;
         // TODO - meterle funciones a esta
@@ -45,8 +46,9 @@ class RedRobin {
         }
     }    
     
-    func public number b() {
-        give 1+2;
+    func public number funcionb() {
+        Equipo e3;
+        give e3.E + 2;
     }
 
     RedRobin() {

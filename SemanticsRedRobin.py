@@ -14,6 +14,14 @@ from MemoriasVirtuales import *
 #                 ['tipo'] - Tipo de variable
 #                 ['size'] - Tamaño de variable
 #                 ['mem'] - Direccion de memoria virtual
+#           ['obj']
+#               [objName]
+#                   ['class']
+#                   ['attr']
+#                       [attrName]
+#                           ['tipo'] - Tipo de variable
+#                           ['size'] - Tamaño de variable
+#                           ['mem'] - Direccion de memoria virtual
 #           ['params']
 #               [contParam]
 #                  ['name'] - nombre del parametro
@@ -35,7 +43,7 @@ from MemoriasVirtuales import *
 #           ['attr']
 #               [attrName]
 #                   ['tipo'] - Tipo de variable
-#                   ['size'] - Tamaño de variable (quizas sirva para arrays, unused)
+#                   ['size'] - Tamaño de variable
 #                   ['mem'] - Direccion de memoria virtual
 dirProced = {}
 
@@ -241,15 +249,14 @@ def p_smnewfunction(p):
     # TODO - checar que no haya una variable global con el mismo nombre
     if existsFunc(newScopeFunction):
         terminate("NAME ALREADY IN USE")
-    else:
-        memVar = -1
-        if giveType != 'empty':
-            memVar = getMemSpace(giveType, 'Class', newScopeFunction)
-            # creo la variable que guardara el valor de retorno
-            dirProced['RedRobin']['vars'][newScopeFunction] = {'tipo': giveType, 'size': 0, 'mem': memVar, 'privilage': 'public'}
-        # agrego la funcion al directorio
-        dirProced[currentScopeClass]['func'][newScopeFunction] = {'vars': {}, 'giveType': p[-2], 'params': {}, 'tam': {}, 'mem': memVar, 'quad': len(cuadruplos), 'class': currentScopeClass, 'privilage': lastPrivilage }
-        setScopeFunction(newScopeFunction)
+    memVar = -1
+    if giveType != 'empty':
+        memVar = getMemSpace(giveType, 'Class', newScopeFunction)
+        # creo la variable que guardara el valor de retorno
+        dirProced['RedRobin']['vars'][newScopeFunction] = {'tipo': giveType, 'size': 0, 'mem': memVar, 'privilage': 'public'}
+    # agrego la funcion al directorio
+    dirProced[currentScopeClass]['func'][newScopeFunction] = {'vars': {}, 'giveType': p[-2], 'params': {}, 'tam': {}, 'mem': memVar, 'quad': len(cuadruplos), 'class': currentScopeClass, 'privilage': lastPrivilage, 'obj': {}}
+    setScopeFunction(newScopeFunction)
     lastPrivilage = ''
 
         
@@ -364,6 +371,30 @@ def isAtomic(mType):
         return True
     return False
     
+    
+def createInstancia(currentType):
+    dicAttr = copy.deepcopy(dirProced[currentType]['vars']);
+    # Instancio todos los atributos de mi objeto
+    for varName in dicAttr:
+        dicAttr[varName]['mem'] = getMemSpace(dicAttr[varName]['tipo'], 'Class', varName)
+        arraySize = dicAttr[varName]['size']
+        # Pido todas las memorias que ocupo en caso de q sea un arreglo
+        if int(arraySize) > 0:
+            memConts[memCont[dicAttr[varName]['tipo'] + 'Class']] += (int(arraySize) - 1)
+
+    # Instancio todos los objetos de mi objeto
+    dicObj = copy.deepcopy(dirProced[currentType]['obj']);
+    for objName in dicObj:
+        dicAttrObj = dicObj[objName]['attr']
+        for attrName in dicAttrObj:
+            dicObj[objName]['attr'][attrName]['mem'] = getMemSpace(dicObj[objName]['attr'][attrName]['tipo'], 'Class', attrName)
+            arraySize = dicObj[objName]['attr'][attrName]['size']
+            if int(arraySize) > 0:
+                memConts[memCont[dicObj[objName]['attr'][attrName]['tipo']+ 'Class']] += (int(arraySize) - 1)
+    return {'attrs': dicAttr, 'objs': dicObj}
+    
+                
+
 # Llamada desde p_declaracion y p_masdeclaraciones    
 def p_smnewvariable(p):
     'smnewvariable : '
@@ -375,9 +406,38 @@ def p_smnewvariable(p):
     
     # Si estamos dentro de una funcion, variable local
     if currentScopeFunction != '': 
-        # TODO- objetos dentro de funciones
-        # Instancio el primitivo de funcion
-        dirProced[currentScopeClass]['func'][currentScopeFunction]['vars'][newVarName] = {'tipo': currentType, 'size': 0, 'mem': getMemSpace(currentType, 'Func', newVarName), 'privilage': lastPrivilage}
+        if isAtomic(currentType):
+            # Instancio el primitivo de funcion
+            dirProced[currentScopeClass]['func'][currentScopeFunction]['vars'][newVarName] = {'tipo': currentType, 'size': 0, 'mem': getMemSpace(currentType, 'Func', newVarName), 'privilage': lastPrivilage}
+        else:
+            # es un objeto
+            # Valido que la clase del objeto exista
+            if currentType not in dirProced or currentType == 'RedRobin':
+                terminate("WRONG OBJECT TYPE")
+            # Depende si estoy en red robin o en otra clase el comportamiento cambia
+            if currentScopeClass == 'RedRobin':
+                # Es un objeto instanciado en funcion dentro de red robin
+                # Creamos instancia de la clase
+                dics = createInstancia(currentType)
+                dirProced[currentScopeClass]['func'][currentScopeFunction]['obj'][newVarName] = {'class': currentType, 'attr': dics['attrs'], 'obj': dics['objs'], 'privilage': lastPrivilage}
+            else:
+                # Si tiene mas objetos mi composicion, seria error
+                if len(dirProced[currentType]['obj']) > 0:
+                    terminate("MORE THAN 1 LEVEL IN COMPOSITION1")
+                    
+                # Arrastro las variables de la clase que estoy "instanciando" en esta funcion
+                variables = copy.deepcopy(dirProced[currentType]['vars'])
+                
+                # Asigno direcciones nuevas para mantener unicidad
+                for varName in variables:
+                    variables[varName]['mem'] = getMemSpace(variables[varName]['tipo'], 'Class', varName)
+                    arraySize = variables[varName]['size']
+                    if int(arraySize) > 0:
+                        memConts[memCont[variables[varName]['tipo'] + 'Class']] += (int(arraySize) - 1)    
+                        
+                # Actualizo el directorio
+                dirProced[currentScopeClass]['func'][currentScopeFunctino]['obj'][newVarName] = {'class': currentType, 'attr': variables, 'privilage': lastPrivilage}
+                
     else:
         # else-  Si estamos fuera de una funcion
         if isAtomic(currentType):
@@ -392,26 +452,8 @@ def p_smnewvariable(p):
             if currentScopeClass == 'RedRobin':
                 # Es un objeto instanciado en main
                 # Hay que crear una instancia de la clase
-                dicAttr = copy.deepcopy(dirProced[currentType]['vars']);
-                # Instancio todos los atributos de mi objeto
-                for varName in dicAttr:
-                    dicAttr[varName]['mem'] = getMemSpace(dicAttr[varName]['tipo'], 'Class', varName)
-                    arraySize = dicAttr[varName]['size']
-                    # Pido todas las memorias que ocupo en caso de q sea un arreglo
-                    if int(arraySize) > 0:
-                        memConts[memCont[dicAttr[varName]['tipo'] + 'Class']] += (int(arraySize) - 1)
-                
-                # Instancio todos los objetos de mi objeto
-                dicObj = copy.deepcopy(dirProced[currentType]['obj']);
-                for objName in dicObj:
-                    dicAttrObj = dicObj[objName]['attr']
-                    for attrName in dicAttrObj:
-                        dicObj[objName]['attr'][attrName]['mem'] = getMemSpace(dicObj[objName]['attr'][attrName]['tipo'], 'Class', attrName)
-                        arraySize = dicObj[objName]['attr'][attrName]['size']
-                        if int(arraySize) > 0:
-                            memConts[memCont[dicObj[objName]['attr'][attrName]['tipo']+ 'Class']] += (int(arraySize) - 1)
-                
-                dirProced['RedRobin']['obj'][newVarName] = {'class': currentType, 'attr': dicAttr, 'obj': dicObj, 'privilage': lastPrivilage}
+                dics = createInstancia(currentType)
+                dirProced['RedRobin']['obj'][newVarName] = {'class': currentType, 'attr': dics['attrs'], 'obj': dics['objs'], 'privilage': lastPrivilage}
             else:
                 # Si tiene mas objetos mi composicion, seria error
                 if len(dirProced[currentType]['obj']) > 0:
@@ -1082,7 +1124,10 @@ def validateObjSemantics(currentAttrPath, currentIdName, currentArray):
                 else:
                     terminate("Attribute " + attr + " doesn't exists")
             else:
-                terminate("object " + obj2 + " doesn't exists")    
+                terminate("object " + obj2 + " doesn't exists")
+        elif True:
+            # TODO: buscar ahora en funciones
+            print("pendiente")
         else:
             terminate("object " + obj1 + " doesn't exists")
     else:
@@ -1101,6 +1146,18 @@ def validateObjSemantics(currentAttrPath, currentIdName, currentArray):
                     stackDirMem.append(dirProced[currentScopeClass]['obj'][currentAttrPath]['attr'][currentIdName]['mem'])
             else:
                 terminate("Attribute " + currentIdName + " not found")
+        elif currentScopeFunction != '' and currentAttrPath in dirProced[currentScopeClass]['func'][currentScopeFunction]['obj']:
+            # ahora vamos a intentar buscando en la rama de funcion
+            # Valido que exista el nombre dentro del objeto
+            if currentIdName in dirProced[currentScopeClass]['func'][currentScopeFunction]['obj'][currentAttrPath]['attr']:
+                priv = dirProced[currentScopeClass]['func'][currentScopeFunction]['obj'][currentAttrPath]['attr'][currentIdName]['privilage']
+                if priv == 'secret':
+                    terminate("Attribute " + currentIdName + " can't be modified from this scope")
+                if currentArray == '[':
+                    arrayRutine(currentIdName, currentAttrPath, None)
+                else:
+                    # existe, lo meto a la pila
+                    stackDirMem.append(dirProced[currentScopeClass]['func'][currentScopeFunction]['obj'][currentAttrPath]['attr'][currentIdName]['mem'])            
         else:
             terminate("Object " + currentAttrPath + " not found")
             
