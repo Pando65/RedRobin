@@ -66,6 +66,7 @@ class RedRobin {
     
     func public number funcionb() {
         Equipo e3;
+        number b = e3.Bcomposicion.B;
         give e3.Bcomposicion.B + 2;
     }
 

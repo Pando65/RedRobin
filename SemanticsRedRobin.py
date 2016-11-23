@@ -171,8 +171,8 @@ def p_smforinitialize(p):
     if getTypeCode(variable) != toCode['number'] and getTypeCode(variable) != toCode['real']:
         terminate("TYPE MISMATCH")
     else:
-        #TODO Validar con cubo semantico
-        createQuadruple(toCode['='], variable, -1, stackDirMem[-1])
+        if cubo.check(getTypeCode(variable), getTypeCode(stackDirMem[-1]), toCode['=']) != 'error':
+            createQuadruple(toCode['='], variable, -1, stackDirMem[-1])
 
 def p_smforstart(p):
     'smforstart :'
@@ -241,6 +241,7 @@ def p_smnewprogram(p):
 # Llamada desde p_funciones
 def p_smnewfunction(p):
     'smnewfunction : '
+    resetFuncMems()
     global contParam
     global lastPrivilage
     contParam = 1
@@ -248,7 +249,8 @@ def p_smnewfunction(p):
     giveType = p[-2]
     if not isAtomic(giveType) and giveType != 'empty':
         terminate("ONLY PRIMITIVE TYPES CAN BE RETURNED")
-    # TODO - checar que no haya una variable global con el mismo nombre
+    if newScopeFunction in dirProced[currentScopeClass]['vars']:
+        terminate("name already used by a variable")
     if existsFunc(newScopeFunction):
         terminate("NAME ALREADY IN USE")
     memVar = -1
@@ -949,7 +951,6 @@ def p_smArgumentoRef(p):
         # Obtenemos el nombre declarado del parametro, segun su posicion
         nameVarParam = dirProced[currentClass]['func'][currentFunction]['params'][contParam]['name']
         # Obtenemos la direccion asignada a ese parametro para la generacion de cuadruplos
-        # TODO - ver si esto de jalar la direccion de vars se va a quedar así, dado que en teoria se va a eliminar el hash de vars del dir de procedimientos despues de q acabe la funcion
         dirVarParam = dirProced[currentClass]['func'][currentFunction]['vars'][nameVarParam]['mem']
         # Verificamos que el argumento sea del mismo tipo que el parametro
         if cubo.check(getTypeCode(dirVarParam), getTypeCode(argDir), toCode['=']) != 'error':
@@ -973,7 +974,6 @@ def p_smArgumentoExpresion(p):
         # Obtenemos el nombre declarado del parametro, segun su posicion
         nameVarParam = dirProced[currentClass]['func'][currentFunction]['params'][contParam]['name']
         # Obtenemos la direccion asignada a ese parametro para la generacion de cuadruplos
-        # TODO - ver si esto de jalar la direccion de vars se va a quedar así, dado que en teoria se va a eliminar el hash de vars del dir de procedimientos despues de q acabe la funcion
         dirVarParam = dirProced[currentClass]['func'][currentFunction]['vars'][nameVarParam]['mem']
         # Verificamos que el argumento sea del mismo tipo que el parametro
         if cubo.check(getTypeCode(dirVarParam), getTypeCode(argDir), toCode['=']) != 'error':
@@ -1136,11 +1136,6 @@ def getMemSpace(varType, scope, varName):
     
 # Llamada de p_identificador
 def validateIdSemantics(currentIdName, currentObjPath, currentArray):
-    # TODO: validar que el tipo de variable concuerde con su declaracion
-    # TODO: que exista el nombre, no queire decir que sea una variable
-            # puedo tener objeto perro y usar un numero perro, deberia ser error
-            # tal vez con arreglar el primer to do sea suficiente
-    # answer todo: creo q esto ya esta, falta testear bien
     # Voy a delegar orientado a objetos a otra funcion
     if currentObjPath != None:
         validateObjSemantics(currentIdName, currentObjPath, currentArray)
