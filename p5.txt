@@ -3,6 +3,13 @@ class RedRobin {
     class superBase {
         public number x;
         // TODO - meterle funciones a esta
+        func public empty hComp() {
+            x = x + 1;
+        }
+        func public number hCompR() {
+            x = x + 1;
+            give x;
+        }
     }
     
     class Base inherit superBase {
@@ -63,6 +70,7 @@ class RedRobin {
     }
 
     RedRobin() {
+        print("hola");
         Equipo e1, e2;
         number a;
         // atributos simple
@@ -91,9 +99,14 @@ class RedRobin {
         print("imprimiendo e1.Bcomposicion.arreglo[1] en funcion RedRaaaaaabin", e1.Bcomposicion.arreglo[1]); // Aaaa quitar a la versh
         e1.Bhcomp.arreglo[1] = 3;
         print("imprimiendo e1.Bhcomp.arreglo[1] en funcion RedRaaaaaabin", e1.Bhcomp.arreglo[1]); // Aaaa quitar a la versh
-        // TODO - invocar funciones de composicion
+        e1.Bcomposicion.B = 5;
         a = e1.Bcomposicion.compuesta();
+        print(a);
+        
         e1.Bcomposicion.compuestaempty();
-        // TODO - invocar funciones heredadas de composicion
+        a = e1.Bcomposicion.hCompR();
+        print(a);
+        e1.Bcomposicion.hComp();
+        print(e1.Bcomposicion.x);
     }
 }

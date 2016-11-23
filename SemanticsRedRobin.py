@@ -732,7 +732,9 @@ def generalInvocationRutine(funName, currClass, objPath):
             obj1 = paths[0]
             obj2 = paths[1]
             currentClass = dirProced['RedRobin']['obj'][obj1]['obj'][obj2]['class']
-            createQuadruple(toCode['era'], -1, -1, dirProced[currentClass]['func'][funName]['quad'])
+            if funName not in dirProced[currentClass]['func']:
+                currentClass = currClass
+            createQuadruple(toCode['era'], -1, -1, dirProced[currentClass]['func'][funName]['quad'])                
             # valido el privilegio
             if dirProced['RedRobin']['obj'][obj1]['privilage'] == 'secret' or dirProced['RedRobin']['obj'][obj1]['obj'][obj2]['privilage'] == 'secreto':
                 terminate("Function " + funName + " can't be inovked in this scope")
@@ -793,10 +795,14 @@ def newInvocacionFuncDeObjNoReturn(objPath, funName):
                 if funName in dirProced[currentClass]['func']:
                     if dirProced[currentClass]['func'][funName]['giveType'] == 'empty':
                         generalInvocationRutine(funName, currentScopeClass, obj1 + '.' + obj2)
-                    elif False:
-                        print("lel")
                     else:
-                        terminate("No variable to catch returned value")
+                        terminate("No variable to catch returned value")                        
+                elif dirProced[currentClass]['parent'] != "" and funName in dirProced[ dirProced[currentClass]['parent'] ]['func']:
+                    # es una funcion heredada
+                    if dirProced[dirProced[currentClass]['parent']]['func'][funName]['giveType'] == 'empty':
+                        generalInvocationRutine(funName, dirProced[currentClass]['parent'], obj1 + '.' + obj2)
+                    else:
+                        terminate("No variable to catch returned value")                      
                 else:
                     terminate("Funcition " + funName + " was not found")
             else:
@@ -859,6 +865,9 @@ def p_smNewFuncNoReturn(p):
 # Llamada desde p_valor
 
 def newInvocacionFuncDeObj(objPath, funName):
+    global contParam
+    global currentFunction
+    global currentClass    
     if '.' in funName:
         obj1 = objPath
         listObj = funName.split('.')
@@ -868,9 +877,13 @@ def newInvocacionFuncDeObj(objPath, funName):
         if existsObj(obj1):
             # valido que el segundo objeto exista
             if obj2 in dirProced[currentScopeClass]['obj'][obj1]['obj']:
+                currentClass = dirProced[currentScopeClass]['obj'][obj1]['obj'][obj2]['class']
                 # valido que la funcion exista
-                if fun in dirProced[dirProced[currentScopeClass]['obj'][obj1]['obj'][obj2]['class']]['func']:
+                if fun in dirProced[currentClass]['func']:
                     generalInvocationRutine(fun, currentScopeClass, obj1 + '.' + obj2)
+                elif dirProced[currentClass]['parent'] != "" and fun in dirProced[dirProced[currentClass]['parent'] ]['func']:
+                    # es una funcion heredada
+                    generalInvocationRutine(fun, dirProced[currentClass]['parent'] , obj1 + '.' + obj2)
                 else:
                     terminate("Funciont " + fun + " doesn't exists");
             else:
@@ -878,9 +891,6 @@ def newInvocacionFuncDeObj(objPath, funName):
         else:
             terminate("Object " + obj1 + " doesn't exists");
     else:
-        global contParam
-        global currentFunction
-        global currentClass
         # Valido que el objeto exista
         if objPath in dirProced[currentScopeClass]['obj']:
             currentClass = dirProced[currentScopeClass]['obj'][objPath]['class']
