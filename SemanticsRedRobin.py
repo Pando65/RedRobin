@@ -723,6 +723,8 @@ def generalInvocationRutine(funName, currClass, objPath):
     # Current class es en DONDE esta definida la funcion
     # puede ser en el currentClassScope o en la class del objeto que invoco la funcion
     currentClass = currClass
+    if objPath == None:
+        createQuadruple(toCode['era'], -1, -1, dirProced[currentClass]['func'][funName]['quad'])
     if objPath != None:
         # si es una composicion de 2 niveles
         if '.' in objPath:
