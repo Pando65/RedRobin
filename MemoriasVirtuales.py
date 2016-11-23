@@ -33,6 +33,12 @@ memConts[memCont['realCte']] =   memStart['realCte']
 memConts[memCont['stringCte']] = memStart['stringCte']
 memConts[memCont['boolCte']] =   memStart['boolCte']
 
+def resetFuncMems():
+    memConts[memCont['numberFunc']] = memStart['numberFunc']
+    memConts[memCont['realFunc']] =   memStart['realFunc']
+    memConts[memCont['stringFunc']] = memStart['stringFunc']
+    memConts[memCont['boolFunc']] =   memStart['boolFunc']    
+
 # getTypeCode: dada una direccion de memoria regresa el codigo del tipo de dato correspondiente
 def getTypeCode(memAddress):
     memAddress = abs(memAddress)

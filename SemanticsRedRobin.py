@@ -26,7 +26,6 @@ from MemoriasVirtuales import *
 #               [contParam]
 #                  ['name'] - nombre del parametro
 #                  ['type'] - tipo del parametro
-#           ['tam'] - diccionario de tamaños requeridos, not defined yet TODO
 #           ['giveType'] - Tipo de retorno de la funcion
 #           ['privilages'] - Privilegio (public o private)
 #           ['mem'] - Direccion de memoria de su variable global asignada
@@ -172,8 +171,8 @@ def p_smforinitialize(p):
     if getTypeCode(variable) != toCode['number'] and getTypeCode(variable) != toCode['real']:
         terminate("TYPE MISMATCH")
     else:
-        #TODO Validar con cubo semantico
-        createQuadruple(toCode['='], variable, -1, stackDirMem[-1])
+        if cubo.check(getTypeCode(variable), getTypeCode(stackDirMem[-1]), toCode['=']) != 'error':
+            createQuadruple(toCode['='], variable, -1, stackDirMem[-1])
 
 def p_smforstart(p):
     'smforstart :'
@@ -242,6 +241,7 @@ def p_smnewprogram(p):
 # Llamada desde p_funciones
 def p_smnewfunction(p):
     'smnewfunction : '
+    resetFuncMems()
     global contParam
     global lastPrivilage
     contParam = 1
@@ -249,7 +249,8 @@ def p_smnewfunction(p):
     giveType = p[-2]
     if not isAtomic(giveType) and giveType != 'empty':
         terminate("ONLY PRIMITIVE TYPES CAN BE RETURNED")
-    # TODO - checar que no haya una variable global con el mismo nombre
+    if newScopeFunction in dirProced[currentScopeClass]['vars']:
+        terminate("name already used by a variable")
     if existsFunc(newScopeFunction):
         terminate("NAME ALREADY IN USE")
     memVar = -1
@@ -724,13 +725,31 @@ def generalInvocationRutine(funName, currClass, objPath):
     # Current class es en DONDE esta definida la funcion
     # puede ser en el currentClassScope o en la class del objeto que invoco la funcion
     currentClass = currClass
-    createQuadruple(toCode['era'], -1, -1, dirProced[currentClass]['func'][funName]['quad'])
+    if objPath == None:
+        createQuadruple(toCode['era'], -1, -1, dirProced[currentClass]['func'][funName]['quad'])
     if objPath != None:
         # si es una composicion de 2 niveles
         if '.' in objPath:
-            # TODO
-            print("invocando composicion de 2 niveles")
+            paths = objPath.split('.')
+            obj1 = paths[0]
+            obj2 = paths[1]
+            currentClass = dirProced['RedRobin']['obj'][obj1]['obj'][obj2]['class']
+            if funName not in dirProced[currentClass]['func']:
+                currentClass = currClass
+            createQuadruple(toCode['era'], -1, -1, dirProced[currentClass]['func'][funName]['quad'])                
+            # valido el privilegio
+            if dirProced['RedRobin']['obj'][obj1]['privilage'] == 'secret' or dirProced['RedRobin']['obj'][obj1]['obj'][obj2]['privilage'] == 'secreto':
+                terminate("Function " + funName + " can't be inovked in this scope")
+                
+            # mando como referencia todos los atributos de mi instancia
+            for attrName in dirProced['RedRobin']['obj'][obj1]['obj'][obj2]['attr']:
+                dirReal = dirProced['RedRobin']['obj'][obj1]['obj'][obj2]['attr'][attrName]['mem']
+                if attrName in dirProced[currentClass]['vars']:
+                    hashRef[dirReal] = dirProced[currentClass]['vars'][attrName]['mem']
+                    hashRefTam[dirReal] = dirProced[currentClass]['vars'][attrName]['size']
+                
         else:
+            createQuadruple(toCode['era'], -1, -1, dirProced[currentClass]['func'][funName]['quad'])            
             # valido el privilegio
             if dirProced[currentClass]['func'][funName]['privilage'] == 'secret':
                 if funName not in dirProced[currentScopeClass]['func']:
@@ -762,12 +781,37 @@ def generalInvocationRutine(funName, currClass, objPath):
     
 
 def newInvocacionFuncDeObjNoReturn(objPath, funName):
+    global contParam
+    global currentFunction
+    global currentClass
     if '.' in funName:
-        print("desde redrobin invamos")
+        svFunName = funName
+        paths = funName.split('.')
+        obj2 = paths[0]
+        obj1 = objPath
+        funName = paths[1]
+        # valido que el objeto exista
+        if obj1 in dirProced['RedRobin']['obj']:
+            if obj2 in dirProced['RedRobin']['obj'][obj1]['obj']:
+                currentClass = dirProced['RedRobin']['obj'][obj1]['obj'][obj2]['class']
+                if funName in dirProced[currentClass]['func']:
+                    if dirProced[currentClass]['func'][funName]['giveType'] == 'empty':
+                        generalInvocationRutine(funName, currentScopeClass, obj1 + '.' + obj2)
+                    else:
+                        terminate("No variable to catch returned value")                        
+                elif dirProced[currentClass]['parent'] != "" and funName in dirProced[ dirProced[currentClass]['parent'] ]['func']:
+                    # es una funcion heredada
+                    if dirProced[dirProced[currentClass]['parent']]['func'][funName]['giveType'] == 'empty':
+                        generalInvocationRutine(funName, dirProced[currentClass]['parent'], obj1 + '.' + obj2)
+                    else:
+                        terminate("No variable to catch returned value")                      
+                else:
+                    terminate("Funcition " + funName + " was not found")
+            else:
+                terminate("Object " + obj1 + " doesn't exists")      
+        else:
+            terminate("Object " + obj1 + " doesn't exists")  
     else:
-        global contParam
-        global currentFunction
-        global currentClass
         # Valido que el objeto exista
         if objPath in dirProced[currentScopeClass]['obj']:
             currentClass = dirProced[currentScopeClass]['obj'][objPath]['class']
@@ -823,6 +867,9 @@ def p_smNewFuncNoReturn(p):
 # Llamada desde p_valor
 
 def newInvocacionFuncDeObj(objPath, funName):
+    global contParam
+    global currentFunction
+    global currentClass    
     if '.' in funName:
         obj1 = objPath
         listObj = funName.split('.')
@@ -832,9 +879,13 @@ def newInvocacionFuncDeObj(objPath, funName):
         if existsObj(obj1):
             # valido que el segundo objeto exista
             if obj2 in dirProced[currentScopeClass]['obj'][obj1]['obj']:
+                currentClass = dirProced[currentScopeClass]['obj'][obj1]['obj'][obj2]['class']
                 # valido que la funcion exista
-                if fun in dirProced[dirProced[currentScopeClass]['obj'][obj1]['obj'][obj2]['class']]['func']:
+                if fun in dirProced[currentClass]['func']:
                     generalInvocationRutine(fun, currentScopeClass, obj1 + '.' + obj2)
+                elif dirProced[currentClass]['parent'] != "" and fun in dirProced[dirProced[currentClass]['parent'] ]['func']:
+                    # es una funcion heredada
+                    generalInvocationRutine(fun, dirProced[currentClass]['parent'] , obj1 + '.' + obj2)
                 else:
                     terminate("Funciont " + fun + " doesn't exists");
             else:
@@ -842,9 +893,6 @@ def newInvocacionFuncDeObj(objPath, funName):
         else:
             terminate("Object " + obj1 + " doesn't exists");
     else:
-        global contParam
-        global currentFunction
-        global currentClass
         # Valido que el objeto exista
         if objPath in dirProced[currentScopeClass]['obj']:
             currentClass = dirProced[currentScopeClass]['obj'][objPath]['class']
@@ -903,7 +951,6 @@ def p_smArgumentoRef(p):
         # Obtenemos el nombre declarado del parametro, segun su posicion
         nameVarParam = dirProced[currentClass]['func'][currentFunction]['params'][contParam]['name']
         # Obtenemos la direccion asignada a ese parametro para la generacion de cuadruplos
-        # TODO - ver si esto de jalar la direccion de vars se va a quedar así, dado que en teoria se va a eliminar el hash de vars del dir de procedimientos despues de q acabe la funcion
         dirVarParam = dirProced[currentClass]['func'][currentFunction]['vars'][nameVarParam]['mem']
         # Verificamos que el argumento sea del mismo tipo que el parametro
         if cubo.check(getTypeCode(dirVarParam), getTypeCode(argDir), toCode['=']) != 'error':
@@ -927,7 +974,6 @@ def p_smArgumentoExpresion(p):
         # Obtenemos el nombre declarado del parametro, segun su posicion
         nameVarParam = dirProced[currentClass]['func'][currentFunction]['params'][contParam]['name']
         # Obtenemos la direccion asignada a ese parametro para la generacion de cuadruplos
-        # TODO - ver si esto de jalar la direccion de vars se va a quedar así, dado que en teoria se va a eliminar el hash de vars del dir de procedimientos despues de q acabe la funcion
         dirVarParam = dirProced[currentClass]['func'][currentFunction]['vars'][nameVarParam]['mem']
         # Verificamos que el argumento sea del mismo tipo que el parametro
         if cubo.check(getTypeCode(dirVarParam), getTypeCode(argDir), toCode['=']) != 'error':
@@ -1090,11 +1136,6 @@ def getMemSpace(varType, scope, varName):
     
 # Llamada de p_identificador
 def validateIdSemantics(currentIdName, currentObjPath, currentArray):
-    # TODO: validar que el tipo de variable concuerde con su declaracion
-    # TODO: que exista el nombre, no queire decir que sea una variable
-            # puedo tener objeto perro y usar un numero perro, deberia ser error
-            # tal vez con arreglar el primer to do sea suficiente
-    # answer todo: creo q esto ya esta, falta testear bien
     # Voy a delegar orientado a objetos a otra funcion
     if currentObjPath != None:
         validateObjSemantics(currentIdName, currentObjPath, currentArray)
