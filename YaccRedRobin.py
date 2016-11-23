@@ -50,7 +50,7 @@ def p_tipovariable(p):
     setCurrentType(p[1])
 
 def p_parametros(p):
-    '''parametros : tipovariable posiblesbrackets DOSPUNTOS ID smnewparam mas_ids mas_parametros
+    '''parametros : tipovariable posiblesbrackets smupdatesize DOSPUNTOS ID smnewparam mas_ids mas_parametros
                   | empty'''
     
 def p_mas_ids(p):
@@ -62,8 +62,12 @@ def p_mas_parametros(p):
                       | empty'''
     
 def p_posiblesbrackets(p):
-    '''posiblesbrackets : B_ABRE B_CIERRA
+    '''posiblesbrackets : B_ABRE CONST_INTEGER B_CIERRA
                         | empty'''
+    if p[1] == '[':
+        p[0] = p[2]
+    else:
+        p[0] = p[1]
 
 def p_clases(p):
     'clases : CLASS ID herencia smnewclass L_ABRE cuerpoclase L_CIERRA'

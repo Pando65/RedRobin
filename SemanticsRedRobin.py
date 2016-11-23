@@ -78,6 +78,9 @@ cubo = Cubo()
 # contador para saber el indice del parametro actual tanto para invocar como para declarar
 contParam = 1
 
+# variable auxiliar para almacenar el tamaño del ultimo arreglo declarado como parametro
+currentSize = 0
+
 ########### REGLAS DE SEMANTICA ###########
 
 # smMainFound: Se encarga de crear el cuadruplo inicial que llevara el flujo a la primera instruccion del main (RedRobin)
@@ -258,17 +261,29 @@ def p_smnewfunction(p):
     dirProced[currentScopeClass]['func'][newScopeFunction] = {'vars': {}, 'giveType': p[-2], 'params': {}, 'tam': {}, 'mem': memVar, 'quad': len(cuadruplos), 'class': currentScopeClass, 'privilage': lastPrivilage, 'obj': {}}
     setScopeFunction(newScopeFunction)
     lastPrivilage = ''
-
+    
+def p_smupdate(p):
+    'smupdatesize :'
+    global currentSize
+    if p[-1] == None:
+        currentSize = 0
+    else:
+        currentSize = p[-1]
+    print(currentSize)
         
 # Llamada desde p_parametros
 def p_smnewparam(p):
     'smnewparam :'
     global contParam
+    global currentSize
     newParamName = p[-1]
+    sizeArray = currentSize
     # agrego a hash de params
-    dirProced[currentScopeClass]['func'][currentScopeFunction]['params'][contParam] = {'name': newParamName, 'type': currentType}
+    dirProced[currentScopeClass]['func'][currentScopeFunction]['params'][contParam] = {'name': newParamName, 'type': currentType, 'size': sizeArray}
     # agrego a hash de vars
-    dirProced[currentScopeClass]['func'][currentScopeFunction]['vars'][newParamName] = {'tipo': currentType, 'size': 0, 'mem': getMemSpace(currentType, 'Func', newParamName), 'privilage': ''}
+    dirProced[currentScopeClass]['func'][currentScopeFunction]['vars'][newParamName] = {'tipo': currentType, 'size': 0, 'mem': getMemSpace(currentType, 'Func', newParamName), 'privilage': '', 'size': sizeArray}
+    if int(sizeArray) > 0:
+        memConts[memCont[currentType + 'Func']] += (int(sizeArray) - 1)
     contParam += 1
 
 # Llamada desde p_clases
@@ -892,7 +907,7 @@ def p_smArgumentoRef(p):
         dirVarParam = dirProced[currentClass]['func'][currentFunction]['vars'][nameVarParam]['mem']
         # Verificamos que el argumento sea del mismo tipo que el parametro
         if cubo.check(getTypeCode(dirVarParam), getTypeCode(argDir), toCode['=']) != 'error':
-            createQuadruple(toCode['param'], argDir, -1, dirVarParam)
+            # createQuadruple(toCode['param'], argDir, -1, dirVarParam)
             hashRef[argDir] = dirVarParam
             hashRefTam[argDir] = dirProced[currentClass]['func'][currentFunction]['vars'][nameVarParam]['size']
             contParam += 1
@@ -916,7 +931,12 @@ def p_smArgumentoExpresion(p):
         dirVarParam = dirProced[currentClass]['func'][currentFunction]['vars'][nameVarParam]['mem']
         # Verificamos que el argumento sea del mismo tipo que el parametro
         if cubo.check(getTypeCode(dirVarParam), getTypeCode(argDir), toCode['=']) != 'error':
-            createQuadruple(toCode['param'], argDir, -1, dirVarParam)
+            # si el parametro es un arreglo lo enviamos por referencia
+            if int(dirProced[currentClass]['func'][currentFunction]['vars'][nameVarParam]['size']) > 0:
+                hashRef[argDir] = dirVarParam
+                hashRefTam[argDir] = dirProced[currentClass]['func'][currentFunction]['vars'][nameVarParam]['size']
+            else:
+                createQuadruple(toCode['param'], argDir, -1, dirVarParam)
             contParam += 1
         else:
             terminate("Error in params of function " + currentFunction)
