@@ -270,7 +270,6 @@ def p_smupdate(p):
         currentSize = 0
     else:
         currentSize = p[-1]
-    print(currentSize)
         
 # Llamada desde p_parametros
 def p_smnewparam(p):
@@ -653,8 +652,6 @@ def p_smRemoveParentesis(p):
     'smRemoveParentesis :'
     opeCode = stackOpe.pop()
     if opeCode != toCode['(']:
-        print(toSymbol[opeCode])
-        print(len(cuadruplos))
         terminate("ERROR EXPRESION")
         
 def p_smAsignacion(p):

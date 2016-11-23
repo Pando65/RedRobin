@@ -298,11 +298,14 @@ parser.parse(s)
 
 if aprobado == True:
     print("Compilacion exitosa")
-    i = 0
-    for cuadruplo in cuadruplos:
-        print(str(i) + " - " + toSymbol[cuadruplo.ope] + " " + str(cuadruplo.op1) + " " + str(cuadruplo.op2) + " " + str(cuadruplo.r))
-        i += 1
-    print(dirProced)
+#    i = 0
+#    for cuadruplo in cuadruplos:
+#        print(str(i) + " - " + toSymbol[cuadruplo.ope] + " " + str(cuadruplo.op1) + " " + str(cuadruplo.op2) + " " + str(cuadruplo.r))
+#        i += 1
+#    print(dirProced)
+#    print("-----")
+#    print(stackDirMem)
+#    print(stackOpe)
 
     # Se genera el codigo objeto
     codigoObjeto = open(filename[:-4] + ".rr", 'w')
@@ -310,10 +313,6 @@ if aprobado == True:
     codigoObjeto.write(str(len(mapCteToDir)) + '\n')
     for keyConstante, valorDireccion  in mapCteToDir.items():
         codigoObjeto.write(str(keyConstante) + '~' + str(valorDireccion) + '\n')
-    print("-----")
-    
-    print(stackDirMem)
-    print(stackOpe)
 
     codigoObjeto.write(str(len(cuadruplos)) + '\n')
     for numCuadruplo in range(0, len(cuadruplos)):
