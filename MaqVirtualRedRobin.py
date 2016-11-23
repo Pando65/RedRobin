@@ -776,11 +776,8 @@ fromCode = {
     20 : esdiferente, #<>
     21 : condicionalor, #or
     22 : condicionaland, #and
-#    '(': 23,
-#    ')': 24,
     50 : goTo, #goto
     51 : goTof, #gotof
-#    52 : negativo, #neg
     53 : era, #era
     54 : irASubrutina, #gosub
     55 : parametro, #param
@@ -789,7 +786,6 @@ fromCode = {
     58 : convierteANumero, #toNumber
     59 : convierteAReal, #toReal
     60 : convierteAString, #toString
-#    'null' : 61,
     62 : give, #'give': 62,
     63 : terminaProcedimiento, #endproc
     64 : terminaPrograma, #endprogram
@@ -801,8 +797,8 @@ fromCode = {
 }
 
 # Se pregunta por archivo ejecutable
-filename = "p6.rr"
-# filename = sys.argv[1]
+filename = sys.argv[1]
+
 separandoFormato = filename.split('.')
 if  separandoFormato[-1] != "rr":
     terminate("Formato de archivo incorrecto. No es codigo objeto de RedRobin")
