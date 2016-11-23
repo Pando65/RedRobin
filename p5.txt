@@ -48,7 +48,7 @@ class RedRobin {
     
     func public number funcionb() {
         Equipo e3;
-        give e3.E + 2;
+        give e3.Bcomposicion.B + 2;
     }
 
     RedRobin() {

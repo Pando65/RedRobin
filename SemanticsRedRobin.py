@@ -346,7 +346,7 @@ def existsVar(newVarName):
 def existsObj(newObjName):
     # Si estamos dentro de una funcion
     if currentScopeFunction != '':
-        # si es un objeto dentro de la funcion TODO
+        # si es un objeto dentro de la funcion
         if newObjName in dirProced[currentScopeClass]['func'][currentScopeFunction]['vars']:
             return True
     # si es un objeto de clase
@@ -1125,9 +1125,23 @@ def validateObjSemantics(currentAttrPath, currentIdName, currentArray):
                     terminate("Attribute " + attr + " doesn't exists")
             else:
                 terminate("object " + obj2 + " doesn't exists")
-        elif True:
-            # TODO: buscar ahora en funciones
-            print("pendiente")
+        elif currentScopeFunction != '' and obj1 in dirProced[currentScopeClass]['func'][currentScopeFunction]['obj']:
+                # ahora intento con funciones
+                if obj2 in dirProced[currentScopeClass]['func'][currentScopeFunction]['obj'][obj1]['obj']:
+                    if dirProced[currentScopeClass]['func'][currentScopeFunction]['obj'][obj1]['obj'][obj2]['privilage'] == 'secret':
+                        terminate("Object " + obj2 + " can't be modified from this scope")
+                    if attr in dirProced[currentScopeClass]['func'][currentScopeFunction]['obj'][obj1]['obj'][obj2]['attr']:
+                        if dirProced[currentScopeClass]['func'][currentScopeFunction]['obj'][obj1]['obj'][obj2]['attr'][attr]['privilage'] == 'secret':
+                            terminate("Attribute " + attr + " can't be modified from this scope")
+                        if currentArray == '[':
+                            arrayRutine(attr, obj2, obj1)
+                        else:
+                            # existe, lo meto a la pila
+                            stackDirMem.append(dirProced[currentScopeClass]['func'][currentScopeFunction]['obj'][obj1]['obj'][obj2]['attr'][attr]['mem'])
+                    else:
+                        terminate("Attribute " + attr + " doesn't exists")
+                else:
+                    terminate("object " + obj2 + " doesn't exists")
         else:
             terminate("object " + obj1 + " doesn't exists")
     else:
